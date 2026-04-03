@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Rectangle Environment",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/enviornment/run.py",
+      "cwd": "${workspaceFolder}/enviornment",
+      "console": "integratedTerminal",
+      "env": {
+        "MPLCONFIGDIR": "${workspaceFolder}/enviornment/.matplotlib"
+      }
+    },
+    {
+      "name": "Run Circle Environment",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/enviornment/run_circles.py",
+      "cwd": "${workspaceFolder}/enviornment",
+      "console": "integratedTerminal",
+      "env": {
+        "MPLCONFIGDIR": "${workspaceFolder}/enviornment/.matplotlib"
+      }
+    }
+  ]
+}
