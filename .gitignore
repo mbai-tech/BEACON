@@ -1,0 +1,13 @@
+.DS_Store
+.venv/
+enviornment/.venv/
+enviornment/.venv-mac/
+enviornment/.matplotlib/
+
+__pycache__/
+*.pyc
+
+data/images/circle_scene_*.png
+data/scenes/circle_scene_*.json
+enviornment/data/images/*.png
+enviornment/data/scenes/*.json
