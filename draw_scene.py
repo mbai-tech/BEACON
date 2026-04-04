@@ -1,31 +1,42 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MplPolygon
 
+# TODO : fix colors NOTE: forbidden and the passageways in the narrow passage function should be the same label/color
+CLASS_COLORS = {
+    "safe": "lightgreen",
+    "movable": "gold",
+    "fragile": "tomato",
+    "forbidden": "lightgray"
+}
+
+
 def draw_scene(scene, save_path=None):
     fig, ax = plt.subplots(figsize=(6, 6))
 
-    # Workspace
-    ax.set_xlim(scene["workspace"][0], scene["workspace"][1])
-    ax.set_ylim(scene["workspace"][2], scene["workspace"][3])
+    xmin, xmax, ymin, ymax = scene["workspace"]
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
     ax.set_aspect("equal")
 
-    # Obstacles
     for obs in scene["obstacles"]:
-        x, y = obs.exterior.xy
-        patch = MplPolygon(list(zip(x, y)), closed=True,
-                           edgecolor="black", facecolor="lightgray")
+        verts = obs["vertices"]
+        patch = MplPolygon(
+            verts,
+            closed=True,
+            edgecolor="black",
+            facecolor=CLASS_COLORS.get(obs["class_true"], "lightblue"),
+            alpha=0.8
+        )
         ax.add_patch(patch)
 
-    # Start and goal
-    sx, sy = scene["start"]
-    gx, gy = scene["goal"]
-    ax.plot(sx, sy, "go", markersize=8, label="Start")
-    ax.plot(gx, gy, "ro", markersize=8, label="Goal")
+    sx, sy, _ = scene["start"]
+    gx, gy, _ = scene["goal"]
+    ax.plot(sx, sy, "bo", markersize=8)
+    ax.plot(gx, gy, "r*", markersize=12)
 
-    ax.set_title("Generated Environment")
-    ax.legend()
+    ax.set_title(scene["family"])
 
     if save_path:
         plt.savefig(save_path, dpi=200, bbox_inches="tight")
+
     plt.close(fig)
-    # plt.show()
