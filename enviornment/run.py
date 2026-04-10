@@ -11,7 +11,7 @@ FAMILIES = [
     "semantic_trap",
     "perturbed",
 ]
-SCENES_PER_FAMILY = 5
+SCENES_PER_FAMILY = 100
 
 
 def clear_output_dir(directory):
