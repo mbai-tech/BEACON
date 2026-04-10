@@ -11,3 +11,4 @@ data/images/circle_scene_*.png
 data/scenes/circle_scene_*.json
 enviornment/data/images/*.png
 enviornment/data/scenes/*.json
+enviornment/saved_enviornments/
