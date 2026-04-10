@@ -31,10 +31,16 @@ def astar_collision_free(scene, robot_shape="rectangle"):
     from shapely.geometry import Polygon
     robot_base = make_robot_polygon(robot_shape)
     obstacles = [Polygon(o["vertices"]) for o in scene["obstacles"]]
+    
+    ws = scene["workspace"]
+    xmin, xmax, ymin, ymax = ws[0], ws[1], ws[2], ws[3]
+    
     sx, sy, st = scene["start"]
     gx, gy, gt = scene["goal"]
     start = snap(sx, sy, st)
-    goal_xy = (gx, gy)
+
+    def in_bounds(x, y):
+        return xmin + 0.3 <= x <= xmax - 0.3 and ymin + 0.3 <= y <= ymax - 0.3
 
     def is_collision(x, y, theta):
         r = transform_polygon(robot_base, x, y, theta)
@@ -48,7 +54,6 @@ def astar_collision_free(scene, robot_shape="rectangle"):
         _, current = heapq.heappop(open_heap)
         cx, cy, ct = current
         if np.hypot(cx - gx, cy - gy) < D_STEP * 1.5:
-            # Reconstruct path
             path = []
             while current in came_from:
                 path.append(current)
@@ -56,7 +61,7 @@ def astar_collision_free(scene, robot_shape="rectangle"):
             return list(reversed(path))
 
         for nx, ny, nt, cost in get_neighbors(cx, cy, ct):
-            if not (0.3 <= nx <= 9.7 and 0.3 <= ny <= 9.7):
+            if not in_bounds(nx, ny):
                 continue
             if is_collision(nx, ny, nt):
                 continue
@@ -67,4 +72,4 @@ def astar_collision_free(scene, robot_shape="rectangle"):
                 f = new_g + heuristic(nx, ny, gx, gy)
                 heapq.heappush(open_heap, (f, ns))
                 came_from[ns] = current
-    return None  # No path found
+    return None

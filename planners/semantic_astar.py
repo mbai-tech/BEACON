@@ -47,9 +47,15 @@ def semantic_astar(scene, robot_shape="rectangle", use_expected=True):
     obstacles = [Polygon(o["vertices"]) for o in scene["obstacles"]]
     posteriors = [o["prior"] for o in scene["obstacles"]]
 
+    ws = scene["workspace"]
+    xmin, xmax, ymin, ymax = ws[0], ws[1], ws[2], ws[3]
+
     sx, sy, st = scene["start"]
     gx, gy, gt = scene["goal"]
     start = snap(sx, sy, st)
+
+    def in_bounds(x, y):
+        return xmin + 0.3 <= x <= xmax - 0.3 and ymin + 0.3 <= y <= ymax - 0.3
 
     def edge_cost(x, y, theta, move_cost):
         r = transform_polygon(robot_base, x, y, theta)
@@ -71,7 +77,7 @@ def semantic_astar(scene, robot_shape="rectangle", use_expected=True):
             return list(reversed(path))
 
         for nx, ny, nt, move_cost in get_neighbors(cx, cy, ct):
-            if not (0.3 <= nx <= 9.7 and 0.3 <= ny <= 9.7):
+            if not in_bounds(nx, ny):
                 continue
             ns = snap(nx, ny, nt)
             new_g = g_score[current] + edge_cost(nx, ny, nt, move_cost)

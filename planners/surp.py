@@ -6,7 +6,8 @@ from planners.semantic_astar import semantic_astar
 from planners.cibp import cibp_update
 from envs.contact_simulator import simulate_contact
 
-def run_surp(scene, kl_threshold=0.1, max_steps=2000, robot_shape="rectangle"):
+def run_surp(scene, kl_threshold=0.1, max_steps=500,
+             robot_shape="rectangle", use_cibp=True):
     robot_base = make_robot_polygon(robot_shape)
     obstacles = [Polygon(o["vertices"]) for o in scene["obstacles"]]
     true_classes = [o["true_class"] for o in scene["obstacles"]]
@@ -16,6 +17,7 @@ def run_surp(scene, kl_threshold=0.1, max_steps=2000, robot_shape="rectangle"):
     current_pose = tuple(scene["start"])
 
     path_taken = [current_pose]
+    contact_log = []
     total_damage = 0.0
     replan_count = 0
     success = False
@@ -24,7 +26,7 @@ def run_surp(scene, kl_threshold=0.1, max_steps=2000, robot_shape="rectangle"):
     plan = semantic_astar(working_scene, use_expected=True)
 
     if plan is None:
-        return {"success": False, "damage": 0, "replans": 0, "path": []}
+        return _empty_result()
 
     plan_idx = 0
     step = 0
@@ -38,9 +40,8 @@ def run_surp(scene, kl_threshold=0.1, max_steps=2000, robot_shape="rectangle"):
         if plan_idx >= len(plan):
             break
 
-        next_pose = plan[plan_idx]
+        current_pose = plan[plan_idx]
         plan_idx += 1
-        current_pose = next_pose
         path_taken.append(current_pose)
         step += 1
 
@@ -50,13 +51,19 @@ def run_surp(scene, kl_threshold=0.1, max_steps=2000, robot_shape="rectangle"):
         for i, obs in enumerate(obstacles):
             area = contact_area(robot_poly, obs)
             if area > 0:
-                outcome = simulate_contact(true_classes[i])
-                true_costs = {"safe": 1, "movable": 3, "fragile": 15, "forbidden": 1000}
-                total_damage += true_costs[true_classes[i]] * area
-                new_post, replan = cibp_update(posteriors[i], outcome, kl_threshold)
-                posteriors[i] = new_post
-                if replan:
-                    triggered_replan = True
+                cls = true_classes[i]
+                contact_log.append((cls, area))
+                true_costs = {"safe": 1, "movable": 3,
+                              "fragile": 15, "forbidden": 1000}
+                total_damage += true_costs[cls] * area
+
+                outcome = simulate_contact(cls)
+                if use_cibp:
+                    new_post, replan = cibp_update(
+                        posteriors[i], outcome, kl_threshold)
+                    posteriors[i] = new_post
+                    if replan:
+                        triggered_replan = True
 
         if triggered_replan:
             replan_count += 1
@@ -71,7 +78,8 @@ def run_surp(scene, kl_threshold=0.1, max_steps=2000, robot_shape="rectangle"):
         "damage": round(total_damage, 4),
         "replans": replan_count,
         "path": path_taken,
-        "posteriors": posteriors
+        "posteriors": posteriors,
+        "contact_log": contact_log,
     }
 
 def _scene_with_posteriors(scene, posteriors):
@@ -79,3 +87,7 @@ def _scene_with_posteriors(scene, posteriors):
     for i, obs in enumerate(s["obstacles"]):
         obs["prior"] = posteriors[i]
     return s
+
+def _empty_result():
+    return {"success": False, "damage": 0, "replans": 0,
+            "path": [], "posteriors": [], "contact_log": []}
