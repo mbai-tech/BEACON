@@ -5,13 +5,14 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from NewProject.constants import OUTPUT_DIR
 from NewProject.bug_algorithm import run_bug
+from NewProject.constants import OUTPUT_DIR
 from NewProject.scene_setup import generate_one_random_environment
 from NewProject.visualization import animate_result, plot_final_snapshot, save_scene_snapshot
 
 
 def main() -> None:
+    """Run the Bug-style baseline in one random environment."""
     scene = generate_one_random_environment()
     result = run_bug(scene)
 
