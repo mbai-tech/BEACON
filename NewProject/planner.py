@@ -1,5 +1,6 @@
 import copy
 import random
+from dataclasses import dataclass
 
 import numpy as np
 from shapely.affinity import translate
@@ -8,6 +9,28 @@ from shapely.geometry import LineString, Point, Polygon, box
 from NewProject.constants import CHAIN_ATTENUATION, DEFAULT_SENSING_RANGE, ROBOT_RADIUS, SAFE_PROB_THRESHOLD
 from NewProject.models import OnlineSurpResult, SimulationFrame
 from NewProject.scene_setup import normalize_scene_for_online_use
+
+
+@dataclass
+class TrajectoryCandidate:
+    """One locally evaluated trajectory option.
+
+    The outline in your flowchart computes two competing trajectories:
+    one for avoidance and one for pushing. This container keeps both
+    branches in the same format so they can be compared by a common
+    reconciliation step.
+    """
+
+    mode: str
+    waypoint: np.ndarray
+    step_target: np.ndarray
+    total_cost: float
+    safety_margin: float
+    progress_gain: float
+    obstacle_index: int | None = None
+    push_distance: float = 0.0
+    corridor_gain: float = 0.0
+    reason: str = ""
 
 
 def obstacle_polygon(obstacle: dict) -> Polygon:
@@ -73,6 +96,116 @@ def reveal_nearby_obstacles(scene: dict, position: np.ndarray, sensing_range: fl
             obstacle["observed"] = True
             newly_observed.append(obstacle)
     return newly_observed
+
+
+def cast_sensor_rays(
+    scene: dict,
+    position: np.ndarray,
+    sensing_range: float,
+    num_rays: int = 48,
+    step_size: float = 0.03,
+) -> list[dict]:
+    """Cast short radial sensing rays around the robot.
+
+    This mirrors the first perception block in the outline. For each angle we
+    march outward along
+
+        p_ray(s) = p + s * [cos(theta), sin(theta)],
+
+    until either a workspace boundary or obstacle is hit. The result is a
+    lightweight local free/occupied scan rather than a full grid map.
+    """
+    ray_results = []
+    for angle in np.linspace(0.0, 2.0 * np.pi, num_rays, endpoint=False):
+        direction = np.array([np.cos(angle), np.sin(angle)], dtype=float)
+        hit_obstacle_idx = None
+        hit_distance = sensing_range
+        frontier_point = clip_point_to_workspace(scene, position + direction * sensing_range)
+
+        for distance in np.linspace(step_size, sensing_range, max(2, int(sensing_range / step_size))):
+            sample = clip_point_to_workspace(scene, position + direction * distance)
+            sample_body = Point(sample[0], sample[1])
+            boundary_clip = float(np.linalg.norm(sample - (position + direction * distance)))
+            if boundary_clip > 1e-6:
+                hit_distance = float(np.linalg.norm(sample - position))
+                frontier_point = sample
+                break
+
+            for idx, obstacle in enumerate(scene["obstacles"]):
+                if sample_body.distance(obstacle_polygon(obstacle)) <= ROBOT_RADIUS:
+                    hit_obstacle_idx = idx
+                    hit_distance = float(np.linalg.norm(sample - position))
+                    frontier_point = sample
+                    break
+            if hit_obstacle_idx is not None:
+                break
+
+        ray_results.append({
+            "angle": float(angle),
+            "direction": direction,
+            "hit_obstacle_idx": hit_obstacle_idx,
+            "hit_distance": hit_distance,
+            "frontier_point": frontier_point,
+            "is_frontier": hit_obstacle_idx is None and hit_distance >= sensing_range - 1e-6,
+        })
+
+    return ray_results
+
+
+def identify_frontier_cells(ray_results: list[dict]) -> list[np.ndarray]:
+    """Identify local frontier points at the edge of known free space.
+
+    In the continuous simulation, a frontier is approximated by a ray that
+    reaches the sensing horizon without hitting an obstacle. Those points are
+    where free space meets still-unknown space.
+    """
+    return [ray["frontier_point"] for ray in ray_results if ray["is_frontier"]]
+
+
+def update_local_perception(
+    scene: dict,
+    position: np.ndarray,
+    sensing_range: float,
+) -> dict:
+    """Run the full local perception update from the outline.
+
+    The update sequence is:
+    1. reveal nearby obstacles,
+    2. cast radial rays,
+    3. identify frontier points,
+    4. update per-obstacle occupancy and blocking estimates.
+    """
+    newly_observed = reveal_nearby_obstacles(scene, position, sensing_range)
+    ray_results = cast_sensor_rays(scene, position, sensing_range)
+    frontier_points = identify_frontier_cells(ray_results)
+
+    hit_counts: dict[int, int] = {}
+    for ray in ray_results:
+        hit_idx = ray["hit_obstacle_idx"]
+        if hit_idx is None:
+            continue
+        hit_counts[hit_idx] = hit_counts.get(hit_idx, 0) + 1
+
+    total_rays = max(1, len(ray_results))
+    for idx, obstacle in enumerate(scene["obstacles"]):
+        obstacle.setdefault("occupancy_prob", 0.0)
+        obstacle.setdefault("blocking_score", 0.0)
+        obstacle.setdefault("semantic_default", obstacle["true_class"])
+        obstacle.setdefault("push_count", 0)
+        obstacle.setdefault("last_push_step", -1)
+        if not obstacle["observed"]:
+            continue
+
+        hit_ratio = hit_counts.get(idx, 0) / total_rays
+        goal_alignment = 0.0
+        obstacle["occupancy_prob"] = min(1.0, 0.35 + 1.8 * hit_ratio)
+        obstacle["blocking_score"] = min(1.0, 0.45 * obstacle["occupancy_prob"] + 0.55 * goal_alignment)
+
+    return {
+        "newly_observed": newly_observed,
+        "rays": ray_results,
+        "frontiers": frontier_points,
+    }
 
 
 def goal_progress_is_stalled(
@@ -255,6 +388,65 @@ def obstacle_safety_probability(obstacle: dict) -> tuple[float, float]:
         - 0.25 * features["q"]
     )
     return float(sigmoid(-safety_score)), float(safety_score)
+
+
+def classify_sensed_obstacles(
+    scene: dict,
+    position: np.ndarray,
+    goal_direction: np.ndarray,
+    epsilon: float,
+) -> tuple[list[int], list[int]]:
+    """Partition sensed obstacles into avoid and push sets.
+
+    This corresponds to the outline stage where sensed space is classified and
+    then partitioned into candidate sets. We compute a simple local blocking
+    score using
+
+        block_i = 0.55 * occupancy_i + 0.45 * ahead_i,
+
+    where ``ahead_i`` is 1 when the obstacle lies in the short forward sweep.
+    Obstacles that are safe enough and close enough enter the push set;
+    everything else stays in the avoid set.
+    """
+    avoid_set: list[int] = []
+    push_set: list[int] = []
+    for idx, obstacle in enumerate(scene["obstacles"]):
+        if not obstacle["observed"]:
+            continue
+
+        p_safe, _ = obstacle_safety_probability(obstacle)
+        ahead = 1.0 if obstacle_is_ahead(position, goal_direction, obstacle, epsilon + 0.06) else 0.0
+        distance = robot_clearance_to_obstacle(position, obstacle)
+        proximity = max(0.0, 1.0 - distance / max(epsilon + 0.2, 1e-6))
+
+        obstacle["semantic_default"] = obstacle.get("semantic_default", obstacle["true_class"])
+        obstacle["safety_probability"] = p_safe
+        obstacle["blocking_score"] = min(
+            1.0,
+            0.55 * obstacle.get("occupancy_prob", 0.35) + 0.30 * ahead + 0.15 * proximity,
+        )
+
+        avoid_set.append(idx)
+        if (
+            obstacle["true_class"] in {"safe", "movable"}
+            and p_safe >= SAFE_PROB_THRESHOLD
+            and distance <= epsilon + 0.08
+            and ahead > 0.0
+        ):
+            push_set.append(idx)
+
+    push_set.sort(
+        key=lambda idx: (
+            scene["obstacles"][idx].get("blocking_score", 0.0),
+            scene["obstacles"][idx].get("safety_probability", 0.0),
+        ),
+        reverse=True,
+    )
+    avoid_set.sort(
+        key=lambda idx: scene["obstacles"][idx].get("blocking_score", 0.0),
+        reverse=True,
+    )
+    return avoid_set, push_set
 
 
 def nearest_sensed_obstacle(scene: dict, position: np.ndarray) -> tuple[int | None, float]:
@@ -675,6 +867,154 @@ def estimate_push_cost(
     return cost, actual_displacement, corridor_gain
 
 
+def smooth_candidate_step(
+    position: np.ndarray,
+    waypoint: np.ndarray,
+    goal: np.ndarray,
+    scene: dict,
+    step_size: float,
+) -> np.ndarray:
+    """Apply a tiny one-step smoothing pass before execution.
+
+    The flowchart mentions path smoothing after search. Here we approximate that
+    by blending the waypoint direction with the direct goal direction:
+
+        d_smooth = normalize(0.7 * d_waypoint + 0.3 * d_goal).
+
+    We then move only one feasible step along that blended direction.
+    """
+    waypoint_direction = normalize(waypoint - position)
+    goal_direction = normalize(goal - position)
+    blended = normalize(0.7 * waypoint_direction + 0.3 * goal_direction)
+    if np.linalg.norm(blended) <= 1e-9:
+        blended = waypoint_direction
+    return safe_step_position(scene, position, blended, step_size, observed_only=True)
+
+
+def compute_avoid_trajectory(
+    scene: dict,
+    position: np.ndarray,
+    goal: np.ndarray,
+    step_size: float,
+    epsilon: float,
+    bad_directions: list[dict],
+) -> TrajectoryCandidate:
+    """Compute the avoidance branch from the current local map.
+
+    This is the blue branch in the outline. The returned cost is based on the
+    avoid cost model, while the safety margin is the minimum robot-body
+    clearance at the resulting step target.
+    """
+    total_cost, waypoint = estimate_avoid_cost(
+        scene,
+        position,
+        goal,
+        step_size,
+        epsilon,
+        bad_directions,
+    )
+    step_target = smooth_candidate_step(position, waypoint, goal, scene, step_size)
+    safety_margin = min(
+        robot_clearance_to_obstacle(step_target, obstacle)
+        for obstacle in scene["obstacles"]
+    ) if scene["obstacles"] else float("inf")
+    progress_gain = float(np.linalg.norm(goal - position) - np.linalg.norm(goal - step_target))
+    return TrajectoryCandidate(
+        mode="avoid",
+        waypoint=waypoint,
+        step_target=step_target,
+        total_cost=total_cost,
+        safety_margin=safety_margin,
+        progress_gain=progress_gain,
+        reason="CFP branch: local avoid trajectory",
+    )
+
+
+def compute_push_trajectory(
+    scene: dict,
+    position: np.ndarray,
+    goal: np.ndarray,
+    goal_direction: np.ndarray,
+    push_candidates: list[int],
+    step_size: float,
+    epsilon: float,
+    push_distance: float,
+) -> TrajectoryCandidate | None:
+    """Compute the pushing branch from the current local map.
+
+    This is the orange branch in the outline. We rank pushable obstacles, score
+    the predicted push corridor, and keep the lowest-cost push branch.
+    """
+    best_candidate: TrajectoryCandidate | None = None
+    for obstacle_index in push_candidates:
+        cost, feasible_distance, corridor_gain = estimate_push_cost(
+            scene,
+            position,
+            obstacle_index,
+            goal_direction,
+            push_distance,
+        )
+        if feasible_distance <= 1e-6:
+            continue
+
+        predicted_position = step_until_sense_or_contact(
+            scene,
+            position,
+            goal_direction,
+            step_size,
+            epsilon,
+        )
+        safety_margin = min(
+            robot_clearance_to_obstacle(predicted_position, obstacle)
+            for obstacle in scene["obstacles"]
+        ) if scene["obstacles"] else float("inf")
+        progress_gain = float(np.linalg.norm(goal - position) - np.linalg.norm(goal - predicted_position))
+        candidate = TrajectoryCandidate(
+            mode="push",
+            waypoint=predicted_position,
+            step_target=predicted_position,
+            total_cost=cost,
+            safety_margin=safety_margin,
+            progress_gain=progress_gain,
+            obstacle_index=obstacle_index,
+            push_distance=feasible_distance,
+            corridor_gain=corridor_gain,
+            reason="CPP branch: local push trajectory",
+        )
+        if best_candidate is None or candidate.total_cost < best_candidate.total_cost:
+            best_candidate = candidate
+
+    return best_candidate
+
+
+def reconcile_trajectory_decision(
+    avoid_candidate: TrajectoryCandidate,
+    push_candidate: TrajectoryCandidate | None,
+    safety_margin_threshold: float,
+) -> TrajectoryCandidate:
+    """Reconcile the avoid and push branches into one action.
+
+    The outline's decision block is implemented as a simple normalized
+    comparison:
+
+        score = cost - 0.35 * progress_gain - 0.25 * safety_margin.
+
+    A push branch is only allowed if its safety margin exceeds the threshold.
+    """
+    def branch_score(candidate: TrajectoryCandidate) -> float:
+        return candidate.total_cost - 0.35 * candidate.progress_gain - 0.25 * candidate.safety_margin
+
+    selected = avoid_candidate
+    avoid_score = branch_score(avoid_candidate)
+    if push_candidate is None:
+        return selected
+
+    push_score = branch_score(push_candidate) - 0.20 * push_candidate.corridor_gain
+    if push_candidate.safety_margin >= safety_margin_threshold and push_score <= avoid_score:
+        selected = push_candidate
+    return selected
+
+
 def remember_bad_direction(
     bad_directions: list[dict],
     position: np.ndarray,
@@ -1000,6 +1340,7 @@ def run_online_surp_push(
     sensed_ids: list[int] = []
     goal_distance_history = [float(np.linalg.norm(goal - position))]
     bad_directions: list[dict] = []
+    push_history: list[dict] = []
     last_boundary_stop_id: int | None = None
     stuck_events = 0
 
@@ -1012,7 +1353,8 @@ def run_online_surp_push(
             success = True
             break
 
-        newly_observed = reveal_nearby_obstacles(working_scene, position, sensing_range)
+        perception = update_local_perception(working_scene, position, sensing_range)
+        newly_observed = perception["newly_observed"]
         if newly_observed:
             observed_ids = [obstacle["id"] for obstacle in newly_observed]
             sensed_ids.extend(observed_ids)
@@ -1021,7 +1363,7 @@ def run_online_surp_push(
                 snapshot_frame(
                     position,
                     working_scene,
-                    f"sensed obstacle(s) {observed_ids} within sensing range",
+                    f"sensed obstacle(s) {observed_ids}; frontiers={len(perception['frontiers'])}",
                 )
             )
             continue
@@ -1030,6 +1372,12 @@ def run_online_surp_push(
         if np.linalg.norm(goal_direction) <= 1e-9:
             break
 
+        avoid_set, push_set = classify_sensed_obstacles(
+            working_scene,
+            position,
+            goal_direction,
+            epsilon,
+        )
         nearest_idx, nearest_distance = nearest_sensed_obstacle(working_scene, position)
         stalled = goal_progress_is_stalled(goal_distance_history)
 
@@ -1071,7 +1419,7 @@ def run_online_surp_push(
             continue
 
         p_safe, safety_score = obstacle_safety_probability(nearest_obstacle)
-        J_avoid, avoid_candidate = estimate_avoid_cost(
+        avoid_candidate = compute_avoid_trajectory(
             working_scene,
             position,
             goal,
@@ -1079,13 +1427,31 @@ def run_online_surp_push(
             epsilon,
             bad_directions,
         )
-        J_push, available_push_distance, corridor_gain = estimate_push_cost(
+        push_candidate = compute_push_trajectory(
             working_scene,
             position,
-            nearest_idx,
+            goal,
             goal_direction,
+            push_set,
+            step_size,
+            epsilon,
             push_distance,
         )
+        selected_candidate = reconcile_trajectory_decision(
+            avoid_candidate,
+            push_candidate,
+            safety_margin_threshold=max(0.02, epsilon * 0.2),
+        )
+        J_avoid = avoid_candidate.total_cost
+        avoid_step_target = avoid_candidate.step_target
+        if push_candidate is not None:
+            J_push = push_candidate.total_cost
+            available_push_distance = push_candidate.push_distance
+            corridor_gain = push_candidate.corridor_gain
+        else:
+            J_push = float("inf")
+            available_push_distance = 0.0
+            corridor_gain = 0.0
 
         if stalled:
             stuck_events += 1
@@ -1126,6 +1492,12 @@ def run_online_surp_push(
                         f"contact mode (stuck override): pushed obstacle "
                         f"{pushed_obstacle['id']} by {moved_distance:.2f}{chain_text}"
                     )
+                    pushed_obstacle["push_count"] = pushed_obstacle.get("push_count", 0) + 1
+                    push_history.append({
+                        "obstacle_id": pushed_obstacle["id"],
+                        "distance": moved_distance,
+                        "chain": moved_chain,
+                    })
                     path.append(tuple(position))
                     frames.append(snapshot_frame(position, working_scene, message))
                     contact_log.append(message)
@@ -1203,13 +1575,18 @@ def run_online_surp_push(
         else:
             stuck_events = 0
 
-        push_allowed = p_safe >= SAFE_PROB_THRESHOLD and available_push_distance > 1e-6
-        if push_allowed and J_push < J_avoid:
+        push_allowed = (
+            selected_candidate.mode == "push"
+            and p_safe >= SAFE_PROB_THRESHOLD
+            and available_push_distance > 1e-6
+            and push_candidate is not None
+        )
+        if push_allowed and push_candidate is not None and push_candidate.obstacle_index is not None:
             moved_distance, moved_chain = move_obstacle_in_direction(
                 working_scene,
-                nearest_idx,
+                push_candidate.obstacle_index,
                 goal_direction,
-                push_distance,
+                push_candidate.push_distance,
                 robot_position=position,
             )
             if moved_distance > 1e-6:
@@ -1223,17 +1600,24 @@ def run_online_surp_push(
                 stuck_events = 0
                 goal_distance_history.append(float(np.linalg.norm(goal - position)))
                 chain_text = f" with chain {moved_chain}" if len(moved_chain) > 1 else ""
+                pushed_obstacle = working_scene["obstacles"][push_candidate.obstacle_index]
+                pushed_obstacle["push_count"] = pushed_obstacle.get("push_count", 0) + 1
+                push_history.append({
+                    "obstacle_id": pushed_obstacle["id"],
+                    "distance": moved_distance,
+                    "chain": moved_chain,
+                })
                 message = (
-                    f"contact mode: pushed obstacle {nearest_obstacle['id']} by "
-                    f"{moved_distance:.2f}{chain_text}"
+                    f"contact mode: pushed obstacle {pushed_obstacle['id']} by "
+                    f"{moved_distance:.2f}{chain_text}; push_history={len(push_history)}"
                 )
                 path.append(tuple(position))
                 frames.append(snapshot_frame(position, working_scene, message))
                 contact_log.append(message)
                 continue
 
-        if np.linalg.norm(avoid_candidate - position) > 1e-6:
-            position = avoid_candidate
+        if np.linalg.norm(avoid_step_target - position) > 1e-6:
+            position = avoid_step_target
             stuck_events = 0
             goal_distance_history.append(float(np.linalg.norm(goal - position)))
             path.append(tuple(position))
@@ -1243,7 +1627,8 @@ def run_online_surp_push(
                     working_scene,
                     (
                         f"avoid mode: obstacle {nearest_obstacle['id']} "
-                        f"(P_safe={p_safe:.2f}, J_push={J_push:.2f}, J_avoid={J_avoid:.2f})"
+                        f"(P_safe={p_safe:.2f}, J_push={J_push:.2f}, J_avoid={J_avoid:.2f}, "
+                        f"frontiers={len(perception['frontiers'])})"
                     ),
                 )
             )

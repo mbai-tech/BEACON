@@ -11,11 +11,20 @@ from enviornment.scene_generator import polygon_to_list
 from enviornment.scene_generator import valid_candidate
 
 
+def coerce_pushable_class(raw_class: str) -> str:
+    """Map legacy non-pushable labels into pushable classes for this project."""
+    if raw_class == "safe":
+        return "safe"
+    return "movable"
+
+
 def normalize_scene_for_online_use(scene: dict) -> dict:
     """Attach the state fields needed by online sensing and visualization."""
     normalized = copy.deepcopy(scene)
     for obstacle in normalized["obstacles"]:
-        true_class = obstacle.get("true_class", obstacle.get("class_true", "movable"))
+        true_class = coerce_pushable_class(
+            obstacle.get("true_class", obstacle.get("class_true", "movable"))
+        )
         obstacle["true_class"] = true_class
         obstacle["class_true"] = true_class
         obstacle["observed"] = False
@@ -80,8 +89,8 @@ def create_cluttered_variant(scene: dict, extra_obstacles: int = 10) -> dict:
 
         placed.append(candidate)
         true_class = random.choices(
-            ["safe", "movable", "fragile", "forbidden"],
-            weights=[0.35, 0.40, 0.15, 0.10],
+            ["safe", "movable"],
+            weights=[0.45, 0.55],
             k=1,
         )[0]
         cluttered["obstacles"].append({
@@ -127,6 +136,11 @@ def convert_scene_obstacles_to_circles(scene: dict) -> dict:
 
         placed.append(candidate)
         obstacle["shape_type"] = "circle"
+        true_class = coerce_pushable_class(
+            obstacle.get("true_class", obstacle.get("class_true", "movable"))
+        )
+        obstacle["true_class"] = true_class
+        obstacle["class_true"] = true_class
         obstacle["vertices"] = polygon_to_list(candidate)
 
     converted["family"] = f"{scene['family']}_circles"
