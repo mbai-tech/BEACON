@@ -1311,7 +1311,7 @@ def move_obstacle_in_direction(
 
 def run_online_surp_push(
     scene: dict,
-    epsilon: float = 0.12,
+    epsilon: float = 0.10,
     sensing_range: float = DEFAULT_SENSING_RANGE,
     step_size: float = 0.07,
     push_distance: float = 0.12,

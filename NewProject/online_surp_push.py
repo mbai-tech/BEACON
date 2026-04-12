@@ -16,7 +16,7 @@ from NewProject.visualization import animate_result, plot_final_snapshot, save_s
 def main() -> None:
     """Run one random environment, save outputs, and open the live simulation."""
     random_scene = generate_one_random_environment()
-    result = run_online_surp_push(random_scene, epsilon=0.12, step_size=0.07, max_steps=320)
+    result = run_online_surp_push(random_scene, epsilon=0.10, step_size=0.07, max_steps=320)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     scene_path = save_scene_snapshot(result.scene, result.family, result.seed)
