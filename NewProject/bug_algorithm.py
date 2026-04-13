@@ -43,15 +43,6 @@ def run_bug(
     step_size: float = 0.07,
     max_steps: int = 800,
 ) -> OnlineSurpResult:
-    """Run the Bug2 algorithm on a scene and return a result compatible with NewProject.
-
-    Parameters
-    ----------
-    scene         : standard scene dict
-    sensing_range : radius within which obstacles are revealed
-    step_size     : distance moved per step
-    max_steps     : hard step limit to prevent infinite loops
-    """
     working_scene = normalize_scene_for_online_use(scene)
     position = np.array(working_scene["start"][:2], dtype=float)
     goal = np.array(working_scene["goal"][:2], dtype=float)
