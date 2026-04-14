@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 from shapely.affinity import translate
 from shapely.geometry import LineString, Point, Polygon, box
+from shapely.ops import nearest_points
 
 from NewProject.constants import CHAIN_ATTENUATION, DEFAULT_SENSING_RANGE, ROBOT_RADIUS, SAFE_PROB_THRESHOLD
 from NewProject.models import OnlineSurpResult, SimulationFrame
@@ -769,6 +770,8 @@ def moved_chain_levels(
             for other_idx, other in enumerate(scene["obstacles"]):
                 if other_idx in chain_levels:
                     continue
+                if other["true_class"] != "movable":
+                    continue
                 if moved_poly.intersects(obstacle_polygon(other)):
                     chain_levels[other_idx] = chain_levels[idx] + 1
                     expanded = True
@@ -1290,6 +1293,118 @@ def rrt_escape_step(
     return normalize(fallback_candidate - position), fallback_candidate
 
 
+def detect_boundary_oscillation(
+    boundary_stop_events: list[int],
+    min_alternations: int = 3,
+) -> tuple[int, int] | None:
+    """Return the two oscillating obstacle IDs if the boundary-stop history alternates between exactly two.
+
+    Checks whether the last ``2 * min_alternations`` boundary-stop events form
+    a strict A-B-A-B-... pattern. Three full alternations (6 events) are
+    required before triggering to avoid false positives in the early steps.
+    """
+    n = 2 * min_alternations
+    if len(boundary_stop_events) < n:
+        return None
+    recent = boundary_stop_events[-n:]
+    if len(set(recent)) != 2:
+        return None
+    for i in range(len(recent) - 1):
+        if recent[i] == recent[i + 1]:
+            return None
+    ids = list(set(recent))
+    return (ids[0], ids[1])
+
+
+def semantic_corridor_response(
+    scene: dict,
+    position: np.ndarray,
+    goal: np.ndarray,
+    obs_id_a: int,
+    obs_id_b: int,
+    step_size: float,
+    frontier_points: list[np.ndarray],
+) -> tuple[np.ndarray | None, str, int | None]:
+    """Semantic response to oscillation between two corridor walls.
+
+    SCHOLAR's philosophy: ask "can I change this environment?" before asking
+    "how do I fit through it?" The two outcomes are mutually exclusive:
+
+    1. **Corridor widening** — if either wall is semantically pushable, return
+       the obstacle index so the caller can push it aside and step through.
+       The scene is NOT modified here; the caller does the push and bookkeeping.
+
+    2. **Frontier detour** — if neither wall is pushable, find a frontier point
+       that heads toward the goal while steering *away* from the blocked
+       corridor, and return one step toward it. This routes through unexplored
+       space rather than threading known tight geometry.
+
+    Return value: ``(candidate_position, label, push_obs_idx)``
+
+    - ``push_obs_idx is not None``: caller should push that obstacle index,
+      then step toward the goal.
+    - ``push_obs_idx is None and candidate_position is not None``: caller
+      should move to ``candidate_position`` directly.
+    - ``(None, "", None)``: neither strategy found a viable action.
+    """
+    goal_direction = normalize(goal - position)
+
+    # --- 1. Widening push: prefer semantics over geometry ---
+    for obs_id in [obs_id_a, obs_id_b]:
+        obs = next((o for o in scene["obstacles"] if o["id"] == obs_id), None)
+        if obs is None:
+            continue
+        p_safe, _ = obstacle_safety_probability(obs)
+        if obs["true_class"] != "movable" or p_safe < SAFE_PROB_THRESHOLD:
+            continue
+        obs_idx = next(
+            (i for i, o in enumerate(scene["obstacles"]) if o["id"] == obs_id), None
+        )
+        if obs_idx is not None:
+            return None, f"corridor widening: push obs {obs_id} to widen gap", obs_idx
+
+    # --- 2. Frontier detour: exploit unexplored space, not known geometry ---
+    if not frontier_points:
+        return None, "", None
+
+    # Find the direction toward the corridor bottleneck so we can steer away.
+    obs_a = next((o for o in scene["obstacles"] if o["id"] == obs_id_a), None)
+    obs_b = next((o for o in scene["obstacles"] if o["id"] == obs_id_b), None)
+    blocked_dir = np.zeros(2, dtype=float)
+    if obs_a is not None and obs_b is not None:
+        pt_a, pt_b = nearest_points(obstacle_polygon(obs_a), obstacle_polygon(obs_b))
+        bottleneck = np.array([(pt_a.x + pt_b.x) / 2.0, (pt_a.y + pt_b.y) / 2.0])
+        blocked_dir = normalize(bottleneck - position)
+
+    best_frontier: np.ndarray | None = None
+    best_score = -float("inf")
+    for fp in frontier_points:
+        fp_dir = normalize(fp - position)
+        goal_alignment = float(np.dot(fp_dir, goal_direction))
+        # Penalize frontiers that point directly into the blocked corridor.
+        corridor_avoidance = -float(np.dot(fp_dir, blocked_dir))
+        score = 0.6 * goal_alignment + 0.4 * corridor_avoidance
+        if score > best_score:
+            best_score = score
+            best_frontier = fp
+
+    if best_frontier is None or best_score <= 0.0:
+        return None, "", None
+
+    fp_dir = normalize(best_frontier - position)
+    candidate = safe_step_position(
+        scene, position, fp_dir, step_size * 1.3, observed_only=True
+    )
+    if np.linalg.norm(candidate - position) > 1e-6:
+        return (
+            candidate,
+            f"frontier detour: around blocked corridor (obs {obs_id_a}/{obs_id_b})",
+            None,
+        )
+
+    return None, "", None
+
+
 def move_obstacle_in_direction(
     scene: dict,
     obstacle_index: int,
@@ -1366,6 +1481,7 @@ def run_online_surp_push(
     bad_directions: list[dict] = []
     push_history: list[dict] = []
     last_boundary_stop_id: int | None = None
+    boundary_stop_events: list[int] = []
     stuck_events = 0
     consecutive_free_steps = 0
 
@@ -1436,6 +1552,60 @@ def run_online_surp_push(
 
         if last_boundary_stop_id != nearest_obstacle["id"]:
             last_boundary_stop_id = nearest_obstacle["id"]
+            boundary_stop_events.append(nearest_obstacle["id"])
+            if len(boundary_stop_events) > 14:
+                boundary_stop_events = boundary_stop_events[-14:]
+
+            # Semantic response to oscillation: widen the corridor or detour via frontiers.
+            osc_pair = detect_boundary_oscillation(boundary_stop_events)
+            if osc_pair is not None:
+                sc_pos, sc_label, sc_push_idx = semantic_corridor_response(
+                    working_scene,
+                    position,
+                    goal,
+                    osc_pair[0],
+                    osc_pair[1],
+                    step_size,
+                    perception["frontiers"],
+                )
+                if sc_push_idx is not None:
+                    # Widen the corridor by pushing the pushable wall aside.
+                    moved_distance, moved_chain = move_obstacle_in_direction(
+                        working_scene,
+                        sc_push_idx,
+                        goal_direction,
+                        push_distance,
+                        robot_position=position,
+                    )
+                    if moved_distance > 1e-6:
+                        position = step_until_sense_or_contact(
+                            working_scene, position, goal_direction, step_size, epsilon
+                        )
+                        pushed_obs = working_scene["obstacles"][sc_push_idx]
+                        pushed_obs["push_count"] = pushed_obs.get("push_count", 0) + 1
+                        push_history.append({
+                            "obstacle_id": pushed_obs["id"],
+                            "distance": moved_distance,
+                            "chain": moved_chain,
+                        })
+                        stuck_events = 0
+                        goal_distance_history.append(float(np.linalg.norm(goal - position)))
+                        chain_text = f" chain {moved_chain}" if len(moved_chain) > 1 else ""
+                        message = (
+                            f"corridor widening: pushed obs {pushed_obs['id']} "
+                            f"by {moved_distance:.2f}{chain_text}"
+                        )
+                        path.append(tuple(position))
+                        frames.append(snapshot_frame(position, working_scene, message))
+                        contact_log.append(message)
+                        continue
+                elif sc_pos is not None and np.linalg.norm(sc_pos - position) > 1e-6:
+                    position = sc_pos
+                    goal_distance_history.append(float(np.linalg.norm(goal - position)))
+                    path.append(tuple(position))
+                    frames.append(snapshot_frame(position, working_scene, sc_label))
+                    continue
+
             path.append(tuple(position))
             frames.append(
                 snapshot_frame(

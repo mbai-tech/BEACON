@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 demo.py — Real-time SCHOLAR simulation across all 5 scene families.
 
@@ -35,7 +36,7 @@ FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 # ── Real-time frame interception ───────────────────────────────────────────────
 
 _original_snapshot = _planner_module.snapshot_frame
-_frame_queues: dict = {}   # thread_id → list of frames
+_frame_queues = {}   # thread_id → list of frames
 _frame_lock = threading.Lock()
 
 

@@ -1,16 +1,3 @@
-"""
-algorithm_illustration.py — Visual explanation of SCHOLAR push-navigation reasoning.
-
-Four panels:
-  ① Sensing & Semantic Classification
-  ② Per-Step Decision Logic (flowchart)
-  ③ Push Mode — corridor clearance & chain reaction
-  ④ Stuck Recovery — bad-direction memory, backtrack, RRT escape
-
-Usage:
-    python scholar/algorithm_illustration.py
-"""
-
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -26,7 +13,6 @@ from matplotlib.patches import (
 from matplotlib.lines import Line2D
 import matplotlib.patheffects as pe
 
-# ── Palette ────────────────────────────────────────────────────────────────────
 C_MOVABLE     = "#f4b942"   # movable
 C_NOT_MOVABLE = "#8b9db5"   # not movable
 C_ROBOT   = "#264653"
