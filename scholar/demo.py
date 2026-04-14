@@ -53,11 +53,13 @@ _planner_module.snapshot_frame = _patched_snapshot
 # ── Per-family simulation thread ───────────────────────────────────────────────
 
 class SimThread(threading.Thread):
-    def __init__(self, family, scene_idx, max_steps):
+    def __init__(self, family, scene_idx, max_steps, step_size=0.04, sensing_range=0.35):
         super().__init__(daemon=True)
-        self.family     = family
-        self.scene_idx  = scene_idx
-        self.max_steps  = max_steps
+        self.family        = family
+        self.scene_idx     = scene_idx
+        self.max_steps     = max_steps
+        self.step_size     = step_size
+        self.sensing_range = sensing_range
         self.frames     = []   # filled in real time by patched snapshot_frame
         self.path       = []
         self.scene      = None
@@ -71,7 +73,9 @@ class SimThread(threading.Thread):
 
         raw_scene = load_scene(self.scene_idx, family=self.family,
                                fragility="mixed", seed=self.scene_idx)
-        result = run_online_surp_push(raw_scene, max_steps=self.max_steps)
+        result = run_online_surp_push(raw_scene, max_steps=self.max_steps,
+                                       step_size=self.step_size,
+                                       sensing_range=self.sensing_range)
 
         self.path          = result.path
         self.scene         = result.scene
@@ -85,9 +89,11 @@ class SimThread(threading.Thread):
 
 # ── Build figure and animate ───────────────────────────────────────────────────
 
-def run_realtime(families, scene_idx, max_steps, save=False, speedup=3):
-    # Start one sim thread per family
-    threads = [SimThread(fam, scene_idx, max_steps) for fam in families]
+def run_realtime(families, scene_idx, max_steps, step_size=0.04,
+                 sensing_range=0.35, save=False, speedup=3):
+    threads = [SimThread(fam, scene_idx, max_steps,
+                         step_size=step_size, sensing_range=sensing_range)
+               for fam in families]
     for t in threads:
         t.start()
 
@@ -312,6 +318,10 @@ if __name__ == "__main__":
     parser.add_argument("--scene",  type=int, default=0)
     parser.add_argument("--family", nargs="*", default=None, choices=FAMILIES)
     parser.add_argument("--steps",  type=int, default=300)
+    parser.add_argument("--sense",  type=float, default=0.35,
+                        help="Sensing radius in metres (default: 0.35)")
+    parser.add_argument("--step",   type=float, default=0.04,
+                        help="Robot step size in metres (default: 0.04)")
     parser.add_argument("--save",   action="store_true",
                         help="Save video after simulation ends")
     parser.add_argument("--speedup", type=int, default=3)
@@ -321,4 +331,5 @@ if __name__ == "__main__":
     print(f"Starting real-time simulation — scene {args.scene}, "
           f"families: {', '.join(families)}")
     run_realtime(families, scene_idx=args.scene, max_steps=args.steps,
+                 step_size=args.step, sensing_range=args.sense,
                  save=args.save, speedup=args.speedup)
