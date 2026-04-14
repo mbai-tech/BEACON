@@ -812,6 +812,7 @@ def feasible_chain_push_distance(
             break
 
         collision_found = False
+        # Check chain members against all non-chain obstacles
         for idx, moved_poly in moved_polys.items():
             for other_idx, other in enumerate(scene["obstacles"]):
                 if other_idx in chain_levels:
@@ -821,6 +822,18 @@ def feasible_chain_push_distance(
                     break
             if collision_found:
                 break
+
+        # Also check chain members against each other — differential attenuation
+        # means the lead obstacle moves more than secondaries and can overlap them.
+        if not collision_found:
+            chain_ids = sorted(chain_levels.keys())
+            for i in range(len(chain_ids)):
+                for j in range(i + 1, len(chain_ids)):
+                    if moved_polys[chain_ids[i]].intersects(moved_polys[chain_ids[j]]):
+                        collision_found = True
+                        break
+                if collision_found:
+                    break
 
         if collision_found:
             break
