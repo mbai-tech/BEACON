@@ -219,8 +219,36 @@ def run_realtime(families, scene_idx, max_steps, step_size=0.04,
     for t in threads:
         t.join()
 
+    _save_log(threads, scene_idx)
+
     if save:
         _save_video(threads, scene_idx)
+
+
+def _save_log(threads, scene_idx):
+    from datetime import datetime
+
+    log_dir  = Path(__file__).resolve().parent / "environment" / "data" / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path  = log_dir / f"simulation_scene{scene_idx:03d}_{timestamp}.txt"
+
+    with open(log_path, "w") as f:
+        f.write(f"SCHOLAR Simulation Log\n")
+        f.write(f"Scene: {scene_idx:03d}   Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write("=" * 70 + "\n\n")
+
+        for t in threads:
+            f.write(f"Family: {t.family}\n")
+            f.write(f"Result: {'SUCCESS' if t.success else 'FAILED'}  "
+                    f"({len(t.frames)} steps)\n")
+            f.write("-" * 50 + "\n")
+            for i, frame in enumerate(t.frames):
+                x, y = frame.position
+                f.write(f"  step {i:4d} | ({x:.4f}, {y:.4f}) | {frame.message}\n")
+            f.write("\n")
+
+    print(f"Log saved → {log_path}")
 
 
 def _save_video(threads, scene_idx, speedup=3, fps=30):
