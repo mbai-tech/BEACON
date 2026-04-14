@@ -10,11 +10,8 @@ from environment.scene_generator import load_scene
 from environment.scene_generator_v2 import FAMILIES_V2
 
 CLASS_COLORS = {
-    "safe":     "lightgreen",
-    "movable":  "gold",
-    "fragile":  "tomato",
-    # fallback for movable/unmovable from fragility re-labelling
-    "unmovable": "grey",
+    "movable":     "gold",
+    "not_movable": "#8b9db5",
 }
 
 IMAGES_DIR = Path(__file__).resolve().parent / "data" / "images"

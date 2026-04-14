@@ -8,7 +8,7 @@ except ImportError:
     validate_scene = None
 
 WORKSPACE = (0, 6, 0, 6)   # xmin, xmax, ymin, ymax
-CLASSES = ["safe", "movable", "fragile"]
+CLASSES = ["movable", "not_movable"]
 FAMILIES_V2 = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 
 
@@ -98,9 +98,8 @@ def sample_background_obstacles(
 
     if class_weights is None:
         class_weights = {
-            "safe": 0.2,
-            "movable": 0.6,
-            "fragile": 0.2
+            "movable":     0.6,
+            "not_movable": 0.4,
         }
 
     classes = list(class_weights.keys())
@@ -186,7 +185,7 @@ def generate_collision_required(seed=None):
         x = midpoint.x + px * offset
         y = midpoint.y + py * offset
         poly = make_circle_at(x, y, r)
-        cls = "movable" if abs(offset) < 0.5 else "fragile"
+        cls = "movable" if abs(offset) < 0.5 else "not_movable"
         try_add_obstacle(poly, cls, placed, obstacles, start, goal, min_gap=0.05)
 
     extra_offsets = [-1.35, 1.35]
@@ -194,11 +193,11 @@ def generate_collision_required(seed=None):
         x = midpoint.x + px * offset
         y = midpoint.y + py * offset
         poly = make_circle_at(x, y, 0.30)
-        try_add_obstacle(poly, "safe", placed, obstacles, start, goal, min_gap=0.05)
+        try_add_obstacle(poly, "not_movable", placed, obstacles, start, goal, min_gap=0.05)
 
     placed, bg = sample_background_obstacles(
         6, 10, start, goal, placed=placed,
-        class_weights={"safe": 0.2, "movable": 0.6, "fragile": 0.2}
+        class_weights={"movable": 0.6, "not_movable": 0.4}
     )
 
     for obs in bg:
@@ -234,7 +233,7 @@ def generate_collision_shortcut(seed=None):
 
     placed, bg = sample_background_obstacles(
         14, 22, start, goal, placed=placed,
-        class_weights={"safe": 0.25, "movable": 0.5, "fragile": 0.25}
+        class_weights={"movable": 0.6, "not_movable": 0.4}
     )
 
     for obs in bg:

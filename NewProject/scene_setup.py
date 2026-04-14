@@ -13,10 +13,10 @@ def _import_enviornment():
 
 
 def coerce_pushable_class(raw_class: str) -> str:
-    """Map legacy non-pushable labels into pushable classes for this project."""
-    if raw_class == "safe":
-        return "safe"
-    return "movable"
+    """Map any class label to the binary movable / not_movable scheme."""
+    if raw_class == "movable":
+        return "movable"
+    return "not_movable"
 
 
 def normalize_scene_for_online_use(scene: dict) -> dict:

@@ -297,8 +297,6 @@ def pushability_score(obstacle: dict, position: np.ndarray, goal_direction: np.n
     cls = obstacle["true_class"]
     if cls == "movable":
         class_score = 3.0
-    elif cls == "safe":
-        class_score = 2.0
     else:
         class_score = -1000.0
 
@@ -328,7 +326,7 @@ def choose_best_pushable_obstacle(
     for idx, obstacle in enumerate(scene["obstacles"]):
         if not obstacle["observed"]:
             continue
-        if obstacle["true_class"] not in {"safe", "movable"}:
+        if obstacle["true_class"] != "movable":
             continue
         distance = robot_clearance_to_obstacle(position, obstacle)
         ahead = obstacle_is_ahead(position, goal_direction, obstacle, epsilon + contact_margin)
@@ -351,30 +349,29 @@ def sigmoid(value: float) -> float:
 def estimate_obstacle_features(obstacle: dict) -> dict:
     """Return a simple semantic feature model used by the risk-aware controller."""
     cls = obstacle["true_class"]
+    # Binary classification: movable (low risk) vs not_movable (high risk)
     fragility_map = {
-        "movable": 0.10,
-        "safe": 0.25,
-        "fragile": 0.95,
-        "forbidden": 1.00,
+        "movable":     0.10,
+        "not_movable": 0.90,
     }
     semantic_risk_map = {
-        "movable": 0.10,
-        "safe": 0.25,
-        "fragile": 0.95,
-        "forbidden": 1.00,
+        "movable":     0.10,
+        "not_movable": 0.90,
     }
     confidence_map = {
-        "movable": 0.88,
-        "safe": 0.84,
-        "fragile": 0.92,
-        "forbidden": 0.95,
+        "movable":     0.88,
+        "not_movable": 0.92,
     }
+    # Fallback for any legacy class labels
+    f = fragility_map.get(cls, 0.50)
+    c = semantic_risk_map.get(cls, 0.50)
+    q = confidence_map.get(cls, 0.88)
     return {
         "m": 0.50,
         "mu": 0.45,
-        "f": fragility_map[cls],
-        "c": semantic_risk_map[cls],
-        "q": confidence_map[cls],
+        "f": f,
+        "c": c,
+        "q": q,
         "class_label": cls,
     }
 
@@ -441,7 +438,7 @@ def classify_sensed_obstacles(
 
         avoid_set.append(idx)
         if (
-            obstacle["true_class"] in {"safe", "movable"}
+            obstacle["true_class"] == "movable"
             and p_safe >= SAFE_PROB_THRESHOLD
             and distance <= epsilon + 0.08
             and ahead > 0.0
@@ -1032,7 +1029,7 @@ def remember_bad_direction(
     bad_directions: list[dict],
     position: np.ndarray,
     direction: np.ndarray,
-    radius: float = 0.9,
+    radius: float = 0.5,
     weight: float = 0.8,
 ) -> None:
     """Store a local direction that recently led to poor progress."""
@@ -1357,6 +1354,7 @@ def run_online_surp_push(
     push_history: list[dict] = []
     last_boundary_stop_id: int | None = None
     stuck_events = 0
+    consecutive_free_steps = 0
 
     success = False
     for _ in range(max_steps):
@@ -1406,7 +1404,10 @@ def run_online_surp_push(
             )
             if np.linalg.norm(direct_candidate - position) > 1e-6:
                 position = direct_candidate
-                stuck_events = 0
+                consecutive_free_steps += 1
+                if consecutive_free_steps >= 8:
+                    stuck_events = max(0, stuck_events - 1)
+                    consecutive_free_steps = 0
                 goal_distance_history.append(float(np.linalg.norm(goal - position)))
                 path.append(tuple(position))
                 frames.append(snapshot_frame(position, working_scene, "goal mode: moving directly toward goal"))
@@ -1469,7 +1470,11 @@ def run_online_surp_push(
 
         if stalled:
             stuck_events += 1
+            consecutive_free_steps = 0
             remember_bad_direction(bad_directions, position, goal_direction)
+            # Cap bad_directions so over-penalization doesn't block all escapes
+            if len(bad_directions) > 24:
+                bad_directions = bad_directions[-24:]
 
             push_idx = choose_best_pushable_obstacle(
                 working_scene,
@@ -1480,7 +1485,7 @@ def run_online_surp_push(
             if push_idx is not None and nearest_idx is not None and push_idx != nearest_idx:
                 nearest_obstacle = working_scene["obstacles"][nearest_idx]
                 nearest_distance = robot_clearance_to_obstacle(position, nearest_obstacle)
-                if nearest_obstacle["true_class"] not in {"safe", "movable"} or nearest_distance <= epsilon + 0.03:
+                if nearest_obstacle["true_class"] != "movable" or nearest_distance <= epsilon + 0.03:
                     push_idx = None
             if push_idx is not None:
                 pushed_obstacle = working_scene["obstacles"][push_idx]
@@ -1517,6 +1522,30 @@ def run_online_surp_push(
                     contact_log.append(message)
                     continue
 
+            # Try RRT first — backtrack oscillates when the path revisits the
+            # same cluster, but RRT can find genuinely new free-space routes.
+            _, rrt_candidate = rrt_escape_step(
+                working_scene,
+                position,
+                goal,
+                step_size,
+                bad_directions=bad_directions,
+                max_samples=120 + 40 * min(stuck_events, 4),
+            )
+            if rrt_candidate is not None and np.linalg.norm(rrt_candidate - position) > 1e-6:
+                position = rrt_candidate
+                goal_distance_history.append(float(np.linalg.norm(goal - position)))
+                path.append(tuple(position))
+                frames.append(
+                    snapshot_frame(
+                        position,
+                        working_scene,
+                        "avoid mode (RRT escape): retreating and replanning through sensed free space",
+                    )
+                )
+                continue
+
+            # RRT failed — fall back to backtrack along the executed path.
             backtrack_target = choose_deep_backtrack_target(path, position, stuck_events)
             if backtrack_target is not None:
                 retreat_direction = normalize(backtrack_target - position)
@@ -1544,28 +1573,6 @@ def run_online_surp_push(
                     )
                     continue
 
-            if stuck_events >= 2:
-                _, rrt_candidate = rrt_escape_step(
-                    working_scene,
-                    position,
-                    goal,
-                    step_size,
-                    bad_directions=bad_directions,
-                    max_samples=120 + 40 * min(stuck_events, 4),
-                )
-                if rrt_candidate is not None and np.linalg.norm(rrt_candidate - position) > 1e-6:
-                    position = rrt_candidate
-                    goal_distance_history.append(float(np.linalg.norm(goal - position)))
-                    path.append(tuple(position))
-                    frames.append(
-                        snapshot_frame(
-                            position,
-                            working_scene,
-                            "avoid mode (RRT escape): retreating and replanning through sensed free space",
-                        )
-                    )
-                    continue
-
             _, escape_candidate = choose_escape_motion(
                 working_scene,
                 position,
@@ -1587,7 +1594,10 @@ def run_online_surp_push(
                 )
                 continue
         else:
-            stuck_events = 0
+            consecutive_free_steps += 1
+            if consecutive_free_steps >= 8:
+                stuck_events = max(0, stuck_events - 1)
+                consecutive_free_steps = 0
 
         push_allowed = (
             selected_candidate.mode == "push"
@@ -1632,7 +1642,10 @@ def run_online_surp_push(
 
         if np.linalg.norm(avoid_step_target - position) > 1e-6:
             position = avoid_step_target
-            stuck_events = 0
+            consecutive_free_steps += 1
+            if consecutive_free_steps >= 8:
+                stuck_events = max(0, stuck_events - 1)
+                consecutive_free_steps = 0
             goal_distance_history.append(float(np.linalg.norm(goal - position)))
             path.append(tuple(position))
             frames.append(
