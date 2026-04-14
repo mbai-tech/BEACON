@@ -1,96 +1,72 @@
 """
-geometry.py — AABB, ray casting, and visibility polygon helpers.
+utils/geometry.py — Geometry helpers built on top of NewProject.planner primitives.
 """
 
 import numpy as np
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
+
+from NewProject.planner import (
+    normalize,
+    obstacle_polygon,
+    robot_body,
+    clip_point_to_workspace,
+)
+
+__all__ = [
+    "normalize",
+    "obstacle_polygon",
+    "robot_body",
+    "clip_point_to_workspace",
+    "ray_cast",
+    "visibility_range",
+]
 
 
-# ── AABB ───────────────────────────────────────────────────────────────────────
-
-def aabb_contains(
-    point: np.ndarray,
-    center: np.ndarray,
-    half_extents: np.ndarray,
-) -> bool:
-    """Return True if point lies within the axis-aligned bounding box."""
-    return bool(np.all(np.abs(point - center[:2]) <= half_extents[:2]))
-
-
-def aabb_overlap(
-    c1: np.ndarray, h1: np.ndarray,
-    c2: np.ndarray, h2: np.ndarray,
-) -> bool:
-    """Return True if two AABBs overlap."""
-    return bool(np.all(np.abs(c1[:2] - c2[:2]) <= h1[:2] + h2[:2]))
-
-
-# ── Ray casting ────────────────────────────────────────────────────────────────
-
-def ray_aabb_intersect(
-    origin: np.ndarray,
-    direction: np.ndarray,
-    center: np.ndarray,
-    half_extents: np.ndarray,
-) -> Optional[float]:
-    """Return distance to first intersection of ray with AABB, or None."""
-    d = direction[:2]
-    o = origin[:2]
-    c = center[:2]
-    h = half_extents[:2]
-
-    t_min, t_max = -np.inf, np.inf
-    for i in range(2):
-        if abs(d[i]) < 1e-10:
-            if abs(o[i] - c[i]) > h[i]:
-                return None
-        else:
-            t1 = (c[i] - h[i] - o[i]) / d[i]
-            t2 = (c[i] + h[i] - o[i]) / d[i]
-            t_min = max(t_min, min(t1, t2))
-            t_max = min(t_max, max(t1, t2))
-
-    if t_max < 0 or t_min > t_max:
-        return None
-    return float(t_min) if t_min >= 0 else float(t_max)
-
-
-def cast_ray(
+def ray_cast(
     origin: np.ndarray,
     direction: np.ndarray,
     obstacles: list,
     max_range: float = 20.0,
 ) -> Tuple[float, Optional[int]]:
-    """Cast a ray and return (distance, obstacle_body_id) of nearest hit."""
-    direction = direction / (np.linalg.norm(direction) + 1e-12)
+    """Cast a ray from origin in direction and return (distance, obs_id) of nearest hit.
+
+    Uses Shapely intersection on each observed obstacle's polygon.
+    """
+    from shapely.geometry import LineString
+    direction = normalize(direction)
+    endpoint = origin + direction * max_range
+    ray = LineString([origin.tolist(), endpoint.tolist()])
+
     best_dist = max_range
     best_id: Optional[int] = None
 
     for obs in obstacles:
-        dist = ray_aabb_intersect(origin, direction, obs.position[:2], obs.half_extents[:2])
-        if dist is not None and dist < best_dist:
-            best_dist = dist
-            best_id = obs.body_id
+        poly = obstacle_polygon(obs)
+        if ray.intersects(poly):
+            intersection = ray.intersection(poly)
+            pt = intersection.centroid
+            dist = float(np.linalg.norm(np.array([pt.x, pt.y]) - origin))
+            if dist < best_dist:
+                best_dist = dist
+                best_id = obs.get("id")
 
     return best_dist, best_id
 
 
-# ── Visibility polygon (approximate) ──────────────────────────────────────────
-
-def visibility_polygon(
+def visibility_range(
     position: np.ndarray,
     obstacles: list,
     sensing_range: float,
-    n_rays: int = 180,
+    n_rays: int = 36,
 ) -> np.ndarray:
-    """Approximate visibility polygon by casting n_rays uniformly around position.
+    """Approximate visible boundary by casting n_rays uniformly around position.
 
-    Returns an (n_rays, 2) array of visible boundary points.
+    Returns an (n_rays, 2) array of boundary points.
     """
     angles = np.linspace(0, 2 * np.pi, n_rays, endpoint=False)
     boundary = np.zeros((n_rays, 2))
     for i, angle in enumerate(angles):
         direction = np.array([np.cos(angle), np.sin(angle)])
-        dist, _ = cast_ray(position[:2], direction, obstacles, max_range=sensing_range)
-        boundary[i] = position[:2] + direction * dist
+        dist, _ = ray_cast(position, direction, obstacles, max_range=sensing_range)
+        boundary[i] = position + direction * dist
     return boundary
