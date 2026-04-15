@@ -1293,6 +1293,48 @@ def rrt_escape_step(
     return normalize(fallback_candidate - position), fallback_candidate
 
 
+def _bug_rotate(v: np.ndarray, angle_deg: float) -> np.ndarray:
+    """Rotate a 2D vector by angle_deg degrees."""
+    a = np.radians(angle_deg)
+    c, s = np.cos(a), np.sin(a)
+    return normalize(np.array([c * v[0] - s * v[1], s * v[0] + c * v[1]]))
+
+
+def _scholar_best_boundary_direction(
+    scene: dict,
+    position: np.ndarray,
+    current_direction: np.ndarray,
+    step_size: float,
+    n_sweep: int = 36,
+) -> tuple[np.ndarray | None, np.ndarray | None]:
+    """Fine-sweep boundary follower implementing the Bug1 left-hand rule.
+
+    Starts from -90° (right turn toward the wall) and sweeps CCW through a
+    full 360°, accepting the first collision-free candidate. This correctly
+    re-acquires curved boundaries: right → forward → left → back.
+    Uses observed-only collision checking so undetected obstacles are ignored.
+    """
+    step_deg = 360.0 / n_sweep
+    for i in range(n_sweep):
+        angle = -90.0 + i * step_deg
+        candidate_dir = _bug_rotate(current_direction, angle)
+        next_pos = clip_point_to_workspace(scene, position + step_size * candidate_dir)
+        if not point_collides(scene, next_pos, observed_only=True):
+            return candidate_dir, next_pos
+    return None, None
+
+
+def _scholar_clear_line_to_goal(
+    scene: dict, position: np.ndarray, goal: np.ndarray
+) -> bool:
+    """Return True if the robot-body swept segment to goal is collision-free."""
+    line = LineString([position.tolist(), goal.tolist()]).buffer(ROBOT_RADIUS)
+    return not any(
+        obs["observed"] and line.intersects(obstacle_polygon(obs))
+        for obs in scene["obstacles"]
+    )
+
+
 def detect_boundary_oscillation(
     boundary_stop_events: list[int],
     min_alternations: int = 3,
@@ -1484,6 +1526,11 @@ def run_online_surp_push(
     boundary_stop_events: list[int] = []
     stuck_events = 0
     consecutive_free_steps = 0
+    bug_follow_boundary: bool = False
+    bug_hit_point: np.ndarray | None = None
+    bug_boundary_direction: np.ndarray | None = None
+    bug_follow_obs_id: int | None = None
+    bug_boundary_steps: int = 0
 
     success = False
     for _ in range(max_steps):
@@ -1524,6 +1571,7 @@ def run_online_surp_push(
 
         if nearest_idx is None or nearest_distance > epsilon:
             last_boundary_stop_id = None
+            bug_follow_boundary = False
             direct_candidate = step_until_sense_or_contact(
                 working_scene,
                 position,
@@ -1617,45 +1665,140 @@ def run_online_surp_push(
             continue
 
         p_safe, safety_score = obstacle_safety_probability(nearest_obstacle)
-        avoid_candidate = compute_avoid_trajectory(
-            working_scene,
-            position,
-            goal,
-            step_size,
-            epsilon,
-            bad_directions,
-        )
-        push_candidate = compute_push_trajectory(
-            working_scene,
-            position,
-            goal,
-            goal_direction,
-            push_set,
-            step_size,
-            epsilon,
-            push_distance,
-        )
-        selected_candidate = reconcile_trajectory_decision(
-            avoid_candidate,
-            push_candidate,
-            safety_margin_threshold=max(0.02, epsilon * 0.2),
-        )
-        J_avoid = avoid_candidate.total_cost
-        avoid_step_target = avoid_candidate.step_target
-        if push_candidate is not None:
-            J_push = push_candidate.total_cost
-            available_push_distance = push_candidate.push_distance
-            corridor_gain = push_candidate.corridor_gain
-        else:
-            J_push = float("inf")
-            available_push_distance = 0.0
-            corridor_gain = 0.0
 
-        if stalled:
+        # Determine whether pushing this obstacle is both viable and optimal.
+        is_pushable = (
+            nearest_obstacle["true_class"] == "movable"
+            and p_safe >= SAFE_PROB_THRESHOLD
+        )
+        push_candidate = None
+        push_is_optimal = False
+        avoid_step_target = position  # safe default — avoids NameError below
+        J_avoid = 0.0
+        J_push = float("inf")
+        available_push_distance = 0.0
+        corridor_gain = 0.0
+
+        if is_pushable:
+            avoid_candidate = compute_avoid_trajectory(
+                working_scene,
+                position,
+                goal,
+                step_size,
+                epsilon,
+                bad_directions,
+            )
+            push_candidate = compute_push_trajectory(
+                working_scene,
+                position,
+                goal,
+                goal_direction,
+                push_set,
+                step_size,
+                epsilon,
+                push_distance,
+            )
+            selected_candidate = reconcile_trajectory_decision(
+                avoid_candidate,
+                push_candidate,
+                safety_margin_threshold=max(0.02, epsilon * 0.2),
+            )
+            J_avoid = avoid_candidate.total_cost
+            avoid_step_target = avoid_candidate.step_target
+            if push_candidate is not None:
+                J_push = push_candidate.total_cost
+                available_push_distance = push_candidate.push_distance
+                corridor_gain = push_candidate.corridor_gain
+            push_is_optimal = (
+                selected_candidate.mode == "push"
+                and available_push_distance > 1e-6
+                and push_candidate is not None
+            )
+
+        # ── Boundary mode ─────────────────────────────────────────────────────
+        # Activated whenever pushing is not the chosen action — covers both
+        # unmovable obstacles (can't push) and movable obstacles where the cost
+        # model prefers avoidance (not optimal to push).  Uses the Bug1
+        # left-hand rule: turn 90° left on first contact, then fine-sweep CCW
+        # to hug the surface until line-of-sight to the goal reopens.
+        _boundary_trapped = False
+        if not push_is_optimal:
+            obs_id = nearest_obstacle["id"]
+            obs_class = nearest_obstacle["true_class"]
+
+            if not bug_follow_boundary or bug_follow_obs_id != obs_id:
+                # First contact (or new obstacle) — enter boundary mode.
+                bug_follow_boundary = True
+                bug_follow_obs_id = obs_id
+                bug_hit_point = position.copy()
+                bug_boundary_direction = _bug_rotate(goal_direction, 90.0)
+                bug_boundary_steps = 0
+                path.append(tuple(position))
+                frames.append(snapshot_frame(
+                    position, working_scene,
+                    f"boundary mode: entered near obs {obs_id} "
+                    f"({obs_class}, P_safe={p_safe:.2f})",
+                ))
+                continue
+
+            # Already in boundary mode — sweep for the best tangential step.
+            new_dir, next_pos = _scholar_best_boundary_direction(
+                working_scene, position, bug_boundary_direction, step_size
+            )
+            if new_dir is not None:
+                bug_boundary_direction = new_dir
+                bug_boundary_steps += 1
+                # Moving along the boundary counts as progress — decay stuck counter.
+                stuck_events = max(0, stuck_events - 1)
+                consecutive_free_steps = 0
+                moved_away = (
+                    float(np.linalg.norm(position - bug_hit_point)) > step_size * 1.5
+                    if bug_hit_point is not None else True
+                )
+                # Circuit detection: returned near hit_point after leaving it, or
+                # absolute step cap (safety net for very large obstacles).
+                circuit_done = (not moved_away and bug_boundary_steps >= 4)
+                orbit_timeout = (bug_boundary_steps >= 120)
+                if circuit_done or orbit_timeout:
+                    reason = "circuit complete" if circuit_done else "orbit timeout"
+                    bug_follow_boundary = False
+                    _boundary_trapped = True
+                    path.append(tuple(position))
+                    frames.append(snapshot_frame(
+                        position, working_scene,
+                        f"boundary mode: {reason} for obs {obs_id} — escalating",
+                    ))
+                elif moved_away and _scholar_clear_line_to_goal(working_scene, position, goal):
+                    # Line-of-sight to goal is open — leave boundary mode.
+                    bug_follow_boundary = False
+                    path.append(tuple(position))
+                    frames.append(snapshot_frame(
+                        position, working_scene,
+                        "boundary mode: line-of-sight to goal clear — resuming goal mode",
+                    ))
+                else:
+                    position = next_pos
+                    goal_distance_history.append(float(np.linalg.norm(goal - position)))
+                    path.append(tuple(position))
+                    frames.append(snapshot_frame(
+                        position, working_scene,
+                        f"boundary mode: following obs {obs_id} ({obs_class})",
+                    ))
+                if not _boundary_trapped:
+                    continue
+
+            if not _boundary_trapped:
+                # 360° sweep found nothing — completely trapped.
+                bug_follow_boundary = False
+                _boundary_trapped = True
+
+        # ── Stall-recovery cascade ─────────────────────────────────────────────
+        # Reached when: (a) boundary mode is fully trapped, or
+        #               (b) push was chosen but goal progress stalled.
+        if stalled or _boundary_trapped:
             stuck_events += 1
             consecutive_free_steps = 0
             remember_bad_direction(bad_directions, position, goal_direction)
-            # Cap bad_directions so over-penalization doesn't block all escapes
             if len(bad_directions) > 24:
                 bad_directions = bad_directions[-24:]
 
@@ -1782,13 +1925,10 @@ def run_online_surp_push(
                 stuck_events = max(0, stuck_events - 1)
                 consecutive_free_steps = 0
 
-        push_allowed = (
-            selected_candidate.mode == "push"
-            and p_safe >= SAFE_PROB_THRESHOLD
-            and available_push_distance > 1e-6
-            and push_candidate is not None
-        )
-        if push_allowed and push_candidate is not None and push_candidate.obstacle_index is not None:
+        # ── Push execution ─────────────────────────────────────────────────────
+        # Only reached when push_is_optimal is True and stall recovery did not
+        # fire or did not find a move.
+        if push_is_optimal and push_candidate is not None and push_candidate.obstacle_index is not None:
             moved_distance, moved_chain = move_obstacle_in_direction(
                 working_scene,
                 push_candidate.obstacle_index,
@@ -1823,6 +1963,8 @@ def run_online_surp_push(
                 contact_log.append(message)
                 continue
 
+        # Push was selected but failed to move the obstacle — fall back to the
+        # avoid trajectory computed during reconciliation.
         if np.linalg.norm(avoid_step_target - position) > 1e-6:
             position = avoid_step_target
             consecutive_free_steps += 1
@@ -1836,9 +1978,8 @@ def run_online_surp_push(
                     position,
                     working_scene,
                     (
-                        f"avoid mode: obstacle {nearest_obstacle['id']} "
-                        f"(P_safe={p_safe:.2f}, J_push={J_push:.2f}, J_avoid={J_avoid:.2f}, "
-                        f"frontiers={len(perception['frontiers'])})"
+                        f"avoid fallback: push failed for obs {nearest_obstacle['id']} "
+                        f"(P_safe={p_safe:.2f}, J_push={J_push:.2f}, J_avoid={J_avoid:.2f})"
                     ),
                 )
             )
@@ -1851,7 +1992,7 @@ def run_online_surp_push(
                 position,
                 working_scene,
                 (
-                    f"boundary decision stalled: obstacle {nearest_obstacle['id']} "
+                    f"all strategies exhausted: obstacle {nearest_obstacle['id']} "
                     f"(P_safe={p_safe:.2f}, score={safety_score:.2f}, "
                     f"J_push={J_push:.2f}, J_avoid={J_avoid:.2f}, gain={corridor_gain:.2f})"
                 ),
