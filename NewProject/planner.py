@@ -1324,16 +1324,6 @@ def _scholar_best_boundary_direction(
     return None, None
 
 
-def _scholar_clear_line_to_goal(
-    scene: dict, position: np.ndarray, goal: np.ndarray
-) -> bool:
-    """Return True if the robot-body swept segment to goal is collision-free."""
-    line = LineString([position.tolist(), goal.tolist()]).buffer(ROBOT_RADIUS)
-    return not any(
-        obs["observed"] and line.intersects(obstacle_polygon(obs))
-        for obs in scene["obstacles"]
-    )
-
 
 def detect_boundary_oscillation(
     boundary_stop_events: list[int],
@@ -1531,6 +1521,8 @@ def run_online_surp_push(
     bug_boundary_direction: np.ndarray | None = None
     bug_follow_obs_id: int | None = None
     bug_boundary_steps: int = 0
+    bug_last_exited_obs_id: int | None = None
+    bug_bounce_count: int = 0
 
     success = False
     for _ in range(max_steps):
@@ -1726,20 +1718,100 @@ def run_online_surp_push(
             obs_id = nearest_obstacle["id"]
             obs_class = nearest_obstacle["true_class"]
 
-            if not bug_follow_boundary or bug_follow_obs_id != obs_id:
-                # First contact (or new obstacle) — enter boundary mode.
-                bug_follow_boundary = True
-                bug_follow_obs_id = obs_id
-                bug_hit_point = position.copy()
-                bug_boundary_direction = _bug_rotate(goal_direction, 90.0)
-                bug_boundary_steps = 0
+            # Primary exit: check whether a direct step toward the goal is
+            # collision-free right now.  Do this before any sweep so the robot
+            # exits and moves in the same iteration — preventing immediate
+            # re-entry on the very next step (which caused the oscillation loop).
+            direct_goal_pos = clip_point_to_workspace(
+                working_scene, position + step_size * goal_direction
+            )
+            if not point_collides(working_scene, direct_goal_pos, observed_only=True):
+                if bug_follow_boundary:
+                    bug_last_exited_obs_id = obs_id
+                    bug_follow_boundary = False
+                    path.append(tuple(position))
+                    frames.append(snapshot_frame(
+                        position, working_scene,
+                        f"boundary mode: direct path clear — leaving obs {obs_id}",
+                    ))
+                position = direct_goal_pos
+                goal_distance_history.append(float(np.linalg.norm(goal - position)))
                 path.append(tuple(position))
                 frames.append(snapshot_frame(
-                    position, working_scene,
-                    f"boundary mode: entered near obs {obs_id} "
-                    f"({obs_class}, P_safe={p_safe:.2f})",
+                    position, working_scene, "goal mode: moving directly toward goal"
                 ))
                 continue
+
+            # Direct path is blocked — boundary following is needed.
+            if not bug_follow_boundary or bug_follow_obs_id != obs_id:
+                # Track how many times we re-enter boundary mode for the same
+                # obstacle we just exited ("bounce").  Repeated bounces mean the
+                # direct-path exit was a dead end blocked by a second obstacle.
+                if obs_id == bug_last_exited_obs_id:
+                    bug_bounce_count += 1
+                else:
+                    bug_bounce_count = 0
+                    bug_last_exited_obs_id = None
+
+                # After enough bounces, the cost model is wrong: push the
+                # obstacle if possible, otherwise fall through to stall recovery.
+                if bug_bounce_count >= 3 and is_pushable:
+                    push_idx_override = next(
+                        (i for i, o in enumerate(working_scene["obstacles"])
+                         if o["id"] == obs_id),
+                        None,
+                    )
+                    if push_idx_override is not None:
+                        moved_distance, moved_chain = move_obstacle_in_direction(
+                            working_scene,
+                            push_idx_override,
+                            goal_direction,
+                            push_distance,
+                            robot_position=position,
+                        )
+                        if moved_distance > 1e-6:
+                            position = step_until_sense_or_contact(
+                                working_scene, position, goal_direction, step_size, epsilon
+                            )
+                            pushed_obs = working_scene["obstacles"][push_idx_override]
+                            pushed_obs["push_count"] = pushed_obs.get("push_count", 0) + 1
+                            push_history.append({
+                                "obstacle_id": pushed_obs["id"],
+                                "distance": moved_distance,
+                                "chain": moved_chain,
+                            })
+                            stuck_events = 0
+                            n_bounces = bug_bounce_count
+                            bug_bounce_count = 0
+                            bug_last_exited_obs_id = None
+                            goal_distance_history.append(float(np.linalg.norm(goal - position)))
+                            chain_text = f" chain {moved_chain}" if len(moved_chain) > 1 else ""
+                            message = (
+                                f"boundary bounce override: pushed obs {pushed_obs['id']} "
+                                f"by {moved_distance:.2f}{chain_text} after {n_bounces} bounces"
+                            )
+                            path.append(tuple(position))
+                            frames.append(snapshot_frame(position, working_scene, message))
+                            contact_log.append(message)
+                            continue
+                    # Push failed or not pushable — treat as trapped
+                    bug_bounce_count = 0
+                    _boundary_trapped = True
+
+                if not _boundary_trapped:
+                    # First contact (or new obstacle) — enter boundary mode.
+                    bug_follow_boundary = True
+                    bug_follow_obs_id = obs_id
+                    bug_hit_point = position.copy()
+                    bug_boundary_direction = _bug_rotate(goal_direction, 90.0)
+                    bug_boundary_steps = 0
+                    path.append(tuple(position))
+                    frames.append(snapshot_frame(
+                        position, working_scene,
+                        f"boundary mode: entered near obs {obs_id} "
+                        f"({obs_class}, P_safe={p_safe:.2f})",
+                    ))
+                    continue
 
             # Already in boundary mode — sweep for the best tangential step.
             new_dir, next_pos = _scholar_best_boundary_direction(
@@ -1748,15 +1820,14 @@ def run_online_surp_push(
             if new_dir is not None:
                 bug_boundary_direction = new_dir
                 bug_boundary_steps += 1
-                # Moving along the boundary counts as progress — decay stuck counter.
                 stuck_events = max(0, stuck_events - 1)
                 consecutive_free_steps = 0
                 moved_away = (
                     float(np.linalg.norm(position - bug_hit_point)) > step_size * 1.5
                     if bug_hit_point is not None else True
                 )
-                # Circuit detection: returned near hit_point after leaving it, or
-                # absolute step cap (safety net for very large obstacles).
+                # Circuit detection: returned near hit_point after a full orbit,
+                # or absolute step cap for very large obstacles.
                 circuit_done = (not moved_away and bug_boundary_steps >= 4)
                 orbit_timeout = (bug_boundary_steps >= 120)
                 if circuit_done or orbit_timeout:
@@ -1767,14 +1838,6 @@ def run_online_surp_push(
                     frames.append(snapshot_frame(
                         position, working_scene,
                         f"boundary mode: {reason} for obs {obs_id} — escalating",
-                    ))
-                elif moved_away and _scholar_clear_line_to_goal(working_scene, position, goal):
-                    # Line-of-sight to goal is open — leave boundary mode.
-                    bug_follow_boundary = False
-                    path.append(tuple(position))
-                    frames.append(snapshot_frame(
-                        position, working_scene,
-                        "boundary mode: line-of-sight to goal clear — resuming goal mode",
                     ))
                 else:
                     position = next_pos

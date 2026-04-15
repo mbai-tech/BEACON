@@ -423,27 +423,6 @@ class Scholar:
         q_star: "CandidateState",
         robot:  "RobotState",
     ):
-        """Fit a cubic B-spline through four waypoints.
-
-        Waypoints
-        ---------
-        p0 = robot.position
-        p1 = robot.position + (q_star.position - robot.position) * 1/3
-        p2 = robot.position + (q_star.position - robot.position) * 2/3
-        p3 = q_star.position
-
-        Trajectory duration
-        -------------------
-        T = max(T_v, T_map)
-        where T_v = P_safe * total_path_length / v_max
-              T_map = 0.2 s  (minimum map-update horizon)
-
-        Returns
-        -------
-        spline : BSpline object callable as spline(t) for t in [0, T],
-                 returning (x, y) position at time t.
-        T      : float, total trajectory duration.
-        """
         p0 = robot.position.copy()
         p3 = q_star.position.copy()
         delta = p3 - p0
@@ -476,32 +455,6 @@ class Scholar:
         f_s:             float,         # anisotropic safety score at collision ∈ [0,1]
         battery:         float,         # current normalised battery ∈ [0, 1]
     ) -> str:
-        """Algorithm 2: select a reactive maneuver at a potential collision.
-
-        Decision tree
-        -------------
-        1. No collision predicted         → 'FREESPACE'
-        2. c(O) > c_max (forbidden/heavy) → 'ROTATE'  (fallback: 'REPLAN')
-        3. Otherwise, compute v (path direction at collision) and
-           v_perp (left-perpendicular to v):
-             dot(v_perp, v_collision) >= 0 AND f_s > f_min → 'PUSH'
-             dot(v_perp, v_collision) <  0                 → 'BOUNDARYFOLLOW'
-             else                                          → 'FLOWTHROUGH'
-
-        Parameters
-        ----------
-        waypoints        : planned path as (N, 2) array; used to derive path
-                           direction at the collision point.
-        collision_point  : predicted (x, y) of first contact, or None.
-        c_O              : semantic cost of the obstacle at the collision point.
-        f_s              : directional safety score from the anisotropic map.
-        battery          : normalised battery level.
-
-        Returns
-        -------
-        maneuver : one of 'FREESPACE', 'ROTATE', 'REPLAN', 'PUSH',
-                   'BOUNDARYFOLLOW', 'FLOWTHROUGH'
-        """
         # Step 1 — no collision
         if collision_point is None:
             return "FREESPACE"
@@ -531,12 +484,9 @@ class Scholar:
         else:
             return "FLOWTHROUGH"
 
-    # ── maneuver helpers ──────────────────────────────────────────────────────
-
     def _path_direction_at(
         self, waypoints: np.ndarray, query: np.ndarray
     ) -> np.ndarray:
-        """Return the unit tangent of the path at the waypoint nearest to query."""
         if len(waypoints) < 2:
             return np.array([1.0, 0.0])
 
@@ -557,7 +507,6 @@ class Scholar:
     def _nearest_waypoint(
         self, waypoints: np.ndarray, query: np.ndarray
     ) -> np.ndarray:
-        """Return the waypoint in the array closest to query."""
         dists = np.linalg.norm(waypoints - query, axis=1)
         return waypoints[int(np.argmin(dists))]
 
