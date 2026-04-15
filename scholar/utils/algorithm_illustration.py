@@ -199,7 +199,6 @@ def panel_flowchart(ax):
     # ── Goal reached? ──
     box(CX, 17.8, 4.8, 0.65, "goal reached?",
         fc="#fff3cd", ec="#e0a800")
-    # Yes branch
     ax.annotate("", xy=(9.2, 17.8), xytext=(CX + 2.4, 17.8),
                 arrowprops=dict(arrowstyle="-|>", color=C_ESCAPE, lw=1.15))
     ax.text(9.25, 17.8, "✓ done", fontsize=6.5, color=C_ESCAPE,
@@ -217,7 +216,6 @@ def panel_flowchart(ax):
     # ── Any new? ──
     box(CX, 15.2, 4.8, 0.65, "newly observed obstacles?",
         fc="#fff3cd", ec="#e0a800")
-    # Yes branch
     ax.annotate("", xy=(9.2, 15.2), xytext=(CX + 2.4, 15.2),
                 arrowprops=dict(arrowstyle="-|>", color="#888", lw=1.0))
     box(9.5, 14.6, 1.8, 0.65, "record &\ncontinue", fc="#f0f0f0", ec="#aaa", fs=6.5)
@@ -249,67 +247,75 @@ def panel_flowchart(ax):
 
     arrow(CX, 12.27, CX, 11.65)
 
-    # ── Compute costs ──
+    # ── Push optimal? ──
     box(CX, 11.3, 4.8, 0.65,
-        r"compute  $J_{avoid}$  and  $J_{push}$",
-        fc="#dceeff", ec=C_SENSE)
-
-    arrow(CX, 10.97, CX, 10.35)
-
-    # ── Push cheaper? ──
-    box(CX, 10.0, 4.8, 0.65,
-        r"$J_{push} < J_{avoid}$  &  obstacle pushable?",
+        r"movable & $P_{safe}\!\geq\!\theta$ & $J_{push}\!<\!J_{avoid}$?",
         fc="#fff3cd", ec="#e0a800")
     # Yes → PUSH MODE
-    ax.annotate("", xy=(9.2, 10.0), xytext=(CX + 2.4, 10.0),
+    ax.annotate("", xy=(9.2, 11.3), xytext=(CX + 2.4, 11.3),
                 arrowprops=dict(arrowstyle="-|>", color=C_PUSH, lw=1.15))
-    ax.text(CX + 2.4, 9.77, "yes", fontsize=6, color="#888", ha="center")
-    box(9.5, 9.35, 1.8, 0.75, "PUSH\nMODE", fc="#fff3e0", ec=C_PUSH,
+    ax.text(CX + 2.4, 11.07, "yes", fontsize=6, color="#888", ha="center")
+    box(9.5, 10.65, 1.8, 0.75, "PUSH\nMODE", fc="#fff3e0", ec=C_PUSH,
         bold=True, fs=7.5)
-    ax.annotate("", xy=(9.5, 9.72), xytext=(9.5, 10.0),
+    ax.annotate("", xy=(9.5, 11.02), xytext=(9.5, 11.3),
                 arrowprops=dict(arrowstyle="-|>", color=C_PUSH, lw=1.15))
-    ax.text(9.5, 8.95, "push obstacle\ntoward goal",
+    ax.text(9.5, 10.25, "push obstacle\ntoward goal",
             fontsize=5.8, color="#555", ha="center", style="italic")
 
-    arrow(CX, 9.67, CX, 9.05, lab="no")
+    arrow(CX, 10.97, CX, 10.35, lab="no")
 
-    # ── AVOID MODE ──
-    box(CX, 8.7, 4.8, 0.65, "AVOID MODE",
-        fc="#cce5ff", ec=C_AVOID, bold=True, fs=7.5)
-    ax.text(CX, 8.33, "navigate around obstacle",
-            fontsize=6, color="#555", ha="center", style="italic")
+    # ── BOUNDARY MODE ──
+    C_BOUNDARY = "#7b4fa5"
+    box(CX, 10.0, 4.8, 0.75, "BOUNDARY MODE  (Bug1)",
+        fc="#ede7f6", ec=C_BOUNDARY, bold=True, fs=7.5)
 
-    arrow(CX, 8.37, CX, 7.75)
+    # Exit sub-note
+    ax.text(CX, 9.58,
+            "sweep 36 dirs · exit when direct step to goal is free",
+            fontsize=5.6, color="#555", ha="center", style="italic")
 
-    # ── Stalled? ──
-    box(CX, 7.4, 4.8, 0.65, "progress stalled?",
+    # Bounce detection side note
+    ax.annotate("", xy=(0.85, 10.0), xytext=(CX - 2.4, 10.0),
+                arrowprops=dict(arrowstyle="-|>", color=C_BOUNDARY, lw=1.0,
+                                linestyle="dashed"))
+    ax.text(CX - 2.4, 9.77, "bounce\n≥ 3×", fontsize=6, color=C_BOUNDARY,
+            ha="center")
+    box(0.5, 9.3, 1.8, 0.65, "bounce\noverride:\npush obs",
+        fc="#f3e5f5", ec=C_BOUNDARY, fs=6.0)
+    ax.annotate("", xy=(0.5, 9.62), xytext=(0.5, 9.95),
+                arrowprops=dict(arrowstyle="-|>", color=C_BOUNDARY, lw=1.0))
+
+    arrow(CX, 9.62, CX, 9.00, lab="circuit\ncomplete", lab_dx=0.22)
+
+    # ── Stalled / trapped? ──
+    box(CX, 8.65, 4.8, 0.65, "stalled or boundary trapped?",
         fc="#fff3cd", ec="#e0a800")
-    # No → loop (text only)
-    ax.annotate("", xy=(9.2, 7.4), xytext=(CX + 2.4, 7.4),
+    ax.annotate("", xy=(9.2, 8.65), xytext=(CX + 2.4, 8.65),
                 arrowprops=dict(arrowstyle="-|>", color="#888", lw=1.0))
-    ax.text(9.25, 7.4, "no →\nnext step", fontsize=6, color="#888", va="center")
-    ax.text(CX + 2.4, 7.17, "no", fontsize=6, color="#888", ha="center")
+    ax.text(9.25, 8.65, "no →\nnext step", fontsize=6, color="#888", va="center")
+    ax.text(CX + 2.4, 8.42, "no", fontsize=6, color="#888", ha="center")
 
-    arrow(CX, 7.07, CX, 6.45, lab="yes")
+    arrow(CX, 8.32, CX, 7.70, lab="yes")
 
-    # ── ESCAPE MODE ──
-    box(CX, 6.1, 4.8, 0.65, "ESCAPE MODE",
+    # ── STALL RECOVERY ──
+    box(CX, 7.35, 4.8, 0.65, "STALL RECOVERY",
         fc="#ffe0e0", ec=C_NOT_MOVABLE, bold=True, fs=7.5)
-    ax.text(CX, 5.72,
-            "stuck-override push  →  backtrack\n→  RRT escape through free space",
-            fontsize=5.8, color="#555", ha="center", style="italic")
+    ax.text(CX, 6.97,
+            "push override  →  RRT escape  →  backtrack  →  local escape",
+            fontsize=5.6, color="#555", ha="center", style="italic")
 
-    # Sub-bullets for escape mode
-    escape_steps = [
-        ("1.", "push any movable obstacle in goal direction"),
-        ("2.", "backtrack along prior path"),
-        ("3.", "RRT-sample collision-free escape direction"),
+    # Sub-bullets for stall recovery
+    stall_steps = [
+        ("1.", "push any movable obstacle toward goal"),
+        ("2.", "RRT-sample through sensed free space"),
+        ("3.", "deep backtrack along executed path"),
+        ("4.", "random-walk local escape"),
     ]
-    for i, (num, txt) in enumerate(escape_steps):
-        y = 5.22 - i * 0.45
-        ax.text(CX - 2.3, y, num, fontsize=6, color=C_NOT_MOVABLE,
+    for i, (num, txt) in enumerate(stall_steps):
+        y = 6.55 - i * 0.42
+        ax.text(CX - 2.3, y, num, fontsize=5.8, color=C_NOT_MOVABLE,
                 fontweight="bold", va="center")
-        ax.text(CX - 2.0, y, txt, fontsize=6, color="#444", va="center")
+        ax.text(CX - 2.0, y, txt, fontsize=5.8, color="#444", va="center")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -552,7 +558,7 @@ if __name__ == "__main__":
     panel_push(ax3)
     panel_escape(ax4)
 
-    out_dir  = Path(__file__).resolve().parent / "environment" / "data" / "images"
+    out_dir  = Path(__file__).resolve().parent.parent / "environment" / "data" / "images"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "algorithm_illustration.png"
 
