@@ -1,0 +1,374 @@
+Bug2 Simulation Log
+Scene: 040   Date: 2026-04-15 14:24:00
+======================================================================
+
+Family: sparse
+Result: SUCCESS  (57 steps)
+--------------------------------------------------
+  step    0 | (2.7889, 4.9271) | start
+  step    1 | (2.7889, 4.9271) | sensed [0]
+  step    2 | (2.7481, 4.8702) | goal mode
+  step    3 | (2.7073, 4.8133) | goal mode
+  step    4 | (2.6666, 4.7564) | goal mode
+  step    5 | (2.6258, 4.6995) | goal mode
+  step    6 | (2.5850, 4.6426) | goal mode
+  step    7 | (2.5442, 4.5858) | goal mode
+  step    8 | (2.5034, 4.5289) | goal mode
+  step    9 | (2.4627, 4.4720) | goal mode
+  step   10 | (2.4219, 4.4151) | goal mode
+  step   11 | (2.3811, 4.3582) | goal mode
+  step   12 | (2.3403, 4.3013) | goal mode
+  step   13 | (2.2996, 4.2444) | goal mode
+  step   14 | (2.2588, 4.1875) | goal mode
+  step   15 | (2.2180, 4.1306) | goal mode
+  step   16 | (2.1772, 4.0737) | goal mode
+  step   17 | (2.1364, 4.0168) | goal mode
+  step   18 | (2.0957, 3.9599) | goal mode
+  step   19 | (2.0549, 3.9030) | goal mode
+  step   20 | (2.0141, 3.8461) | goal mode
+  step   21 | (1.9733, 3.7892) | goal mode
+  step   22 | (1.9326, 3.7323) | goal mode
+  step   23 | (1.8918, 3.6754) | goal mode
+  step   24 | (1.8510, 3.6185) | goal mode
+  step   25 | (1.8102, 3.5616) | goal mode
+  step   26 | (1.7694, 3.5047) | goal mode
+  step   27 | (1.7287, 3.4478) | goal mode
+  step   28 | (1.6879, 3.3909) | goal mode
+  step   29 | (1.6471, 3.3340) | goal mode
+  step   30 | (1.6063, 3.2771) | goal mode
+  step   31 | (1.5656, 3.2202) | goal mode
+  step   32 | (1.5656, 3.2202) | sensed [6]
+  step   33 | (1.5248, 3.1634) | goal mode
+  step   34 | (1.4840, 3.1065) | goal mode
+  step   35 | (1.4432, 3.0496) | goal mode
+  step   36 | (1.4024, 2.9927) | goal mode
+  step   37 | (1.3617, 2.9358) | goal mode
+  step   38 | (1.3209, 2.8789) | goal mode
+  step   39 | (1.2801, 2.8220) | goal mode
+  step   40 | (1.2393, 2.7651) | goal mode
+  step   41 | (1.1986, 2.7082) | goal mode
+  step   42 | (1.1578, 2.6513) | goal mode
+  step   43 | (1.1170, 2.5944) | goal mode
+  step   44 | (1.0762, 2.5375) | goal mode
+  step   45 | (1.0354, 2.4806) | goal mode
+  step   46 | (0.9947, 2.4237) | goal mode
+  step   47 | (0.9539, 2.3668) | goal mode
+  step   48 | (0.9131, 2.3099) | goal mode
+  step   49 | (0.8723, 2.2530) | goal mode
+  step   50 | (0.8315, 2.1961) | goal mode
+  step   51 | (0.7908, 2.1392) | goal mode
+  step   52 | (0.7500, 2.0823) | goal mode
+  step   53 | (0.7092, 2.0254) | goal mode
+  step   54 | (0.6684, 1.9685) | goal mode
+  step   55 | (0.6277, 1.9116) | goal mode
+  step   56 | (0.6124, 1.8904) | goal reached
+
+Family: cluttered
+Result: SUCCESS  (100 steps)
+--------------------------------------------------
+  step    0 | (2.7889, 4.9271) | start
+  step    1 | (2.7889, 4.9271) | sensed [0]
+  step    2 | (2.7481, 4.8702) | goal mode
+  step    3 | (2.7073, 4.8133) | goal mode
+  step    4 | (2.6666, 4.7564) | goal mode
+  step    5 | (2.6258, 4.6995) | goal mode
+  step    6 | (2.5850, 4.6426) | goal mode
+  step    7 | (2.5442, 4.5858) | goal mode
+  step    8 | (2.5034, 4.5289) | goal mode
+  step    9 | (2.5034, 4.5289) | sensed [19, 25]
+  step   10 | (2.4627, 4.4720) | goal mode
+  step   11 | (2.4219, 4.4151) | goal mode
+  step   12 | (2.3811, 4.3582) | goal mode
+  step   13 | (2.3403, 4.3013) | goal mode
+  step   14 | (2.2996, 4.2444) | goal mode
+  step   15 | (2.2588, 4.1875) | goal mode
+  step   16 | (2.2180, 4.1306) | goal mode
+  step   17 | (2.1772, 4.0737) | goal mode
+  step   18 | (2.1772, 4.0737) | obstacle hit (d=2.69) — boundary mode
+  step   19 | (2.2446, 4.0548) | boundary mode
+  step   20 | (2.3120, 4.0360) | boundary mode
+  step   21 | (2.3752, 4.0057) | boundary mode
+  step   22 | (2.4383, 3.9754) | boundary mode
+  step   23 | (2.4872, 3.9254) | boundary mode
+  step   24 | (2.4872, 3.9254) | sensed [9]
+  step   25 | (2.5362, 3.8753) | boundary mode
+  step   26 | (2.5851, 3.8253) | boundary mode
+  step   27 | (2.6140, 3.7615) | boundary mode
+  step   28 | (2.6429, 3.6978) | boundary mode
+  step   29 | (2.6603, 3.6300) | boundary mode
+  step   30 | (2.6656, 3.5602) | boundary mode
+  step   31 | (2.6709, 3.4904) | boundary mode
+  step   32 | (2.6521, 3.4230) | boundary mode
+  step   33 | (2.6332, 3.3555) | boundary mode
+  step   34 | (2.6029, 3.2924) | boundary mode
+  step   35 | (2.5727, 3.2293) | boundary mode
+  step   36 | (2.5226, 3.1804) | boundary mode
+  step   37 | (2.4726, 3.1314) | boundary mode
+  step   38 | (2.4726, 3.1314) | sensed [13]
+  step   39 | (2.4148, 3.0919) | boundary mode
+  step   40 | (2.3570, 3.0524) | boundary mode
+  step   41 | (2.2892, 3.0350) | boundary mode
+  step   42 | (2.2214, 3.0176) | boundary mode
+  step   43 | (2.1516, 3.0123) | boundary mode
+  step   44 | (2.0818, 3.0070) | boundary mode
+  step   45 | (2.0144, 3.0258) | boundary mode
+  step   46 | (1.9470, 3.0447) | boundary mode
+  step   47 | (1.8839, 3.0750) | boundary mode
+  step   48 | (1.8270, 3.1157) | boundary mode
+  step   49 | (1.7701, 3.1565) | boundary mode
+  step   50 | (1.7306, 3.2143) | boundary mode
+  step   51 | (1.7306, 3.2143) | m-line crossed (d=1.73 < hit=2.69) — goal mode
+  step   52 | (1.6854, 3.1608) | goal mode
+  step   53 | (1.6854, 3.1608) | obstacle hit (d=1.66) — boundary mode
+  step   54 | (1.7302, 3.1071) | boundary mode
+  step   55 | (1.7959, 3.0829) | boundary mode
+  step   56 | (1.8616, 3.0587) | boundary mode
+  step   57 | (1.9221, 3.0236) | boundary mode
+  step   58 | (1.9756, 2.9784) | boundary mode
+  step   59 | (2.0291, 2.9332) | boundary mode
+  step   60 | (2.0739, 2.8795) | boundary mode
+  step   61 | (2.1087, 2.8187) | boundary mode
+  step   62 | (2.1325, 2.7529) | boundary mode
+  step   63 | (2.1444, 2.6839) | boundary mode
+  step   64 | (2.1563, 2.6149) | boundary mode
+  step   65 | (2.1561, 2.5449) | boundary mode
+  step   66 | (2.1561, 2.5449) | sensed [14]
+  step   67 | (2.1559, 2.4749) | boundary mode
+  step   68 | (2.1317, 2.4092) | boundary mode
+  step   69 | (2.1076, 2.3435) | boundary mode
+  step   70 | (2.0724, 2.2830) | boundary mode
+  step   71 | (2.0272, 2.2295) | boundary mode
+  step   72 | (1.9820, 2.1760) | boundary mode
+  step   73 | (1.9283, 2.1312) | boundary mode
+  step   74 | (1.8675, 2.0964) | boundary mode
+  step   75 | (1.8017, 2.0727) | boundary mode
+  step   76 | (1.7358, 2.0490) | boundary mode
+  step   77 | (1.6669, 2.0370) | boundary mode
+  step   78 | (1.5969, 2.0372) | boundary mode
+  step   79 | (1.5280, 2.0496) | boundary mode
+  step   80 | (1.4591, 2.0620) | boundary mode
+  step   81 | (1.3986, 2.0972) | boundary mode
+  step   82 | (1.3329, 2.1213) | boundary mode
+  step   83 | (1.2794, 2.1665) | boundary mode
+  step   84 | (1.2259, 2.2117) | boundary mode
+  step   85 | (1.1811, 2.2654) | boundary mode
+  step   86 | (1.1463, 2.3262) | boundary mode
+  step   87 | (1.1225, 2.3920) | boundary mode
+  step   88 | (1.1225, 2.3920) | m-line crossed (d=0.72 < hit=1.66) — goal mode
+  step   89 | (1.0726, 2.3430) | goal mode
+  step   90 | (1.0227, 2.2939) | goal mode
+  step   91 | (0.9728, 2.2448) | goal mode
+  step   92 | (0.9229, 2.1957) | goal mode
+  step   93 | (0.8730, 2.1466) | goal mode
+  step   94 | (0.8231, 2.0975) | goal mode
+  step   95 | (0.7732, 2.0485) | goal mode
+  step   96 | (0.7233, 1.9994) | goal mode
+  step   97 | (0.6733, 1.9503) | goal mode
+  step   98 | (0.6234, 1.9012) | goal mode
+  step   99 | (0.6124, 1.8904) | goal reached
+
+Family: collision_required
+Result: SUCCESS  (92 steps)
+--------------------------------------------------
+  step    0 | (5.3551, 3.8380) | start
+  step    1 | (5.3551, 3.8380) | sensed [5]
+  step    2 | (5.2897, 3.8132) | goal mode
+  step    3 | (5.2242, 3.7884) | goal mode
+  step    4 | (5.1588, 3.7636) | goal mode
+  step    5 | (5.0933, 3.7388) | goal mode
+  step    6 | (5.0279, 3.7140) | goal mode
+  step    7 | (4.9624, 3.6892) | goal mode
+  step    8 | (4.8970, 3.6643) | goal mode
+  step    9 | (4.8315, 3.6395) | goal mode
+  step   10 | (4.7660, 3.6147) | goal mode
+  step   11 | (4.7006, 3.5899) | goal mode
+  step   12 | (4.6351, 3.5651) | goal mode
+  step   13 | (4.5697, 3.5403) | goal mode
+  step   14 | (4.5042, 3.5155) | goal mode
+  step   15 | (4.4388, 3.4907) | goal mode
+  step   16 | (4.3733, 3.4658) | goal mode
+  step   17 | (4.3079, 3.4410) | goal mode
+  step   18 | (4.2424, 3.4162) | goal mode
+  step   19 | (4.1769, 3.3914) | goal mode
+  step   20 | (4.1769, 3.3914) | sensed [1]
+  step   21 | (4.1115, 3.3666) | goal mode
+  step   22 | (4.0460, 3.3418) | goal mode
+  step   23 | (3.9806, 3.3170) | goal mode
+  step   24 | (3.9151, 3.2922) | goal mode
+  step   25 | (3.8497, 3.2673) | goal mode
+  step   26 | (3.7842, 3.2425) | goal mode
+  step   27 | (3.7188, 3.2177) | goal mode
+  step   28 | (3.6533, 3.1929) | goal mode
+  step   29 | (3.6533, 3.1929) | sensed [0]
+  step   30 | (3.6533, 3.1929) | obstacle hit (d=2.73) — boundary mode
+  step   31 | (3.6990, 3.1399) | boundary mode
+  step   32 | (3.7447, 3.0869) | boundary mode
+  step   33 | (3.7805, 3.0267) | boundary mode
+  step   34 | (3.8163, 2.9666) | boundary mode
+  step   35 | (3.8411, 2.9011) | boundary mode
+  step   36 | (3.8542, 2.8323) | boundary mode
+  step   37 | (3.8673, 2.7636) | boundary mode
+  step   38 | (3.8560, 2.6945) | boundary mode
+  step   39 | (3.8560, 2.6945) | sensed [2]
+  step   40 | (3.8448, 2.6254) | boundary mode
+  step   41 | (3.8217, 2.5593) | boundary mode
+  step   42 | (3.7987, 2.4932) | boundary mode
+  step   43 | (3.7544, 2.4390) | boundary mode
+  step   44 | (3.7101, 2.3848) | boundary mode
+  step   45 | (3.6571, 2.3391) | boundary mode
+  step   46 | (3.6041, 2.2934) | boundary mode
+  step   47 | (3.5386, 2.2685) | boundary mode
+  step   48 | (3.5386, 2.2685) | sensed [10]
+  step   49 | (3.4731, 2.2437) | boundary mode
+  step   50 | (3.4044, 2.2307) | boundary mode
+  step   51 | (3.3344, 2.2297) | boundary mode
+  step   52 | (3.2644, 2.2288) | boundary mode
+  step   53 | (3.1953, 2.2400) | boundary mode
+  step   54 | (3.1292, 2.2631) | boundary mode
+  step   55 | (3.0681, 2.2973) | boundary mode
+  step   56 | (3.0139, 2.3416) | boundary mode
+  step   57 | (2.9597, 2.3859) | boundary mode
+  step   58 | (2.9140, 2.4389) | boundary mode
+  step   59 | (2.8782, 2.4990) | boundary mode
+  step   60 | (2.8424, 2.5592) | boundary mode
+  step   61 | (2.8293, 2.6280) | boundary mode
+  step   62 | (2.8162, 2.6967) | boundary mode
+  step   63 | (2.8153, 2.7667) | boundary mode
+  step   64 | (2.8153, 2.7667) | m-line crossed (d=1.79 < hit=2.73) — goal mode
+  step   65 | (2.7486, 2.7457) | goal mode
+  step   66 | (2.6818, 2.7246) | goal mode
+  step   67 | (2.6151, 2.7035) | goal mode
+  step   68 | (2.5483, 2.6824) | goal mode
+  step   69 | (2.4816, 2.6614) | goal mode
+  step   70 | (2.4148, 2.6403) | goal mode
+  step   71 | (2.3480, 2.6192) | goal mode
+  step   72 | (2.2813, 2.5982) | goal mode
+  step   73 | (2.2145, 2.5771) | goal mode
+  step   74 | (2.1478, 2.5560) | goal mode
+  step   75 | (2.0810, 2.5350) | goal mode
+  step   76 | (2.0143, 2.5139) | goal mode
+  step   77 | (1.9475, 2.4928) | goal mode
+  step   78 | (1.8808, 2.4717) | goal mode
+  step   79 | (1.8140, 2.4507) | goal mode
+  step   80 | (1.7473, 2.4296) | goal mode
+  step   81 | (1.6805, 2.4085) | goal mode
+  step   82 | (1.6138, 2.3875) | goal mode
+  step   83 | (1.5470, 2.3664) | goal mode
+  step   84 | (1.4802, 2.3453) | goal mode
+  step   85 | (1.4802, 2.3453) | sensed [9]
+  step   86 | (1.4135, 2.3243) | goal mode
+  step   87 | (1.3467, 2.3032) | goal mode
+  step   88 | (1.2800, 2.2821) | goal mode
+  step   89 | (1.2132, 2.2610) | goal mode
+  step   90 | (1.1465, 2.2400) | goal mode
+  step   91 | (1.1047, 2.2268) | goal reached
+
+Family: collision_shortcut
+Result: SUCCESS  (105 steps)
+--------------------------------------------------
+  step    0 | (5.3551, 3.8380) | start
+  step    1 | (5.3551, 3.8380) | sensed [4, 11]
+  step    2 | (5.2897, 3.8132) | goal mode
+  step    3 | (5.2242, 3.7884) | goal mode
+  step    4 | (5.1588, 3.7636) | goal mode
+  step    5 | (5.0933, 3.7388) | goal mode
+  step    6 | (5.0279, 3.7140) | goal mode
+  step    7 | (4.9624, 3.6892) | goal mode
+  step    8 | (4.8970, 3.6643) | goal mode
+  step    9 | (4.8315, 3.6395) | goal mode
+  step   10 | (4.8315, 3.6395) | sensed [0]
+  step   11 | (4.7660, 3.6147) | goal mode
+  step   12 | (4.7006, 3.5899) | goal mode
+  step   13 | (4.6351, 3.5651) | goal mode
+  step   14 | (4.5697, 3.5403) | goal mode
+  step   15 | (4.5042, 3.5155) | goal mode
+  step   16 | (4.4388, 3.4907) | goal mode
+  step   17 | (4.3733, 3.4658) | goal mode
+  step   18 | (4.3733, 3.4658) | obstacle hit (d=3.50) — boundary mode
+  step   19 | (4.3864, 3.3971) | boundary mode
+  step   20 | (4.3995, 3.3283) | boundary mode
+  step   21 | (4.4004, 3.2583) | boundary mode
+  step   22 | (4.3891, 3.1892) | boundary mode
+  step   23 | (4.3779, 3.1201) | boundary mode
+  step   24 | (4.3548, 3.0540) | boundary mode
+  step   25 | (4.3206, 2.9930) | boundary mode
+  step   26 | (4.3206, 2.9930) | sensed [13]
+  step   27 | (4.2764, 2.9387) | boundary mode
+  step   28 | (4.2321, 2.8845) | boundary mode
+  step   29 | (4.1791, 2.8388) | boundary mode
+  step   30 | (4.1791, 2.8388) | sensed [7]
+  step   31 | (4.1189, 2.8030) | boundary mode
+  step   32 | (4.0535, 2.7782) | boundary mode
+  step   33 | (3.9880, 2.7534) | boundary mode
+  step   34 | (3.9192, 2.7403) | boundary mode
+  step   35 | (3.8492, 2.7394) | boundary mode
+  step   36 | (3.8741, 2.6739) | boundary mode
+  step   37 | (3.8871, 2.6052) | boundary mode
+  step   38 | (3.9002, 2.5364) | boundary mode
+  step   39 | (3.8889, 2.4673) | boundary mode
+  step   40 | (3.8659, 2.4012) | boundary mode
+  step   41 | (3.8317, 2.3401) | boundary mode
+  step   42 | (3.7975, 2.2791) | boundary mode
+  step   43 | (3.7445, 2.2334) | boundary mode
+  step   44 | (3.6915, 2.1876) | boundary mode
+  step   45 | (3.6260, 2.1628) | boundary mode
+  step   46 | (3.5605, 2.1380) | boundary mode
+  step   47 | (3.5605, 2.1380) | sensed [9]
+  step   48 | (3.4906, 2.1371) | boundary mode
+  step   49 | (3.4206, 2.1362) | boundary mode
+  step   50 | (3.3515, 2.1474) | boundary mode
+  step   51 | (3.2904, 2.1816) | boundary mode
+  step   52 | (3.2904, 2.1816) | sensed [1]
+  step   53 | (3.2293, 2.2158) | boundary mode
+  step   54 | (3.1751, 2.2601) | boundary mode
+  step   55 | (3.1294, 2.3131) | boundary mode
+  step   56 | (3.0936, 2.3732) | boundary mode
+  step   57 | (3.0688, 2.4387) | boundary mode
+  step   58 | (3.0557, 2.5075) | boundary mode
+  step   59 | (3.0548, 2.5775) | boundary mode
+  step   60 | (3.0660, 2.6466) | boundary mode
+  step   61 | (3.0891, 2.7126) | boundary mode
+  step   62 | (3.1233, 2.7737) | boundary mode
+  step   63 | (3.1575, 2.8348) | boundary mode
+  step   64 | (3.2105, 2.8805) | boundary mode
+  step   65 | (3.2105, 2.8805) | m-line crossed (d=2.20 < hit=3.50) — goal mode
+  step   66 | (3.1436, 2.8598) | goal mode
+  step   67 | (3.0768, 2.8390) | goal mode
+  step   68 | (3.0768, 2.8390) | obstacle hit (d=2.06) — boundary mode
+  step   69 | (3.0211, 2.7966) | boundary mode
+  step   70 | (3.0177, 2.7267) | boundary mode
+  step   71 | (3.0022, 2.6584) | boundary mode
+  step   72 | (2.9752, 2.5939) | boundary mode
+  step   73 | (2.9373, 2.5350) | boundary mode
+  step   74 | (2.8898, 2.4836) | boundary mode
+  step   75 | (2.8341, 2.4413) | boundary mode
+  step   76 | (2.7783, 2.3989) | boundary mode
+  step   77 | (2.7115, 2.3781) | boundary mode
+  step   78 | (2.6420, 2.3693) | boundary mode
+  step   79 | (2.5726, 2.3605) | boundary mode
+  step   80 | (2.5043, 2.3759) | boundary mode
+  step   81 | (2.4361, 2.3914) | boundary mode
+  step   82 | (2.3715, 2.4185) | boundary mode
+  step   83 | (2.3201, 2.4660) | boundary mode
+  step   84 | (2.2687, 2.5135) | boundary mode
+  step   85 | (2.2687, 2.5135) | m-line crossed (d=1.20 < hit=2.06) — goal mode
+  step   86 | (2.2007, 2.4967) | goal mode
+  step   87 | (2.1328, 2.4800) | goal mode
+  step   88 | (2.0648, 2.4633) | goal mode
+  step   89 | (1.9968, 2.4465) | goal mode
+  step   90 | (1.9289, 2.4298) | goal mode
+  step   91 | (1.8609, 2.4130) | goal mode
+  step   92 | (1.7929, 2.3963) | goal mode
+  step   93 | (1.7250, 2.3796) | goal mode
+  step   94 | (1.6570, 2.3628) | goal mode
+  step   95 | (1.5890, 2.3461) | goal mode
+  step   96 | (1.5210, 2.3293) | goal mode
+  step   97 | (1.5210, 2.3293) | sensed [8]
+  step   98 | (1.4531, 2.3126) | goal mode
+  step   99 | (1.3851, 2.2959) | goal mode
+  step  100 | (1.3171, 2.2791) | goal mode
+  step  101 | (1.2492, 2.2624) | goal mode
+  step  102 | (1.1812, 2.2456) | goal mode
+  step  103 | (1.1132, 2.2289) | goal mode
+  step  104 | (1.1047, 2.2268) | goal reached
+

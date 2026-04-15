@@ -1,0 +1,665 @@
+SCHOLAR Simulation Log
+Scene: 005   Date: 2026-04-15 01:29:04
+======================================================================
+
+Family: sparse
+Result: SUCCESS  (109 steps)
+--------------------------------------------------
+  step    0 | (4.2235, 5.1539) | start
+  step    1 | (4.1898, 5.1322) | goal mode: moving directly toward goal
+  step    2 | (4.1562, 5.1106) | goal mode: moving directly toward goal
+  step    3 | (4.1225, 5.0890) | goal mode: moving directly toward goal
+  step    4 | (4.0889, 5.0674) | goal mode: moving directly toward goal
+  step    5 | (4.0552, 5.0458) | goal mode: moving directly toward goal
+  step    6 | (4.0216, 5.0241) | goal mode: moving directly toward goal
+  step    7 | (3.9879, 5.0025) | goal mode: moving directly toward goal
+  step    8 | (3.9543, 4.9809) | goal mode: moving directly toward goal
+  step    9 | (3.9206, 4.9593) | goal mode: moving directly toward goal
+  step   10 | (3.8869, 4.9377) | goal mode: moving directly toward goal
+  step   11 | (3.8533, 4.9160) | goal mode: moving directly toward goal
+  step   12 | (3.8196, 4.8944) | goal mode: moving directly toward goal
+  step   13 | (3.7860, 4.8728) | goal mode: moving directly toward goal
+  step   14 | (3.7523, 4.8512) | goal mode: moving directly toward goal
+  step   15 | (3.7187, 4.8296) | goal mode: moving directly toward goal
+  step   16 | (3.6850, 4.8079) | goal mode: moving directly toward goal
+  step   17 | (3.6514, 4.7863) | goal mode: moving directly toward goal
+  step   18 | (3.6177, 4.7647) | goal mode: moving directly toward goal
+  step   19 | (3.5841, 4.7431) | goal mode: moving directly toward goal
+  step   20 | (3.5504, 4.7215) | goal mode: moving directly toward goal
+  step   21 | (3.5168, 4.6998) | goal mode: moving directly toward goal
+  step   22 | (3.4831, 4.6782) | goal mode: moving directly toward goal
+  step   23 | (3.4494, 4.6566) | goal mode: moving directly toward goal
+  step   24 | (3.4158, 4.6350) | goal mode: moving directly toward goal
+  step   25 | (3.3821, 4.6134) | goal mode: moving directly toward goal
+  step   26 | (3.3485, 4.5917) | goal mode: moving directly toward goal
+  step   27 | (3.3148, 4.5701) | goal mode: moving directly toward goal
+  step   28 | (3.2812, 4.5485) | goal mode: moving directly toward goal
+  step   29 | (3.2475, 4.5269) | goal mode: moving directly toward goal
+  step   30 | (3.2139, 4.5053) | goal mode: moving directly toward goal
+  step   31 | (3.1802, 4.4836) | goal mode: moving directly toward goal
+  step   32 | (3.1466, 4.4620) | goal mode: moving directly toward goal
+  step   33 | (3.1129, 4.4404) | goal mode: moving directly toward goal
+  step   34 | (3.0793, 4.4188) | goal mode: moving directly toward goal
+  step   35 | (3.0456, 4.3971) | goal mode: moving directly toward goal
+  step   36 | (3.0120, 4.3755) | goal mode: moving directly toward goal
+  step   37 | (2.9783, 4.3539) | goal mode: moving directly toward goal
+  step   38 | (2.9446, 4.3323) | goal mode: moving directly toward goal
+  step   39 | (2.9110, 4.3107) | goal mode: moving directly toward goal
+  step   40 | (2.8773, 4.2890) | goal mode: moving directly toward goal
+  step   41 | (2.8437, 4.2674) | goal mode: moving directly toward goal
+  step   42 | (2.8100, 4.2458) | goal mode: moving directly toward goal
+  step   43 | (2.7764, 4.2242) | goal mode: moving directly toward goal
+  step   44 | (2.7427, 4.2026) | goal mode: moving directly toward goal
+  step   45 | (2.7091, 4.1809) | goal mode: moving directly toward goal
+  step   46 | (2.6754, 4.1593) | goal mode: moving directly toward goal
+  step   47 | (2.6418, 4.1377) | goal mode: moving directly toward goal
+  step   48 | (2.6081, 4.1161) | goal mode: moving directly toward goal
+  step   49 | (2.5745, 4.0945) | goal mode: moving directly toward goal
+  step   50 | (2.5408, 4.0728) | goal mode: moving directly toward goal
+  step   51 | (2.5071, 4.0512) | goal mode: moving directly toward goal
+  step   52 | (2.4735, 4.0296) | goal mode: moving directly toward goal
+  step   53 | (2.4398, 4.0080) | goal mode: moving directly toward goal
+  step   54 | (2.4062, 3.9864) | goal mode: moving directly toward goal
+  step   55 | (2.3725, 3.9647) | goal mode: moving directly toward goal
+  step   56 | (2.3389, 3.9431) | goal mode: moving directly toward goal
+  step   57 | (2.3052, 3.9215) | goal mode: moving directly toward goal
+  step   58 | (2.2716, 3.8999) | goal mode: moving directly toward goal
+  step   59 | (2.2379, 3.8783) | goal mode: moving directly toward goal
+  step   60 | (2.2043, 3.8566) | goal mode: moving directly toward goal
+  step   61 | (2.1706, 3.8350) | goal mode: moving directly toward goal
+  step   62 | (2.1370, 3.8134) | goal mode: moving directly toward goal
+  step   63 | (2.1033, 3.7918) | goal mode: moving directly toward goal
+  step   64 | (2.0697, 3.7702) | goal mode: moving directly toward goal
+  step   65 | (2.0360, 3.7485) | goal mode: moving directly toward goal
+  step   66 | (2.0023, 3.7269) | goal mode: moving directly toward goal
+  step   67 | (1.9687, 3.7053) | goal mode: moving directly toward goal
+  step   68 | (1.9350, 3.6837) | goal mode: moving directly toward goal
+  step   69 | (1.9014, 3.6621) | goal mode: moving directly toward goal
+  step   70 | (1.8677, 3.6404) | goal mode: moving directly toward goal
+  step   71 | (1.8341, 3.6188) | goal mode: moving directly toward goal
+  step   72 | (1.8004, 3.5972) | goal mode: moving directly toward goal
+  step   73 | (1.7668, 3.5756) | goal mode: moving directly toward goal
+  step   74 | (1.7331, 3.5540) | goal mode: moving directly toward goal
+  step   75 | (1.6995, 3.5323) | goal mode: moving directly toward goal
+  step   76 | (1.6658, 3.5107) | goal mode: moving directly toward goal
+  step   77 | (1.6322, 3.4891) | goal mode: moving directly toward goal
+  step   78 | (1.5985, 3.4675) | goal mode: moving directly toward goal
+  step   79 | (1.5648, 3.4459) | goal mode: moving directly toward goal
+  step   80 | (1.5312, 3.4242) | goal mode: moving directly toward goal
+  step   81 | (1.4975, 3.4026) | goal mode: moving directly toward goal
+  step   82 | (1.4639, 3.3810) | goal mode: moving directly toward goal
+  step   83 | (1.4302, 3.3594) | goal mode: moving directly toward goal
+  step   84 | (1.3966, 3.3378) | goal mode: moving directly toward goal
+  step   85 | (1.3629, 3.3161) | goal mode: moving directly toward goal
+  step   86 | (1.3293, 3.2945) | goal mode: moving directly toward goal
+  step   87 | (1.2956, 3.2729) | goal mode: moving directly toward goal
+  step   88 | (1.2620, 3.2513) | goal mode: moving directly toward goal
+  step   89 | (1.2283, 3.2297) | goal mode: moving directly toward goal
+  step   90 | (1.1947, 3.2080) | goal mode: moving directly toward goal
+  step   91 | (1.1610, 3.1864) | goal mode: moving directly toward goal
+  step   92 | (1.1274, 3.1648) | goal mode: moving directly toward goal
+  step   93 | (1.0937, 3.1432) | goal mode: moving directly toward goal
+  step   94 | (1.0600, 3.1216) | goal mode: moving directly toward goal
+  step   95 | (1.0264, 3.0999) | goal mode: moving directly toward goal
+  step   96 | (0.9927, 3.0783) | goal mode: moving directly toward goal
+  step   97 | (0.9591, 3.0567) | goal mode: moving directly toward goal
+  step   98 | (0.9254, 3.0351) | goal mode: moving directly toward goal
+  step   99 | (0.8918, 3.0135) | goal mode: moving directly toward goal
+  step  100 | (0.8581, 2.9918) | goal mode: moving directly toward goal
+  step  101 | (0.8245, 2.9702) | goal mode: moving directly toward goal
+  step  102 | (0.7908, 2.9486) | goal mode: moving directly toward goal
+  step  103 | (0.7572, 2.9270) | goal mode: moving directly toward goal
+  step  104 | (0.7235, 2.9054) | goal mode: moving directly toward goal
+  step  105 | (0.6899, 2.8837) | goal mode: moving directly toward goal
+  step  106 | (0.6562, 2.8621) | goal mode: moving directly toward goal
+  step  107 | (0.6225, 2.8405) | goal mode: moving directly toward goal
+  step  108 | (0.5979, 2.8247) | goal reached
+
+Family: cluttered
+Result: SUCCESS  (265 steps)
+--------------------------------------------------
+  step    0 | (4.2235, 5.1539) | start
+  step    1 | (4.2235, 5.1539) | sensed obstacle(s) [14, 21, 22]; frontiers=32
+  step    2 | (4.1898, 5.1322) | goal mode: moving directly toward goal
+  step    3 | (4.1562, 5.1106) | goal mode: moving directly toward goal
+  step    4 | (4.1225, 5.0890) | goal mode: moving directly toward goal
+  step    5 | (4.0889, 5.0674) | goal mode: moving directly toward goal
+  step    6 | (4.0552, 5.0458) | goal mode: moving directly toward goal
+  step    7 | (4.0552, 5.0458) | sensed obstacle(s) [31]; frontiers=45
+  step    8 | (4.0216, 5.0241) | goal mode: moving directly toward goal
+  step    9 | (3.9879, 5.0025) | goal mode: moving directly toward goal
+  step   10 | (3.9543, 4.9809) | goal mode: moving directly toward goal
+  step   11 | (3.9206, 4.9593) | goal mode: moving directly toward goal
+  step   12 | (3.9206, 4.9593) | sensed obstacle(s) [24]; frontiers=39
+  step   13 | (3.8869, 4.9377) | goal mode: moving directly toward goal
+  step   14 | (3.8533, 4.9160) | goal mode: moving directly toward goal
+  step   15 | (3.8196, 4.8944) | goal mode: moving directly toward goal
+  step   16 | (3.7860, 4.8728) | goal mode: moving directly toward goal
+  step   17 | (3.7523, 4.8512) | goal mode: moving directly toward goal
+  step   18 | (3.7187, 4.8296) | goal mode: moving directly toward goal
+  step   19 | (3.6850, 4.8079) | goal mode: moving directly toward goal
+  step   20 | (3.6514, 4.7863) | goal mode: moving directly toward goal
+  step   21 | (3.6177, 4.7647) | goal mode: moving directly toward goal
+  step   22 | (3.5841, 4.7431) | goal mode: moving directly toward goal
+  step   23 | (3.5841, 4.7431) | sensed obstacle(s) [17]; frontiers=32
+  step   24 | (3.5504, 4.7215) | goal mode: moving directly toward goal
+  step   25 | (3.5168, 4.6998) | goal mode: moving directly toward goal
+  step   26 | (3.5168, 4.6998) | sensed obstacle(s) [19]; frontiers=24
+  step   27 | (3.4831, 4.6782) | goal mode: moving directly toward goal
+  step   28 | (3.4494, 4.6566) | goal mode: moving directly toward goal
+  step   29 | (3.4158, 4.6350) | goal mode: moving directly toward goal
+  step   30 | (3.3821, 4.6134) | goal mode: moving directly toward goal
+  step   31 | (3.3485, 4.5917) | goal mode: moving directly toward goal
+  step   32 | (3.3148, 4.5701) | goal mode: moving directly toward goal
+  step   33 | (3.3148, 4.5701) | stopped at epsilon boundary near obstacle 19
+  step   34 | (3.2812, 4.5485) | goal mode: moving directly toward goal
+  step   35 | (3.2812, 4.5485) | boundary mode: entered near obs 19 (not_movable, P_safe=0.34)
+  step   36 | (3.2761, 4.5088) | boundary mode: following obs 19 (not_movable)
+  step   37 | (3.2977, 4.4752) | boundary mode: following obs 19 (not_movable)
+  step   38 | (3.3194, 4.4415) | boundary mode: following obs 19 (not_movable)
+  step   39 | (3.3348, 4.4046) | boundary mode: following obs 19 (not_movable)
+  step   40 | (3.3502, 4.3677) | boundary mode: following obs 19 (not_movable)
+  step   41 | (3.3591, 4.3287) | boundary mode: following obs 19 (not_movable)
+  step   42 | (3.3610, 4.2887) | boundary mode: following obs 19 (not_movable)
+  step   43 | (3.3628, 4.2488) | boundary mode: following obs 19 (not_movable)
+  step   44 | (3.3647, 4.2088) | boundary mode: following obs 19 (not_movable)
+  step   45 | (3.3597, 4.1692) | boundary mode: following obs 19 (not_movable)
+  step   46 | (3.3478, 4.1310) | boundary mode: following obs 19 (not_movable)
+  step   47 | (3.3359, 4.0928) | boundary mode: following obs 19 (not_movable)
+  step   48 | (3.3359, 4.0928) | sensed obstacle(s) [1]; frontiers=14
+  step   49 | (3.3240, 4.0546) | boundary mode: following obs 19 (not_movable)
+  step   50 | (3.2998, 4.0227) | boundary mode: following obs 19 (not_movable)
+  step   51 | (3.2815, 3.9872) | boundary mode: following obs 19 (not_movable)
+  step   52 | (3.2521, 3.9601) | boundary mode: following obs 19 (not_movable)
+  step   53 | (3.2278, 3.9282) | boundary mode: following obs 19 (not_movable)
+  step   54 | (3.1942, 3.9066) | boundary mode: following obs 19 (not_movable)
+  step   55 | (3.1648, 3.8795) | boundary mode: following obs 19 (not_movable)
+  step   56 | (3.1648, 3.8795) | boundary mode: direct path clear — leaving obs 19
+  step   57 | (3.1278, 3.8643) | goal mode: moving directly toward goal
+  step   58 | (3.1278, 3.8643) | boundary mode: entered near obs 19 (not_movable, P_safe=0.34)
+  step   59 | (3.0940, 3.8429) | boundary mode: following obs 19 (not_movable)
+  step   60 | (3.0940, 3.8429) | boundary mode: direct path clear — leaving obs 19
+  step   61 | (3.0570, 3.8278) | goal mode: moving directly toward goal
+  step   62 | (3.0570, 3.8278) | sensed obstacle(s) [12]; frontiers=10
+  step   63 | (3.0199, 3.8127) | goal mode: moving directly toward goal
+  step   64 | (2.9829, 3.7975) | goal mode: moving directly toward goal
+  step   65 | (2.9459, 3.7824) | goal mode: moving directly toward goal
+  step   66 | (2.9088, 3.7673) | goal mode: moving directly toward goal
+  step   67 | (2.8718, 3.7522) | goal mode: moving directly toward goal
+  step   68 | (2.8347, 3.7371) | goal mode: moving directly toward goal
+  step   69 | (2.7977, 3.7220) | goal mode: moving directly toward goal
+  step   70 | (2.7977, 3.7220) | stopped at epsilon boundary near obstacle 12
+  step   71 | (2.7607, 3.7069) | contact mode: pushed obstacle 12 by 0.12 with chain [12, 15]; push_history=1
+  step   72 | (2.7236, 3.6918) | goal mode: moving directly toward goal
+  step   73 | (2.6866, 3.6767) | goal mode: moving directly toward goal
+  step   74 | (2.6866, 3.6767) | stopped at epsilon boundary near obstacle 12
+  step   75 | (2.6496, 3.6616) | contact mode: pushed obstacle 12 by 0.12 with chain [12, 15]; push_history=2
+  step   76 | (2.6125, 3.6465) | goal mode: moving directly toward goal
+  step   77 | (2.5755, 3.6314) | goal mode: moving directly toward goal
+  step   78 | (2.5755, 3.6314) | stopped at epsilon boundary near obstacle 12
+  step   79 | (2.5385, 3.6163) | contact mode: pushed obstacle 12 by 0.12 with chain [12, 15]; push_history=3
+  step   80 | (2.5014, 3.6011) | goal mode: moving directly toward goal
+  step   81 | (2.4644, 3.5860) | goal mode: moving directly toward goal
+  step   82 | (2.4644, 3.5860) | stopped at epsilon boundary near obstacle 12
+  step   83 | (2.4273, 3.5709) | goal mode: moving directly toward goal
+  step   84 | (2.4273, 3.5709) | boundary mode: entered near obs 12 (movable, P_safe=0.50)
+  step   85 | (2.4219, 3.5313) | boundary mode: following obs 12 (movable)
+  step   86 | (2.4432, 3.4974) | boundary mode: following obs 12 (movable)
+  step   87 | (2.4645, 3.4636) | boundary mode: following obs 12 (movable)
+  step   88 | (2.4796, 3.4266) | boundary mode: following obs 12 (movable)
+  step   89 | (2.4947, 3.3895) | boundary mode: following obs 12 (movable)
+  step   90 | (2.5032, 3.3504) | boundary mode: following obs 12 (movable)
+  step   91 | (2.5116, 3.3113) | boundary mode: following obs 12 (movable)
+  step   92 | (2.5132, 3.2714) | boundary mode: following obs 12 (movable)
+  step   93 | (2.5147, 3.2314) | boundary mode: following obs 12 (movable)
+  step   94 | (2.5162, 3.1914) | boundary mode: following obs 12 (movable)
+  step   95 | (2.5108, 3.1518) | boundary mode: following obs 12 (movable)
+  step   96 | (2.5054, 3.1122) | boundary mode: following obs 12 (movable)
+  step   97 | (2.4931, 3.0741) | boundary mode: following obs 12 (movable)
+  step   98 | (2.4809, 3.0360) | boundary mode: following obs 12 (movable)
+  step   99 | (2.4622, 3.0006) | boundary mode: following obs 12 (movable)
+  step  100 | (2.4622, 3.0006) | sensed obstacle(s) [7]; frontiers=24
+  step  101 | (2.4436, 2.9652) | boundary mode: following obs 12 (movable)
+  step  102 | (2.4249, 2.9298) | boundary mode: following obs 12 (movable)
+  step  103 | (2.4004, 2.8982) | boundary mode: following obs 12 (movable)
+  step  104 | (2.3708, 2.8714) | boundary mode: following obs 12 (movable)
+  step  105 | (2.3462, 2.8398) | boundary mode: following obs 12 (movable)
+  step  106 | (2.3124, 2.8185) | boundary mode: following obs 12 (movable)
+  step  107 | (2.2827, 2.7916) | boundary mode: following obs 12 (movable)
+  step  108 | (2.2489, 2.7703) | boundary mode: following obs 12 (movable)
+  step  109 | (2.2805, 2.7458) | boundary mode: following obs 12 (movable)
+  step  110 | (2.2805, 2.7458) | stopped at epsilon boundary near obstacle 7
+  step  111 | (2.2805, 2.7458) | boundary mode: entered near obs 7 (movable, P_safe=0.50)
+  step  112 | (2.3142, 2.7242) | boundary mode: following obs 7 (movable)
+  step  113 | (2.3436, 2.6971) | boundary mode: following obs 7 (movable)
+  step  114 | (2.3436, 2.6971) | sensed obstacle(s) [10]; frontiers=14
+  step  115 | (2.3678, 2.6652) | boundary mode: following obs 7 (movable)
+  step  116 | (2.3972, 2.6381) | boundary mode: following obs 7 (movable)
+  step  117 | (2.4215, 2.6063) | boundary mode: following obs 7 (movable)
+  step  118 | (2.4398, 2.5708) | boundary mode: following obs 7 (movable)
+  step  119 | (2.4641, 2.5390) | boundary mode: following obs 7 (movable)
+  step  120 | (2.4760, 2.5008) | boundary mode: following obs 7 (movable)
+  step  121 | (2.4943, 2.4652) | boundary mode: following obs 7 (movable)
+  step  122 | (2.5062, 2.4270) | boundary mode: following obs 7 (movable)
+  step  123 | (2.5418, 2.4454) | boundary mode: following obs 7 (movable)
+  step  124 | (2.5418, 2.4454) | stopped at epsilon boundary near obstacle 10
+  step  125 | (2.5418, 2.4454) | boundary mode: direct path clear — leaving obs 10
+  step  126 | (2.5025, 2.4531) | goal mode: moving directly toward goal
+  step  127 | (2.5025, 2.4531) | stopped at epsilon boundary near obstacle 7
+  step  128 | (2.5025, 2.4531) | boundary mode: entered near obs 7 (movable, P_safe=0.50)
+  step  129 | (2.5087, 2.4135) | boundary mode: following obs 7 (movable)
+  step  130 | (2.5087, 2.4135) | stopped at epsilon boundary near obstacle 10
+  step  131 | (2.5087, 2.4135) | boundary mode: entered near obs 10 (not_movable, P_safe=0.34)
+  step  132 | (2.5403, 2.4381) | boundary mode: following obs 10 (not_movable)
+  step  133 | (2.5403, 2.4381) | boundary mode: direct path clear — leaving obs 10
+  step  134 | (2.5011, 2.4459) | goal mode: moving directly toward goal
+  step  135 | (2.5011, 2.4459) | stopped at epsilon boundary near obstacle 7
+  step  136 | (2.5011, 2.4459) | boundary mode: entered near obs 7 (movable, P_safe=0.50)
+  step  137 | (2.5072, 2.4064) | boundary mode: following obs 7 (movable)
+  step  138 | (2.4681, 2.4149) | corridor widening: pushed obs 7 by 0.12
+  step  139 | (2.4681, 2.4149) | boundary mode: direct path clear — leaving obs 10
+  step  140 | (2.4290, 2.4235) | goal mode: moving directly toward goal
+  step  141 | (2.3900, 2.4321) | corridor widening: pushed obs 7 by 0.12
+  step  142 | (2.3509, 2.4406) | goal mode: moving directly toward goal
+  step  143 | (2.3509, 2.4406) | stopped at epsilon boundary near obstacle 7
+  step  144 | (2.3118, 2.4492) | contact mode (stuck override): pushed obstacle 7 by 0.12
+  step  145 | (2.2727, 2.4577) | goal mode: moving directly toward goal
+  step  146 | (2.2337, 2.4663) | goal mode: moving directly toward goal
+  step  147 | (2.1946, 2.4749) | goal mode: moving directly toward goal
+  step  148 | (2.1946, 2.4749) | stopped at epsilon boundary near obstacle 7
+  step  149 | (2.1555, 2.4834) | contact mode: pushed obstacle 7 by 0.12; push_history=7
+  step  150 | (2.1164, 2.4920) | goal mode: moving directly toward goal
+  step  151 | (2.0774, 2.5005) | goal mode: moving directly toward goal
+  step  152 | (2.0774, 2.5005) | stopped at epsilon boundary near obstacle 7
+  step  153 | (2.0383, 2.5091) | contact mode: pushed obstacle 7 by 0.12; push_history=8
+  step  154 | (1.9992, 2.5177) | goal mode: moving directly toward goal
+  step  155 | (1.9601, 2.5262) | goal mode: moving directly toward goal
+  step  156 | (1.9211, 2.5348) | goal mode: moving directly toward goal
+  step  157 | (1.9211, 2.5348) | stopped at epsilon boundary near obstacle 7
+  step  158 | (1.8820, 2.5433) | goal mode: moving directly toward goal
+  step  159 | (1.8429, 2.5519) | goal mode: moving directly toward goal
+  step  160 | (1.8039, 2.5605) | goal mode: moving directly toward goal
+  step  161 | (1.8039, 2.5605) | boundary mode: entered near obs 7 (movable, P_safe=0.50)
+  step  162 | (1.8283, 2.5288) | boundary mode: following obs 7 (movable)
+  step  163 | (1.8468, 2.4934) | boundary mode: following obs 7 (movable)
+  step  164 | (1.8713, 2.4617) | boundary mode: following obs 7 (movable)
+  step  165 | (1.8834, 2.4236) | boundary mode: following obs 7 (movable)
+  step  166 | (1.9020, 2.3881) | boundary mode: following obs 7 (movable)
+  step  167 | (1.9073, 2.3485) | boundary mode: following obs 7 (movable)
+  step  168 | (1.9194, 2.3104) | boundary mode: following obs 7 (movable)
+  step  169 | (1.9247, 2.2707) | boundary mode: following obs 7 (movable)
+  step  170 | (1.9300, 2.2311) | boundary mode: following obs 7 (movable)
+  step  171 | (1.9284, 2.1911) | boundary mode: following obs 7 (movable)
+  step  172 | (1.9267, 2.1511) | boundary mode: following obs 7 (movable)
+  step  173 | (1.9182, 2.1121) | boundary mode: following obs 7 (movable)
+  step  174 | (1.9096, 2.0730) | boundary mode: following obs 7 (movable)
+  step  175 | (1.9011, 2.0339) | boundary mode: following obs 7 (movable)
+  step  176 | (1.8858, 1.9969) | boundary mode: following obs 7 (movable)
+  step  177 | (1.8706, 1.9599) | boundary mode: following obs 7 (movable)
+  step  178 | (1.8492, 1.9261) | boundary mode: following obs 7 (movable)
+  step  179 | (1.8492, 1.9261) | sensed obstacle(s) [13]; frontiers=21
+  step  180 | (1.8278, 1.8924) | boundary mode: following obs 7 (movable)
+  step  181 | (1.8064, 1.8586) | boundary mode: following obs 7 (movable)
+  step  182 | (1.7795, 1.8290) | boundary mode: following obs 7 (movable)
+  step  183 | (1.7525, 1.7995) | boundary mode: following obs 7 (movable)
+  step  184 | (1.7208, 1.7750) | boundary mode: following obs 7 (movable)
+  step  185 | (1.6892, 1.7506) | boundary mode: following obs 7 (movable)
+  step  186 | (1.6575, 1.7262) | boundary mode: following obs 7 (movable)
+  step  187 | (1.6220, 1.7076) | boundary mode: following obs 7 (movable)
+  step  188 | (1.5866, 1.6891) | boundary mode: following obs 7 (movable)
+  step  189 | (1.5485, 1.6769) | boundary mode: following obs 7 (movable)
+  step  190 | (1.5104, 1.6648) | boundary mode: following obs 7 (movable)
+  step  191 | (1.4707, 1.6595) | boundary mode: following obs 7 (movable)
+  step  192 | (1.4311, 1.6542) | boundary mode: following obs 7 (movable)
+  step  193 | (1.3914, 1.6488) | boundary mode: following obs 7 (movable)
+  step  194 | (1.3515, 1.6505) | boundary mode: following obs 7 (movable)
+  step  195 | (1.3115, 1.6521) | boundary mode: following obs 7 (movable)
+  step  196 | (1.2715, 1.6538) | boundary mode: following obs 7 (movable)
+  step  197 | (1.2325, 1.6623) | boundary mode: following obs 7 (movable)
+  step  198 | (1.1934, 1.6709) | boundary mode: following obs 7 (movable)
+  step  199 | (1.1934, 1.6709) | sensed obstacle(s) [8]; frontiers=23
+  step  200 | (1.1564, 1.6861) | boundary mode: following obs 7 (movable)
+  step  201 | (1.1194, 1.7013) | boundary mode: following obs 7 (movable)
+  step  202 | (1.0856, 1.7227) | boundary mode: following obs 7 (movable)
+  step  203 | (1.0518, 1.7442) | boundary mode: following obs 7 (movable)
+  step  204 | (1.0180, 1.7656) | boundary mode: following obs 7 (movable)
+  step  205 | (0.9885, 1.7925) | boundary mode: following obs 7 (movable)
+  step  206 | (0.9589, 1.8195) | boundary mode: following obs 7 (movable)
+  step  207 | (0.9345, 1.8511) | boundary mode: following obs 7 (movable)
+  step  208 | (0.9101, 1.8828) | boundary mode: following obs 7 (movable)
+  step  209 | (0.8949, 1.8458) | boundary mode: following obs 7 (movable)
+  step  210 | (0.8949, 1.8458) | stopped at epsilon boundary near obstacle 8
+  step  211 | (0.8949, 1.8458) | boundary mode: entered near obs 8 (not_movable, P_safe=0.34)
+  step  212 | (0.8858, 1.8069) | boundary mode: following obs 8 (not_movable)
+  step  213 | (0.8767, 1.7679) | boundary mode: following obs 8 (not_movable)
+  step  214 | (0.8610, 1.7311) | boundary mode: following obs 8 (not_movable)
+  step  215 | (0.8391, 1.6976) | boundary mode: following obs 8 (not_movable)
+  step  216 | (0.8173, 1.6641) | boundary mode: following obs 8 (not_movable)
+  step  217 | (0.7899, 1.6349) | boundary mode: following obs 8 (not_movable)
+  step  218 | (0.7579, 1.6109) | boundary mode: following obs 8 (not_movable)
+  step  219 | (0.7579, 1.6109) | sensed obstacle(s) [28]; frontiers=20
+  step  220 | (0.7222, 1.5928) | boundary mode: following obs 8 (not_movable)
+  step  221 | (0.6866, 1.5748) | boundary mode: following obs 8 (not_movable)
+  step  222 | (0.6483, 1.5632) | boundary mode: following obs 8 (not_movable)
+  step  223 | (0.6100, 1.5515) | boundary mode: following obs 8 (not_movable)
+  step  224 | (0.5703, 1.5468) | boundary mode: following obs 8 (not_movable)
+  step  225 | (0.5303, 1.5489) | boundary mode: following obs 8 (not_movable)
+  step  226 | (0.4914, 1.5580) | boundary mode: following obs 8 (not_movable)
+  step  227 | (0.4524, 1.5671) | boundary mode: following obs 8 (not_movable)
+  step  228 | (0.4157, 1.5828) | boundary mode: following obs 8 (not_movable)
+  step  229 | (0.3789, 1.5985) | boundary mode: following obs 8 (not_movable)
+  step  230 | (0.3454, 1.6204) | boundary mode: following obs 8 (not_movable)
+  step  231 | (0.3162, 1.6477) | boundary mode: following obs 8 (not_movable)
+  step  232 | (0.2922, 1.6797) | boundary mode: following obs 8 (not_movable)
+  step  233 | (0.2682, 1.7117) | boundary mode: following obs 8 (not_movable)
+  step  234 | (0.2501, 1.7474) | boundary mode: following obs 8 (not_movable)
+  step  235 | (0.2385, 1.7857) | boundary mode: following obs 8 (not_movable)
+  step  236 | (0.2269, 1.8240) | boundary mode: following obs 8 (not_movable)
+  step  237 | (0.2221, 1.8637) | boundary mode: following obs 8 (not_movable)
+  step  238 | (0.2243, 1.9036) | boundary mode: following obs 8 (not_movable)
+  step  239 | (0.2264, 1.9435) | boundary mode: following obs 8 (not_movable)
+  step  240 | (0.2355, 1.9825) | boundary mode: following obs 8 (not_movable)
+  step  241 | (0.2355, 1.9825) | boundary mode: direct path clear — leaving obs 8
+  step  242 | (0.2513, 2.0192) | goal mode: moving directly toward goal
+  step  243 | (0.2671, 2.0560) | goal mode: moving directly toward goal
+  step  244 | (0.2830, 2.0927) | goal mode: moving directly toward goal
+  step  245 | (0.2988, 2.1295) | goal mode: moving directly toward goal
+  step  246 | (0.3146, 2.1662) | goal mode: moving directly toward goal
+  step  247 | (0.3304, 2.2030) | goal mode: moving directly toward goal
+  step  248 | (0.3462, 2.2397) | goal mode: moving directly toward goal
+  step  249 | (0.3620, 2.2764) | goal mode: moving directly toward goal
+  step  250 | (0.3778, 2.3132) | goal mode: moving directly toward goal
+  step  251 | (0.3936, 2.3499) | goal mode: moving directly toward goal
+  step  252 | (0.4094, 2.3867) | goal mode: moving directly toward goal
+  step  253 | (0.4253, 2.4234) | goal mode: moving directly toward goal
+  step  254 | (0.4411, 2.4602) | goal mode: moving directly toward goal
+  step  255 | (0.4569, 2.4969) | goal mode: moving directly toward goal
+  step  256 | (0.4727, 2.5336) | goal mode: moving directly toward goal
+  step  257 | (0.4885, 2.5704) | goal mode: moving directly toward goal
+  step  258 | (0.5043, 2.6071) | goal mode: moving directly toward goal
+  step  259 | (0.5201, 2.6439) | goal mode: moving directly toward goal
+  step  260 | (0.5359, 2.6806) | goal mode: moving directly toward goal
+  step  261 | (0.5517, 2.7174) | goal mode: moving directly toward goal
+  step  262 | (0.5676, 2.7541) | goal mode: moving directly toward goal
+  step  263 | (0.5834, 2.7908) | goal mode: moving directly toward goal
+  step  264 | (0.5979, 2.8247) | goal reached
+
+Family: collision_required
+Result: SUCCESS  (136 steps)
+--------------------------------------------------
+  step    0 | (4.2235, 5.1539) | start
+  step    1 | (4.1898, 5.1322) | goal mode: moving directly toward goal
+  step    2 | (4.1562, 5.1106) | goal mode: moving directly toward goal
+  step    3 | (4.1225, 5.0890) | goal mode: moving directly toward goal
+  step    4 | (4.0889, 5.0674) | goal mode: moving directly toward goal
+  step    5 | (4.0552, 5.0458) | goal mode: moving directly toward goal
+  step    6 | (4.0216, 5.0241) | goal mode: moving directly toward goal
+  step    7 | (3.9879, 5.0025) | goal mode: moving directly toward goal
+  step    8 | (3.9543, 4.9809) | goal mode: moving directly toward goal
+  step    9 | (3.9206, 4.9593) | goal mode: moving directly toward goal
+  step   10 | (3.8869, 4.9377) | goal mode: moving directly toward goal
+  step   11 | (3.8533, 4.9160) | goal mode: moving directly toward goal
+  step   12 | (3.8196, 4.8944) | goal mode: moving directly toward goal
+  step   13 | (3.7860, 4.8728) | goal mode: moving directly toward goal
+  step   14 | (3.7523, 4.8512) | goal mode: moving directly toward goal
+  step   15 | (3.7187, 4.8296) | goal mode: moving directly toward goal
+  step   16 | (3.6850, 4.8079) | goal mode: moving directly toward goal
+  step   17 | (3.6514, 4.7863) | goal mode: moving directly toward goal
+  step   18 | (3.6177, 4.7647) | goal mode: moving directly toward goal
+  step   19 | (3.5841, 4.7431) | goal mode: moving directly toward goal
+  step   20 | (3.5504, 4.7215) | goal mode: moving directly toward goal
+  step   21 | (3.5168, 4.6998) | goal mode: moving directly toward goal
+  step   22 | (3.4831, 4.6782) | goal mode: moving directly toward goal
+  step   23 | (3.4494, 4.6566) | goal mode: moving directly toward goal
+  step   24 | (3.4158, 4.6350) | goal mode: moving directly toward goal
+  step   25 | (3.3821, 4.6134) | goal mode: moving directly toward goal
+  step   26 | (3.3485, 4.5917) | goal mode: moving directly toward goal
+  step   27 | (3.3148, 4.5701) | goal mode: moving directly toward goal
+  step   28 | (3.2812, 4.5485) | goal mode: moving directly toward goal
+  step   29 | (3.2475, 4.5269) | goal mode: moving directly toward goal
+  step   30 | (3.2139, 4.5053) | goal mode: moving directly toward goal
+  step   31 | (3.1802, 4.4836) | goal mode: moving directly toward goal
+  step   32 | (3.1466, 4.4620) | goal mode: moving directly toward goal
+  step   33 | (3.1129, 4.4404) | goal mode: moving directly toward goal
+  step   34 | (3.0793, 4.4188) | goal mode: moving directly toward goal
+  step   35 | (3.0793, 4.4188) | sensed obstacle(s) [1]; frontiers=44
+  step   36 | (3.0456, 4.3971) | goal mode: moving directly toward goal
+  step   37 | (3.0120, 4.3755) | goal mode: moving directly toward goal
+  step   38 | (2.9783, 4.3539) | goal mode: moving directly toward goal
+  step   39 | (2.9446, 4.3323) | goal mode: moving directly toward goal
+  step   40 | (2.9110, 4.3107) | goal mode: moving directly toward goal
+  step   41 | (2.8773, 4.2890) | goal mode: moving directly toward goal
+  step   42 | (2.8437, 4.2674) | goal mode: moving directly toward goal
+  step   43 | (2.8437, 4.2674) | stopped at epsilon boundary near obstacle 1
+  step   44 | (2.8100, 4.2458) | goal mode: moving directly toward goal
+  step   45 | (2.7764, 4.2242) | goal mode: moving directly toward goal
+  step   46 | (2.7764, 4.2242) | boundary mode: entered near obs 1 (not_movable, P_safe=0.34)
+  step   47 | (2.8119, 4.2059) | boundary mode: following obs 1 (not_movable)
+  step   48 | (2.8438, 4.1816) | boundary mode: following obs 1 (not_movable)
+  step   49 | (2.8793, 4.1633) | boundary mode: following obs 1 (not_movable)
+  step   50 | (2.9111, 4.1391) | boundary mode: following obs 1 (not_movable)
+  step   51 | (2.9383, 4.1097) | boundary mode: following obs 1 (not_movable)
+  step   52 | (2.9654, 4.0803) | boundary mode: following obs 1 (not_movable)
+  step   53 | (2.9925, 4.0509) | boundary mode: following obs 1 (not_movable)
+  step   54 | (3.0142, 4.0172) | boundary mode: following obs 1 (not_movable)
+  step   55 | (3.0358, 3.9836) | boundary mode: following obs 1 (not_movable)
+  step   56 | (3.0512, 3.9467) | boundary mode: following obs 1 (not_movable)
+  step   57 | (3.0667, 3.9098) | boundary mode: following obs 1 (not_movable)
+  step   58 | (3.0755, 3.8708) | boundary mode: following obs 1 (not_movable)
+  step   59 | (3.0843, 3.8318) | boundary mode: following obs 1 (not_movable)
+  step   60 | (3.0931, 3.7927) | boundary mode: following obs 1 (not_movable)
+  step   61 | (3.0950, 3.7528) | boundary mode: following obs 1 (not_movable)
+  step   62 | (3.0969, 3.7128) | boundary mode: following obs 1 (not_movable)
+  step   63 | (3.0918, 3.6732) | boundary mode: following obs 1 (not_movable)
+  step   64 | (3.0867, 3.6335) | boundary mode: following obs 1 (not_movable)
+  step   65 | (3.0867, 3.6335) | sensed obstacle(s) [2]; frontiers=24
+  step   66 | (3.0749, 3.5953) | boundary mode: following obs 1 (not_movable)
+  step   67 | (3.0630, 3.5571) | boundary mode: following obs 1 (not_movable)
+  step   68 | (3.0511, 3.5189) | boundary mode: following obs 1 (not_movable)
+  step   69 | (3.0328, 3.4833) | boundary mode: following obs 1 (not_movable)
+  step   70 | (3.0085, 3.4515) | boundary mode: following obs 1 (not_movable)
+  step   71 | (2.9902, 3.4160) | boundary mode: following obs 1 (not_movable)
+  step   72 | (2.9608, 3.3888) | boundary mode: following obs 1 (not_movable)
+  step   73 | (2.9366, 3.3570) | boundary mode: following obs 1 (not_movable)
+  step   74 | (2.9072, 3.3299) | boundary mode: following obs 1 (not_movable)
+  step   75 | (2.8735, 3.3082) | boundary mode: following obs 1 (not_movable)
+  step   76 | (2.8399, 3.2866) | boundary mode: following obs 1 (not_movable)
+  step   77 | (2.8062, 3.2650) | boundary mode: following obs 1 (not_movable)
+  step   78 | (2.7693, 3.2496) | boundary mode: following obs 1 (not_movable)
+  step   79 | (2.7303, 3.2408) | boundary mode: following obs 1 (not_movable)
+  step   80 | (2.6934, 3.2253) | boundary mode: following obs 1 (not_movable)
+  step   81 | (2.6934, 3.2253) | boundary mode: direct path clear — leaving obs 1
+  step   82 | (2.6541, 3.2178) | goal mode: moving directly toward goal
+  step   83 | (2.6148, 3.2103) | goal mode: moving directly toward goal
+  step   84 | (2.5756, 3.2028) | goal mode: moving directly toward goal
+  step   85 | (2.5363, 3.1953) | goal mode: moving directly toward goal
+  step   86 | (2.4970, 3.1877) | goal mode: moving directly toward goal
+  step   87 | (2.4577, 3.1802) | goal mode: moving directly toward goal
+  step   88 | (2.4184, 3.1727) | goal mode: moving directly toward goal
+  step   89 | (2.3791, 3.1652) | goal mode: moving directly toward goal
+  step   90 | (2.3398, 3.1577) | goal mode: moving directly toward goal
+  step   91 | (2.3005, 3.1502) | goal mode: moving directly toward goal
+  step   92 | (2.2612, 3.1427) | goal mode: moving directly toward goal
+  step   93 | (2.2220, 3.1352) | goal mode: moving directly toward goal
+  step   94 | (2.1827, 3.1277) | goal mode: moving directly toward goal
+  step   95 | (2.1434, 3.1201) | goal mode: moving directly toward goal
+  step   96 | (2.1041, 3.1126) | goal mode: moving directly toward goal
+  step   97 | (2.0648, 3.1051) | goal mode: moving directly toward goal
+  step   98 | (2.0255, 3.0976) | goal mode: moving directly toward goal
+  step   99 | (1.9862, 3.0901) | goal mode: moving directly toward goal
+  step  100 | (1.9469, 3.0826) | goal mode: moving directly toward goal
+  step  101 | (1.9077, 3.0751) | goal mode: moving directly toward goal
+  step  102 | (1.8684, 3.0676) | goal mode: moving directly toward goal
+  step  103 | (1.8291, 3.0601) | goal mode: moving directly toward goal
+  step  104 | (1.7898, 3.0525) | goal mode: moving directly toward goal
+  step  105 | (1.7505, 3.0450) | goal mode: moving directly toward goal
+  step  106 | (1.7112, 3.0375) | goal mode: moving directly toward goal
+  step  107 | (1.6719, 3.0300) | goal mode: moving directly toward goal
+  step  108 | (1.6326, 3.0225) | goal mode: moving directly toward goal
+  step  109 | (1.5933, 3.0150) | goal mode: moving directly toward goal
+  step  110 | (1.5541, 3.0075) | goal mode: moving directly toward goal
+  step  111 | (1.5148, 3.0000) | goal mode: moving directly toward goal
+  step  112 | (1.4755, 2.9925) | goal mode: moving directly toward goal
+  step  113 | (1.4362, 2.9849) | goal mode: moving directly toward goal
+  step  114 | (1.3969, 2.9774) | goal mode: moving directly toward goal
+  step  115 | (1.3576, 2.9699) | goal mode: moving directly toward goal
+  step  116 | (1.3183, 2.9624) | goal mode: moving directly toward goal
+  step  117 | (1.2790, 2.9549) | goal mode: moving directly toward goal
+  step  118 | (1.2397, 2.9474) | goal mode: moving directly toward goal
+  step  119 | (1.2005, 2.9399) | goal mode: moving directly toward goal
+  step  120 | (1.1612, 2.9324) | goal mode: moving directly toward goal
+  step  121 | (1.1219, 2.9248) | goal mode: moving directly toward goal
+  step  122 | (1.0826, 2.9173) | goal mode: moving directly toward goal
+  step  123 | (1.0433, 2.9098) | goal mode: moving directly toward goal
+  step  124 | (1.0040, 2.9023) | goal mode: moving directly toward goal
+  step  125 | (0.9647, 2.8948) | goal mode: moving directly toward goal
+  step  126 | (0.9254, 2.8873) | goal mode: moving directly toward goal
+  step  127 | (0.8862, 2.8798) | goal mode: moving directly toward goal
+  step  128 | (0.8469, 2.8723) | goal mode: moving directly toward goal
+  step  129 | (0.8076, 2.8648) | goal mode: moving directly toward goal
+  step  130 | (0.7683, 2.8572) | goal mode: moving directly toward goal
+  step  131 | (0.7290, 2.8497) | goal mode: moving directly toward goal
+  step  132 | (0.6897, 2.8422) | goal mode: moving directly toward goal
+  step  133 | (0.6504, 2.8347) | goal mode: moving directly toward goal
+  step  134 | (0.6111, 2.8272) | goal mode: moving directly toward goal
+  step  135 | (0.5979, 2.8247) | goal reached
+
+Family: collision_shortcut
+Result: SUCCESS  (135 steps)
+--------------------------------------------------
+  step    0 | (4.2235, 5.1539) | start
+  step    1 | (4.1898, 5.1322) | goal mode: moving directly toward goal
+  step    2 | (4.1562, 5.1106) | goal mode: moving directly toward goal
+  step    3 | (4.1225, 5.0890) | goal mode: moving directly toward goal
+  step    4 | (4.0889, 5.0674) | goal mode: moving directly toward goal
+  step    5 | (4.0552, 5.0458) | goal mode: moving directly toward goal
+  step    6 | (4.0216, 5.0241) | goal mode: moving directly toward goal
+  step    7 | (3.9879, 5.0025) | goal mode: moving directly toward goal
+  step    8 | (3.9543, 4.9809) | goal mode: moving directly toward goal
+  step    9 | (3.9206, 4.9593) | goal mode: moving directly toward goal
+  step   10 | (3.8869, 4.9377) | goal mode: moving directly toward goal
+  step   11 | (3.8533, 4.9160) | goal mode: moving directly toward goal
+  step   12 | (3.8196, 4.8944) | goal mode: moving directly toward goal
+  step   13 | (3.7860, 4.8728) | goal mode: moving directly toward goal
+  step   14 | (3.7523, 4.8512) | goal mode: moving directly toward goal
+  step   15 | (3.7187, 4.8296) | goal mode: moving directly toward goal
+  step   16 | (3.6850, 4.8079) | goal mode: moving directly toward goal
+  step   17 | (3.6850, 4.8079) | sensed obstacle(s) [0]; frontiers=44
+  step   18 | (3.6514, 4.7863) | goal mode: moving directly toward goal
+  step   19 | (3.6177, 4.7647) | goal mode: moving directly toward goal
+  step   20 | (3.5841, 4.7431) | goal mode: moving directly toward goal
+  step   21 | (3.5504, 4.7215) | goal mode: moving directly toward goal
+  step   22 | (3.5168, 4.6998) | goal mode: moving directly toward goal
+  step   23 | (3.4831, 4.6782) | goal mode: moving directly toward goal
+  step   24 | (3.4831, 4.6782) | stopped at epsilon boundary near obstacle 0
+  step   25 | (3.4494, 4.6566) | contact mode: pushed obstacle 0 by 0.12; push_history=1
+  step   26 | (3.4158, 4.6350) | goal mode: moving directly toward goal
+  step   27 | (3.3821, 4.6134) | goal mode: moving directly toward goal
+  step   28 | (3.3821, 4.6134) | stopped at epsilon boundary near obstacle 0
+  step   29 | (3.3485, 4.5917) | contact mode: pushed obstacle 0 by 0.12; push_history=2
+  step   30 | (3.3148, 4.5701) | goal mode: moving directly toward goal
+  step   31 | (3.2812, 4.5485) | goal mode: moving directly toward goal
+  step   32 | (3.2812, 4.5485) | stopped at epsilon boundary near obstacle 0
+  step   33 | (3.2475, 4.5269) | contact mode: pushed obstacle 0 by 0.12; push_history=3
+  step   34 | (3.2139, 4.5053) | goal mode: moving directly toward goal
+  step   35 | (3.1802, 4.4836) | goal mode: moving directly toward goal
+  step   36 | (3.1802, 4.4836) | stopped at epsilon boundary near obstacle 0
+  step   37 | (3.1466, 4.4620) | contact mode: pushed obstacle 0 by 0.12; push_history=4
+  step   38 | (3.1129, 4.4404) | goal mode: moving directly toward goal
+  step   39 | (3.0793, 4.4188) | goal mode: moving directly toward goal
+  step   40 | (3.0793, 4.4188) | stopped at epsilon boundary near obstacle 0
+  step   41 | (3.0456, 4.3971) | contact mode: pushed obstacle 0 by 0.03; push_history=5
+  step   42 | (3.0120, 4.3755) | goal mode: moving directly toward goal
+  step   43 | (2.9783, 4.3539) | goal mode: moving directly toward goal
+  step   44 | (2.9783, 4.3539) | boundary mode: entered near obs 0 (movable, P_safe=0.50)
+  step   45 | (2.9999, 4.3203) | boundary mode: following obs 0 (movable)
+  step   46 | (3.0154, 4.2834) | boundary mode: following obs 0 (movable)
+  step   47 | (3.0308, 4.2465) | boundary mode: following obs 0 (movable)
+  step   48 | (3.0308, 4.2465) | sensed obstacle(s) [10]; frontiers=21
+  step   49 | (3.0396, 4.2074) | boundary mode: following obs 0 (movable)
+  step   50 | (3.0484, 4.1684) | boundary mode: following obs 0 (movable)
+  step   51 | (3.0572, 4.1294) | boundary mode: following obs 0 (movable)
+  step   52 | (3.0591, 4.0895) | boundary mode: following obs 0 (movable)
+  step   53 | (3.0610, 4.0495) | boundary mode: following obs 0 (movable)
+  step   54 | (3.0560, 4.0098) | boundary mode: following obs 0 (movable)
+  step   55 | (3.0509, 3.9701) | boundary mode: following obs 0 (movable)
+  step   56 | (3.0458, 3.9305) | boundary mode: following obs 0 (movable)
+  step   57 | (3.0339, 3.8923) | boundary mode: following obs 0 (movable)
+  step   58 | (3.0221, 3.8541) | boundary mode: following obs 0 (movable)
+  step   59 | (3.0037, 3.8185) | boundary mode: following obs 0 (movable)
+  step   60 | (2.9854, 3.7830) | boundary mode: following obs 0 (movable)
+  step   61 | (2.9612, 3.7511) | boundary mode: following obs 0 (movable)
+  step   62 | (2.9369, 3.7193) | boundary mode: following obs 0 (movable)
+  step   63 | (2.9127, 3.6875) | boundary mode: following obs 0 (movable)
+  step   64 | (2.8833, 3.6604) | boundary mode: following obs 0 (movable)
+  step   65 | (2.8497, 3.6387) | boundary mode: following obs 0 (movable)
+  step   66 | (2.8203, 3.6116) | boundary mode: following obs 0 (movable)
+  step   67 | (2.7834, 3.5962) | boundary mode: following obs 0 (movable)
+  step   68 | (2.7497, 3.5745) | boundary mode: following obs 0 (movable)
+  step   69 | (2.7497, 3.5745) | boundary mode: direct path clear — leaving obs 0
+  step   70 | (2.7119, 3.5614) | goal mode: moving directly toward goal
+  step   71 | (2.7119, 3.5614) | sensed obstacle(s) [1]; frontiers=15
+  step   72 | (2.6742, 3.5482) | goal mode: moving directly toward goal
+  step   73 | (2.6364, 3.5350) | goal mode: moving directly toward goal
+  step   74 | (2.5986, 3.5219) | goal mode: moving directly toward goal
+  step   75 | (2.5609, 3.5087) | goal mode: moving directly toward goal
+  step   76 | (2.5231, 3.4956) | goal mode: moving directly toward goal
+  step   77 | (2.4853, 3.4824) | goal mode: moving directly toward goal
+  step   78 | (2.4475, 3.4692) | goal mode: moving directly toward goal
+  step   79 | (2.4098, 3.4561) | goal mode: moving directly toward goal
+  step   80 | (2.4098, 3.4561) | stopped at epsilon boundary near obstacle 1
+  step   81 | (2.3720, 3.4429) | goal mode: moving directly toward goal
+  step   82 | (2.3720, 3.4429) | boundary mode: entered near obs 1 (not_movable, P_safe=0.34)
+  step   83 | (2.3459, 3.4126) | boundary mode: following obs 1 (not_movable)
+  step   84 | (2.3317, 3.3752) | boundary mode: following obs 1 (not_movable)
+  step   85 | (2.3055, 3.3449) | boundary mode: following obs 1 (not_movable)
+  step   86 | (2.2851, 3.3106) | boundary mode: following obs 1 (not_movable)
+  step   87 | (2.2589, 3.2803) | boundary mode: following obs 1 (not_movable)
+  step   88 | (2.2589, 3.2803) | sensed obstacle(s) [14]; frontiers=24
+  step   89 | (2.2328, 3.2500) | boundary mode: following obs 1 (not_movable)
+  step   90 | (2.2018, 3.2247) | boundary mode: following obs 1 (not_movable)
+  step   91 | (2.1669, 3.2052) | boundary mode: following obs 1 (not_movable)
+  step   92 | (2.1359, 3.1799) | boundary mode: following obs 1 (not_movable)
+  step   93 | (2.1010, 3.1604) | boundary mode: following obs 1 (not_movable)
+  step   94 | (2.0632, 3.1472) | boundary mode: following obs 1 (not_movable)
+  step   95 | (2.0254, 3.1341) | boundary mode: following obs 1 (not_movable)
+  step   96 | (2.0254, 3.1341) | boundary mode: direct path clear — leaving obs 1
+  step   97 | (1.9864, 3.1256) | goal mode: moving directly toward goal
+  step   98 | (1.9473, 3.1171) | goal mode: moving directly toward goal
+  step   99 | (1.9082, 3.1086) | goal mode: moving directly toward goal
+  step  100 | (1.8691, 3.1002) | goal mode: moving directly toward goal
+  step  101 | (1.8300, 3.0917) | goal mode: moving directly toward goal
+  step  102 | (1.7909, 3.0832) | goal mode: moving directly toward goal
+  step  103 | (1.7518, 3.0748) | goal mode: moving directly toward goal
+  step  104 | (1.7127, 3.0663) | goal mode: moving directly toward goal
+  step  105 | (1.7127, 3.0663) | stopped at epsilon boundary near obstacle 14
+  step  106 | (1.6736, 3.0578) | goal mode: moving directly toward goal
+  step  107 | (1.6345, 3.0493) | goal mode: moving directly toward goal
+  step  108 | (1.5954, 3.0409) | goal mode: moving directly toward goal
+  step  109 | (1.5563, 3.0324) | goal mode: moving directly toward goal
+  step  110 | (1.5172, 3.0239) | goal mode: moving directly toward goal
+  step  111 | (1.4782, 3.0154) | goal mode: moving directly toward goal
+  step  112 | (1.4391, 3.0070) | goal mode: moving directly toward goal
+  step  113 | (1.4000, 2.9985) | goal mode: moving directly toward goal
+  step  114 | (1.3609, 2.9900) | goal mode: moving directly toward goal
+  step  115 | (1.3218, 2.9816) | goal mode: moving directly toward goal
+  step  116 | (1.2827, 2.9731) | goal mode: moving directly toward goal
+  step  117 | (1.2436, 2.9646) | goal mode: moving directly toward goal
+  step  118 | (1.2045, 2.9561) | goal mode: moving directly toward goal
+  step  119 | (1.1654, 2.9477) | goal mode: moving directly toward goal
+  step  120 | (1.1263, 2.9392) | goal mode: moving directly toward goal
+  step  121 | (1.0872, 2.9307) | goal mode: moving directly toward goal
+  step  122 | (1.0481, 2.9222) | goal mode: moving directly toward goal
+  step  123 | (1.0090, 2.9138) | goal mode: moving directly toward goal
+  step  124 | (0.9700, 2.9053) | goal mode: moving directly toward goal
+  step  125 | (0.9309, 2.8968) | goal mode: moving directly toward goal
+  step  126 | (0.8918, 2.8884) | goal mode: moving directly toward goal
+  step  127 | (0.8527, 2.8799) | goal mode: moving directly toward goal
+  step  128 | (0.8136, 2.8714) | goal mode: moving directly toward goal
+  step  129 | (0.7745, 2.8629) | goal mode: moving directly toward goal
+  step  130 | (0.7354, 2.8545) | goal mode: moving directly toward goal
+  step  131 | (0.6963, 2.8460) | goal mode: moving directly toward goal
+  step  132 | (0.6572, 2.8375) | goal mode: moving directly toward goal
+  step  133 | (0.6181, 2.8291) | goal mode: moving directly toward goal
+  step  134 | (0.5979, 2.8247) | goal reached
+

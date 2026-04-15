@@ -1,18 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-test_bug1.py — Real-time Bug1 simulation across all scene families.
-
-Mirrors demo.py exactly: each family runs in a background thread whose
-frames are intercepted live and displayed panel by panel as they arrive.
-
-Usage
------
-    python3 scholar/test_bug1.py
-    python3 scholar/test_bug1.py --scene 3
-    python3 scholar/test_bug1.py --family cluttered collision_required
-    python3 scholar/test_bug1.py --steps 600 --save
-"""
-
 import sys
 import json
 import time
@@ -100,9 +85,6 @@ class SimThread(threading.Thread):
 
         with _frame_lock:
             _frame_queues.pop(threading.get_ident(), None)
-
-
-# ── Live multi-panel display ──────────────────────────────────────────────────
 
 def run_realtime(families, scene_idx, max_steps,
                  step_size=0.07, sensing_range=0.55,
@@ -239,8 +221,42 @@ def run_realtime(families, scene_idx, max_steps,
     if save:
         _save_video(threads, scene_idx, speedup=speedup)
 
+def run_batch(families, scene_indices, max_steps,
+              step_size=0.07, sensing_range=0.55,
+              save=False, speedup=3, max_workers=8):
+    """Run multiple scenes fully in parallel (no live animation). Saves logs and optional videos."""
+    import concurrent.futures
 
-# ── Log saving ────────────────────────────────────────────────────────────────
+    def _run_scene(scene_idx):
+        threads = [
+            SimThread(fam, scene_idx, max_steps,
+                      step_size=step_size, sensing_range=sensing_range)
+            for fam in families
+        ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        _save_log(threads, scene_idx)
+        if save:
+            _save_video(threads, scene_idx, speedup=speedup)
+        results = {t.family: t.success for t in threads}
+        return scene_idx, results
+
+    print(f"Running {len(scene_indices)} scenes × {len(families)} families "
+          f"({min(max_workers, len(scene_indices))} workers)...")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = {ex.submit(_run_scene, idx): idx for idx in scene_indices}
+        for fut in concurrent.futures.as_completed(futures):
+            scene_idx, results = fut.result()
+            summary = "  ".join(
+                f"{fam[:3]}={'✓' if ok else '✗'}" for fam, ok in results.items()
+            )
+            print(f"  scene {scene_idx:03d}  {summary}")
+
+    print("Done.")
+
 
 def _save_log(threads, scene_idx):
     log_dir   = Path(__file__).resolve().parent / "environment" / "data" / "logs"
@@ -366,7 +382,10 @@ def _save_video(threads, scene_idx, speedup=3, fps=30):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--scene",    type=int,   default=0)
+    parser.add_argument("--scene",    type=int,   nargs="+", default=[0],
+                        help="One or more scene indices. Multiple → batch mode (no live viz).")
+    parser.add_argument("--scenes",   type=str,   default=None,
+                        help="Range of scenes, e.g. '0-99'. Implies batch mode.")
     parser.add_argument("--family",   nargs="*",  default=None, choices=FAMILIES)
     parser.add_argument("--steps",    type=int,   default=500)
     parser.add_argument("--sense",    type=float, default=0.55,
@@ -376,16 +395,40 @@ if __name__ == "__main__":
     parser.add_argument("--save",     action="store_true",
                         help="Save video after simulation ends")
     parser.add_argument("--speedup",  type=int,   default=3)
+    parser.add_argument("--workers",  type=int,   default=8,
+                        help="Max parallel workers in batch mode (default: 8)")
     args = parser.parse_args()
 
     families = args.family or FAMILIES
-    print(f"Bug1 — scene {args.scene:03d}  families: {', '.join(families)}")
-    run_realtime(
-        families,
-        scene_idx     = args.scene,
-        max_steps     = args.steps,
-        step_size     = args.step,
-        sensing_range = args.sense,
-        save          = args.save,
-        speedup       = args.speedup,
-    )
+
+    # Build scene list
+    if args.scenes:
+        lo, hi = map(int, args.scenes.split("-"))
+        scene_indices = list(range(lo, hi + 1))
+    else:
+        scene_indices = args.scene
+
+    if len(scene_indices) > 1 or args.scenes:
+        print(f"Bug1 batch — {len(scene_indices)} scenes  families: {', '.join(families)}")
+        run_batch(
+            families,
+            scene_indices = scene_indices,
+            max_steps     = args.steps,
+            step_size     = args.step,
+            sensing_range = args.sense,
+            save          = args.save,
+            speedup       = args.speedup,
+            max_workers   = args.workers,
+        )
+    else:
+        scene_idx = scene_indices[0]
+        print(f"Bug1 — scene {scene_idx:03d}  families: {', '.join(families)}")
+        run_realtime(
+            families,
+            scene_idx     = scene_idx,
+            max_steps     = args.steps,
+            step_size     = args.step,
+            sensing_range = args.sense,
+            save          = args.save,
+            speedup       = args.speedup,
+        )

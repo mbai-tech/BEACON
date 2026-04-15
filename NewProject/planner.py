@@ -1523,6 +1523,7 @@ def run_online_surp_push(
     bug_boundary_steps: int = 0
     bug_last_exited_obs_id: int | None = None
     bug_bounce_count: int = 0
+    bug_recent_obs_ids: list[int] = []   # pinball detector: last N boundary entries
 
     success = False
     for _ in range(max_steps):
@@ -1564,6 +1565,7 @@ def run_online_surp_push(
         if nearest_idx is None or nearest_distance > epsilon:
             last_boundary_stop_id = None
             bug_follow_boundary = False
+            bug_recent_obs_ids.clear()
             direct_candidate = step_until_sense_or_contact(
                 working_scene,
                 position,
@@ -1744,18 +1746,31 @@ def run_online_surp_push(
 
             # Direct path is blocked — boundary following is needed.
             if not bug_follow_boundary or bug_follow_obs_id != obs_id:
-                # Track how many times we re-enter boundary mode for the same
-                # obstacle we just exited ("bounce").  Repeated bounces mean the
-                # direct-path exit was a dead end blocked by a second obstacle.
+                # Track recent boundary entries for pinball detection.
+                bug_recent_obs_ids.append(obs_id)
+                if len(bug_recent_obs_ids) > 6:
+                    bug_recent_obs_ids.pop(0)
+
+                # Same-obstacle bounce: re-entering an obstacle we just exited
+                # means the direct-path exit leads into a dead-end corridor.
                 if obs_id == bug_last_exited_obs_id:
                     bug_bounce_count += 1
                 else:
                     bug_bounce_count = 0
                     bug_last_exited_obs_id = None
 
-                # After enough bounces, the cost model is wrong: push the
-                # obstacle if possible, otherwise fall through to stall recovery.
-                if bug_bounce_count >= 3 and is_pushable:
+                # Pinball detection: cycling between ≤2 obstacles with no
+                # progress (two-obstacle corridor that same-obstacle bounce
+                # counting cannot detect since the IDs always differ).
+                pinball = (
+                    len(bug_recent_obs_ids) >= 6
+                    and len(set(bug_recent_obs_ids)) <= 2
+                )
+
+                # After enough bounces or a confirmed pinball, the cost model
+                # is wrong: push the obstacle if possible, otherwise fall
+                # through to stall recovery.
+                if (bug_bounce_count >= 3 or pinball) and is_pushable:
                     push_idx_override = next(
                         (i for i, o in enumerate(working_scene["obstacles"])
                          if o["id"] == obs_id),
@@ -1784,11 +1799,13 @@ def run_online_surp_push(
                             n_bounces = bug_bounce_count
                             bug_bounce_count = 0
                             bug_last_exited_obs_id = None
+                            bug_recent_obs_ids.clear()
                             goal_distance_history.append(float(np.linalg.norm(goal - position)))
                             chain_text = f" chain {moved_chain}" if len(moved_chain) > 1 else ""
+                            reason = "pinball" if pinball else f"{n_bounces} bounces"
                             message = (
                                 f"boundary bounce override: pushed obs {pushed_obs['id']} "
-                                f"by {moved_distance:.2f}{chain_text} after {n_bounces} bounces"
+                                f"by {moved_distance:.2f}{chain_text} ({reason})"
                             )
                             path.append(tuple(position))
                             frames.append(snapshot_frame(position, working_scene, message))
@@ -1796,6 +1813,7 @@ def run_online_surp_push(
                             continue
                     # Push failed or not pushable — treat as trapped
                     bug_bounce_count = 0
+                    bug_recent_obs_ids.clear()
                     _boundary_trapped = True
 
                 if not _boundary_trapped:
