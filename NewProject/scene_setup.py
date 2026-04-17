@@ -12,25 +12,73 @@ def _import_enviornment():
     return generate_scene, polygon_to_list, valid_candidate
 
 
+CLASSES: list[str] = ["safe", "movable", "fragile", "forbidden"]
+
+# Confusion-model parameters
+_BELIEF_CORRECT  = 0.8                              # P(true class | true class)
+_BELIEF_OTHER    = (1.0 - _BELIEF_CORRECT) / 3.0   # uniform over the other three
+
+
+def init_belief(raw_class: str) -> dict[str, float]:
+    """Return a 4-class prior for one obstacle using a simple confusion model.
+
+    P(correct class) = 0.8; the remaining 0.2 mass is split uniformly over the
+    other three classes.  If ``raw_class`` is not in CLASSES (e.g. a legacy
+    binary label such as ``not_movable``) the prior is uniform.
+
+    The returned dict always sums to 1.0 over CLASSES.
+    """
+    if raw_class not in CLASSES:
+        return {c: 1.0 / len(CLASSES) for c in CLASSES}
+    return {c: (_BELIEF_CORRECT if c == raw_class else _BELIEF_OTHER) for c in CLASSES}
+
+
+def map_class(belief: dict[str, float]) -> str:
+    """Return the MAP (most-probable) class from a belief dict."""
+    return max(belief, key=belief.__getitem__)
+
+
 def coerce_pushable_class(raw_class: str) -> str:
-    """Map any class label to the binary movable / not_movable scheme."""
+    """Map any class label to the binary movable / not_movable scheme.
+
+    This coercion is kept for backward compatibility with all motion-logic
+    code in planner.py that expects a binary ``true_class``.  The full
+    4-class information is carried in ``obstacle["belief"]`` and
+    ``obstacle["map_class"]``.
+    """
     if raw_class == "movable":
         return "movable"
     return "not_movable"
 
 
 def normalize_scene_for_online_use(scene: dict) -> dict:
-    """Attach the state fields needed by online sensing and visualization."""
+    """Attach the state fields needed by online sensing and visualization.
+
+    Each obstacle gets:
+      ``belief``         – 4-class probability vector (safe / movable / fragile / forbidden)
+                          initialised with the confusion-model prior.
+      ``initial_belief`` – immutable copy of that prior; used as the decay target so
+                          belief_decay in the planner can interpolate back toward
+                          the original sensor classification over time.
+      ``map_class``      – argmax of ``belief``; tracks the robot's current best
+                          estimate of the obstacle class.
+      ``true_class``/ ``class_true`` – binary coercion (movable / not_movable)
+                          retained for backward compatibility with motion-logic code.
+    """
     normalized = copy.deepcopy(scene)
     for obstacle in normalized["obstacles"]:
-        true_class = coerce_pushable_class(
-            obstacle.get("true_class", obstacle.get("class_true", "movable"))
-        )
-        obstacle["true_class"] = true_class
-        obstacle["class_true"] = true_class
-        obstacle["observed"] = False
+        raw = obstacle.get("true_class", obstacle.get("class_true", "movable"))
+        belief = init_belief(raw)
+        obstacle["belief"]         = belief
+        obstacle["initial_belief"] = copy.deepcopy(belief)
+        obstacle["map_class"]      = map_class(belief)
+        # Binary coercion — keeps all planner.py motion logic unchanged.
+        binary_class = coerce_pushable_class(raw)
+        obstacle["true_class"] = binary_class
+        obstacle["class_true"] = binary_class
+        obstacle["observed"]   = False
         obstacle["initial_vertices"] = copy.deepcopy(obstacle["vertices"])
-        obstacle.pop("_poly", None)   # ensure cache is rebuilt for this copy
+        obstacle.pop("_poly", None)
     return normalized
 
 

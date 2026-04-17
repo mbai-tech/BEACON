@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 from dataclasses import dataclass
 
@@ -10,6 +11,66 @@ from shapely.ops import nearest_points
 from NewProject.constants import CHAIN_ATTENUATION, DEFAULT_SENSING_RANGE, ROBOT_RADIUS, SAFE_PROB_THRESHOLD
 from NewProject.models import OnlineSurpResult, SimulationFrame
 from NewProject.scene_setup import normalize_scene_for_online_use
+from NewProject.cibp import CIBP
+
+# ── Semantic-cost weights for the belief-weighted contact term U ──────────────
+# w_c = cost of contacting an obstacle believed to be class c.
+# U = Σ_c p(c) * w_c * κ   where κ = max(0, ε − clearance)
+_SEMANTIC_COSTS: dict[str, float] = {
+    "safe":      1.0,
+    "movable":   3.0,
+    "fragile":  10.0,
+    "forbidden": 1000.0,
+}
+_LAMBDA_U: float = 1.0   # weight on U in both J_push and J_avoid
+
+# Per-class cost vectors for belief-weighted J_push and J_avoid.
+# E[cost | belief] = dot(belief, cost_vec).  Values ∈ [0, 1].
+# CIBP.CLASSES order: ["safe", "movable", "fragile", "forbidden"]
+_PUSH_CLASS_COSTS: dict[str, float] = {
+    "safe":      0.10,   # present but harmless to push; low cost
+    "movable":   0.02,   # intended push target; minimal cost (must be low enough
+                         # that E[risk|movable-prior] beats E[risk|safe-prior]
+                         # even after the higher _SEMANTIC_COSTS["movable"] U term)
+    "fragile":   0.80,   # likely damage; high cost
+    "forbidden": 0.99,   # must never be pushed; near-maximum cost
+}
+_AVOID_CLASS_COSTS: dict[str, float] = {
+    "safe":      0.05,   # harmless; very low avoidance penalty
+    "movable":   0.15,   # accidental displacement possible; moderate penalty
+    "fragile":   0.60,   # careful detour required; high penalty
+    "forbidden": 0.99,   # maximum avoidance pressure
+}
+_LAMBDA_BELIEF: float = 0.40   # reconciler weight on belief-weighted push risk
+
+
+def _apply_cibp(
+    obstacle: dict,
+    outcome: str,
+    updater: CIBP,
+    contact_log: list[str],
+) -> bool:
+    """Apply one CIBP update to an obstacle's belief in-place.
+
+    Writes the updated posterior and MAP class back onto *obstacle*, appends a
+    structured log entry to *contact_log*, and returns True when the KL
+    divergence exceeds the updater's replanning threshold (``updater.tau``).
+
+    Returns False without updating if the obstacle has no belief vector (e.g.
+    an obstacle that bypassed ``normalize_scene_for_online_use``).
+    """
+    if "belief" not in obstacle:
+        return False
+    posterior, kl = updater.update(obstacle["belief"], outcome)
+    obstacle["belief"]    = posterior
+    obstacle["map_class"] = updater.map_class(posterior)
+    triggered = kl > updater.tau
+    contact_log.append(
+        f"CIBP obs {obstacle['id']}: outcome={outcome} "
+        f"kl={kl:.4f} replan={'YES' if triggered else 'no'} "
+        f"map_class={obstacle['map_class']}"
+    )
+    return triggered
 
 
 @dataclass
@@ -378,18 +439,21 @@ def estimate_obstacle_features(obstacle: dict) -> dict:
 
 
 def obstacle_safety_probability(obstacle: dict) -> tuple[float, float]:
-    """Convert semantic obstacle features into a push-safety probability.
+    """Return ``(P_safe, E_risk)`` for a push decision on this obstacle.
 
-    The code uses the weighted score
+    Both quantities are derived from the obstacle's CIBP belief vector:
 
-        S = 0.10 m + 0.15 mu + 0.45 f + 0.40 c - 0.25 q,
+        E_risk = dot(belief, _PUSH_CLASS_COSTS)  ∈ [0, 1]
+        P_safe = 1 − E_risk                      ∈ [0, 1]
 
-    then maps it into
-
-        P_safe = sigma(-S).
-
-    Lower risk therefore means larger ``P_safe``.
+    A higher expected risk means a lower push-safety probability.  Falls back
+    to the fixed-feature formula when no belief vector is present.
     """
+    belief = obstacle.get("belief")
+    if belief:
+        e_risk = _belief_dot(belief, _PUSH_CLASS_COSTS)
+        return float(1.0 - e_risk), float(e_risk)
+    # Fallback for obstacles without a belief vector.
     features = estimate_obstacle_features(obstacle)
     safety_score = (
         0.10 * features["m"]
@@ -623,6 +687,79 @@ def choose_escape_motion(
     return best_direction, best_candidate
 
 
+def _semantic_contact_cost(
+    obstacle: dict,
+    position: np.ndarray,
+    epsilon: float,
+) -> float:
+    """Compute U = Σ_c p(c) * w_c * κ for one obstacle.
+
+    κ (kappa) approximates contact area as the overlap between the robot's
+    sensing horizon and the obstacle: κ = max(0, ε − clearance), where
+    clearance is the current robot-body-to-obstacle gap.  When the robot is
+    already inside the epsilon band, κ > 0; outside the band, U = 0.
+
+    Returns 0.0 if the obstacle has no belief vector (legacy obstacle).
+    """
+    belief = obstacle.get("belief")
+    if not belief:
+        return 0.0
+    clearance = robot_clearance_to_obstacle(position, obstacle)
+    kappa = max(0.0, epsilon - clearance)
+    if kappa == 0.0:
+        return 0.0
+    return sum(belief.get(c, 0.0) * w for c, w in _SEMANTIC_COSTS.items()) * kappa
+
+
+def _belief_dot(belief: dict[str, float], cost_vec: dict[str, float]) -> float:
+    """Expected cost: E[cost | belief] = Σ_c P(c) · cost_c.
+
+    Iterates over ``CIBP.CLASSES`` so the order matches the likelihood matrix.
+    """
+    return sum(belief.get(c, 0.0) * cost_vec.get(c, 0.0) for c in CIBP.CLASSES)
+
+
+def _belief_entropy(belief: dict[str, float]) -> float:
+    """Shannon entropy of a belief distribution in nats.
+
+    Used as a tie-breaker: lower entropy means the robot is *more certain* about
+    the obstacle class, so when two obstacles have equal P(movable) the one with
+    lower entropy is preferred — the robot acts on its most confident estimate.
+    """
+    h = 0.0
+    for p in belief.values():
+        if p > 0.0:
+            h -= p * math.log(p)
+    return h
+
+
+def _decay_beliefs(scene: dict, alpha: float, cibp: CIBP) -> None:
+    """Interpolate every obstacle's belief one step toward its initial prior.
+
+    new_belief[c] = α · belief[c] + (1 − α) · initial_belief[c]
+
+    At α = 1.0 this is a no-op.  At α < 1.0 a confident belief built up from
+    past contacts erodes gradually back toward the confusion-model prior,
+    preventing a single misleading contact from locking in the wrong class
+    permanently.
+
+    Updates ``map_class`` in-place.  Skips obstacles that lack either field
+    (e.g. those that bypassed ``normalize_scene_for_online_use``).
+    """
+    if alpha >= 1.0:
+        return
+    for obs in scene["obstacles"]:
+        belief = obs.get("belief")
+        initial = obs.get("initial_belief")
+        if belief is None or initial is None:
+            continue
+        obs["belief"] = {
+            c: alpha * belief.get(c, 0.0) + (1.0 - alpha) * initial.get(c, 0.0)
+            for c in CIBP.CLASSES
+        }
+        obs["map_class"] = cibp.map_class(obs["belief"])
+
+
 def estimate_avoid_cost(
     scene: dict,
     position: np.ndarray,
@@ -630,12 +767,19 @@ def estimate_avoid_cost(
     step_size: float,
     epsilon: float,
     bad_directions: list[dict],
+    nearest_obstacle: dict | None = None,
 ) -> tuple[float, np.ndarray]:
     """Compare a short sidestep with a broader local escape and keep the better one.
 
-    The avoid cost is a simple weighted sum:
+    The avoid cost is a weighted sum:
 
-        J_avoid = 1.1 * move_distance + 0.7 * remaining_goal_distance + 0.25 * uncertainty.
+        J_avoid = 1.1 * move_distance + 0.7 * remaining_goal_distance
+                + 0.25 * E[avoid_penalty | belief] + λ_U * U
+
+    where ``E[avoid_penalty | belief] = dot(belief, _AVOID_CLASS_COSTS)``
+    replaces the fixed uncertainty scalar, encoding how risky it is to route
+    near this class of obstacle.  U is the belief-weighted proximity contact
+    cost (0 when no obstacle is provided or out of range).
     """
     _, sidestep_candidate = choose_sidestep_motion(
         scene,
@@ -663,8 +807,15 @@ def estimate_avoid_cost(
 
     move_distance = float(np.linalg.norm(chosen_candidate - position))
     remaining = float(np.linalg.norm(goal - chosen_candidate))
-    uncertainty = 0.20
-    cost = 1.1 * move_distance + 0.7 * remaining + 0.25 * uncertainty
+    # E[avoid_penalty | belief]: dot product of belief with per-class avoidance
+    # costs.  Falls back to 0.20 when no nearest obstacle or no belief vector.
+    e_avoid = 0.20
+    if nearest_obstacle is not None:
+        _b = nearest_obstacle.get("belief")
+        if _b:
+            e_avoid = _belief_dot(_b, _AVOID_CLASS_COSTS)
+    U = _semantic_contact_cost(nearest_obstacle, position, epsilon) if nearest_obstacle is not None else 0.0
+    cost = 1.1 * move_distance + 0.7 * remaining + 0.25 * e_avoid + _LAMBDA_U * U
     return cost, chosen_candidate
 
 
@@ -853,18 +1004,20 @@ def estimate_push_cost(
     obstacle_index: int,
     goal_direction: np.ndarray,
     push_distance: float,
+    epsilon: float = 0.0,
 ) -> tuple[float, float, float]:
-    """Estimate whether a push is worthwhile using effort, risk, and corridor gain.
+    """Estimate whether a push is worthwhile using effort, risk, corridor gain, and semantic cost.
 
     The implemented push cost is
 
-        J_push = 0.6 * time + 0.5 * effort + 1.2 * risk - 1.4 * corridor_gain.
+        J_push = 0.6 * time + 0.5 * effort + 1.2 * E[risk | belief]
+               − 1.4 * corridor_gain + λ_U * U
 
-    ``corridor_gain`` is the change in robot-to-obstacle clearance after a
-    predicted push; larger corridor gain lowers the push cost.
+    where ``E[risk | belief] = dot(belief, _PUSH_CLASS_COSTS)`` replaces the
+    hard-coded binary-feature formula, and U is the belief-weighted proximity
+    contact cost.
     """
     obstacle = scene["obstacles"][obstacle_index]
-    features = estimate_obstacle_features(obstacle)
     actual_displacement, chain = feasible_chain_push_distance(
         scene,
         obstacle_index,
@@ -882,14 +1035,14 @@ def estimate_push_cost(
     corridor_gain = after_clearance - before_clearance
 
     chain_load = max(0, len(chain) - 1)
-    risk = (
-        0.70 * features["f"]
-        + 0.20 * (1.0 - features["q"])
-        + 0.90 * (1.0 if features["class_label"] in {"fragile", "forbidden"} else 0.0)
-    )
+    # E[risk | belief]: belief-weighted expected push risk — replaces the binary
+    # feature formula.  Falls back to 0.50 when no belief vector is present.
+    _b = obstacle.get("belief")
+    e_risk = _belief_dot(_b, _PUSH_CLASS_COSTS) if _b else 0.50
     effort = 1.0 + 0.35 * chain_load
     time_term = 1.0
-    cost = 0.6 * time_term + 0.5 * effort + 1.2 * risk - 1.4 * corridor_gain
+    U = _semantic_contact_cost(obstacle, position, epsilon)
+    cost = 0.6 * time_term + 0.5 * effort + 1.2 * e_risk - 1.4 * corridor_gain + _LAMBDA_U * U
     return cost, actual_displacement, corridor_gain
 
 
@@ -924,12 +1077,16 @@ def compute_avoid_trajectory(
     step_size: float,
     epsilon: float,
     bad_directions: list[dict],
+    nearest_obstacle: dict | None = None,
 ) -> TrajectoryCandidate:
     """Compute the avoidance branch from the current local map.
 
     This is the blue branch in the outline. The returned cost is based on the
     avoid cost model, while the safety margin is the minimum robot-body
     clearance at the resulting step target.
+
+    ``nearest_obstacle`` is forwarded to ``estimate_avoid_cost`` so the
+    belief-weighted semantic contact cost U can be included in J_avoid.
     """
     total_cost, waypoint = estimate_avoid_cost(
         scene,
@@ -938,6 +1095,7 @@ def compute_avoid_trajectory(
         step_size,
         epsilon,
         bad_directions,
+        nearest_obstacle=nearest_obstacle,
     )
     step_target = smooth_candidate_step(position, waypoint, goal, scene, step_size)
     safety_margin = min(
@@ -979,6 +1137,7 @@ def compute_push_trajectory(
             obstacle_index,
             goal_direction,
             push_distance,
+            epsilon=epsilon,
         )
         if feasible_distance <= 1e-6:
             continue
@@ -1017,15 +1176,24 @@ def reconcile_trajectory_decision(
     avoid_candidate: TrajectoryCandidate,
     push_candidate: TrajectoryCandidate | None,
     safety_margin_threshold: float,
+    push_belief_risk: float = 0.0,
 ) -> TrajectoryCandidate:
     """Reconcile the avoid and push branches into one action.
 
-    The outline's decision block is implemented as a simple normalized
-    comparison:
+    Branch scores are computed as
 
-        score = cost - 0.35 * progress_gain - 0.25 * safety_margin.
+        score = cost − 0.35 * progress_gain − 0.25 * safety_margin.
 
-    A push branch is only allowed if its safety margin exceeds the threshold.
+    The push branch additionally incurs ``_LAMBDA_BELIEF * push_belief_risk``,
+    the expectation-weighted class cost derived from the target obstacle's CIBP
+    belief (``E[risk | belief] = dot(belief, _PUSH_CLASS_COSTS)``).  This makes
+    the reconciler explicitly more conservative when the belief assigns
+    significant mass to fragile or forbidden classes — independent of what
+    J_push already captured via its 1.2 × E[risk] term.
+
+    A push is only selected when *both* the geometric safety margin exceeds
+    ``safety_margin_threshold`` *and* the adjusted push score is no worse than
+    the avoid score.
     """
     def branch_score(candidate: TrajectoryCandidate) -> float:
         return candidate.total_cost - 0.35 * candidate.progress_gain - 0.25 * candidate.safety_margin
@@ -1035,7 +1203,11 @@ def reconcile_trajectory_decision(
     if push_candidate is None:
         return selected
 
-    push_score = branch_score(push_candidate) - 0.20 * push_candidate.corridor_gain
+    push_score = (
+        branch_score(push_candidate)
+        - 0.20 * push_candidate.corridor_gain
+        + _LAMBDA_BELIEF * push_belief_risk
+    )
     if push_candidate.safety_margin >= safety_margin_threshold and push_score <= avoid_score:
         selected = push_candidate
     return selected
@@ -1381,7 +1553,10 @@ def semantic_corridor_response(
     """
     goal_direction = normalize(goal - position)
 
-    # --- 1. Widening push: prefer semantics over geometry ---
+    # --- 1. Widening push: rank by P(movable) desc, entropy asc as tie-breaker ---
+    # Build a ranked list of pushable corridor walls so the robot acts on the
+    # obstacle it is *most confident* is movable rather than the first in order.
+    _widen_candidates: list[tuple[float, float, int, int]] = []
     for obs_id in [obs_id_a, obs_id_b]:
         obs = next((o for o in scene["obstacles"] if o["id"] == obs_id), None)
         if obs is None:
@@ -1392,8 +1567,19 @@ def semantic_corridor_response(
         obs_idx = next(
             (i for i, o in enumerate(scene["obstacles"]) if o["id"] == obs_id), None
         )
-        if obs_idx is not None:
-            return None, f"corridor widening: push obs {obs_id} to widen gap", obs_idx
+        if obs_idx is None:
+            continue
+        belief = obs.get("belief", {})
+        _widen_candidates.append((
+            -belief.get("movable", 0.0),  # negate so highest P(movable) sorts first
+            _belief_entropy(belief),       # lower entropy (more certain) breaks ties
+            obs_id,
+            obs_idx,
+        ))
+    if _widen_candidates:
+        _widen_candidates.sort()
+        _, _, best_obs_id, best_obs_idx = _widen_candidates[0]
+        return None, f"corridor widening: push obs {best_obs_id} to widen gap", best_obs_idx
 
     # --- 2. Frontier detour: exploit unexplored space, not known geometry ---
     if not frontier_points:
@@ -1487,6 +1673,7 @@ def run_online_surp_push(
     step_size: float = 0.07,
     push_distance: float = 0.12,
     max_steps: int = 500,
+    belief_decay: float = 0.95,
 ) -> OnlineSurpResult:
     """Run the online goal-seeking / avoid / push controller on one scene.
 
@@ -1525,6 +1712,9 @@ def run_online_surp_push(
     bug_bounce_count: int = 0
     bug_recent_obs_ids: list[int] = []   # pinball detector: last N boundary entries
 
+    _cibp = CIBP()
+    replan_triggered = False
+
     success = False
     for _ in range(max_steps):
         if np.linalg.norm(goal - position) <= step_size:
@@ -1534,6 +1724,8 @@ def run_online_surp_push(
             success = True
             break
 
+        replan_triggered = False
+        _decay_beliefs(working_scene, belief_decay, _cibp)
         perception = update_local_perception(working_scene, position, sensing_range)
         newly_observed = perception["newly_observed"]
         if newly_observed:
@@ -1619,6 +1811,12 @@ def run_online_surp_push(
                         push_distance,
                         robot_position=position,
                     )
+                    if _apply_cibp(
+                        working_scene["obstacles"][sc_push_idx],
+                        "displacement" if moved_distance > 1e-6 else "damage",
+                        _cibp, contact_log,
+                    ):
+                        replan_triggered = True
                     if moved_distance > 1e-6:
                         position = step_until_sense_or_contact(
                             working_scene, position, goal_direction, step_size, epsilon
@@ -1648,6 +1846,87 @@ def run_online_surp_push(
                     frames.append(snapshot_frame(position, working_scene, sc_label))
                     continue
 
+            _cibp_outcome = (
+                "hard_flag" if nearest_obstacle["true_class"] == "not_movable"
+                else "no_displacement"
+            )
+            if _apply_cibp(nearest_obstacle, _cibp_outcome, _cibp, contact_log):
+                replan_triggered = True
+                # ── Belief-triggered replan (boundary stop) ────────────────────
+                # KL > τ: updated belief may change the push/avoid decision.
+                # Re-run the Layer-3 reconciler with fresh beliefs; execute the
+                # recommended action immediately rather than sitting still.
+                _bnd_avoid = compute_avoid_trajectory(
+                    working_scene, position, goal, step_size, epsilon,
+                    bad_directions, nearest_obstacle=nearest_obstacle,
+                )
+                _bnd_push: TrajectoryCandidate | None = None
+                _bnd_risk = 0.0
+                if nearest_obstacle.get("map_class") == "movable":
+                    _bnd_push = compute_push_trajectory(
+                        working_scene, position, goal, goal_direction,
+                        push_set, step_size, epsilon, push_distance,
+                    )
+                    _bnd_risk = _belief_dot(
+                        nearest_obstacle.get("belief", {}), _PUSH_CLASS_COSTS
+                    )
+                _bnd_selected = reconcile_trajectory_decision(
+                    _bnd_avoid,
+                    _bnd_push,
+                    safety_margin_threshold=max(0.02, epsilon * 0.2),
+                    push_belief_risk=_bnd_risk,
+                )
+                contact_log.append(
+                    f"CIBP replan (boundary): obs {nearest_obstacle['id']} "
+                    f"KL>τ={_cibp.tau:.2f}, decision={_bnd_selected.mode}"
+                )
+                if (
+                    _bnd_selected.mode == "push"
+                    and _bnd_push is not None
+                    and _bnd_push.obstacle_index is not None
+                    and _bnd_push.push_distance > 1e-6
+                ):
+                    _bnd_moved, _bnd_chain = move_obstacle_in_direction(
+                        working_scene,
+                        _bnd_push.obstacle_index,
+                        goal_direction,
+                        _bnd_push.push_distance,
+                        robot_position=position,
+                    )
+                    if _apply_cibp(
+                        working_scene["obstacles"][_bnd_push.obstacle_index],
+                        "displacement" if _bnd_moved > 1e-6 else "damage",
+                        _cibp, contact_log,
+                    ):
+                        replan_triggered = True
+                    if _bnd_moved > 1e-6:
+                        position = step_until_sense_or_contact(
+                            working_scene, position, goal_direction, step_size, epsilon
+                        )
+                        _bnd_obs = working_scene["obstacles"][_bnd_push.obstacle_index]
+                        _bnd_obs["push_count"] = _bnd_obs.get("push_count", 0) + 1
+                        push_history.append({
+                            "obstacle_id": _bnd_obs["id"],
+                            "distance": _bnd_moved,
+                            "chain": _bnd_chain,
+                        })
+                        stuck_events = 0
+                        goal_distance_history.append(float(np.linalg.norm(goal - position)))
+                        path.append(tuple(position))
+                        frames.append(snapshot_frame(
+                            position, working_scene,
+                            f"CIBP replan: boundary→push obs {_bnd_obs['id']} by {_bnd_moved:.2f}",
+                        ))
+                        continue
+                elif np.linalg.norm(_bnd_avoid.step_target - position) > 1e-6:
+                    position = _bnd_avoid.step_target
+                    goal_distance_history.append(float(np.linalg.norm(goal - position)))
+                    path.append(tuple(position))
+                    frames.append(snapshot_frame(
+                        position, working_scene,
+                        f"CIBP replan: boundary→avoid for obs {nearest_obstacle['id']}",
+                    ))
+                    continue
             path.append(tuple(position))
             frames.append(
                 snapshot_frame(
@@ -1681,6 +1960,7 @@ def run_online_surp_push(
                 step_size,
                 epsilon,
                 bad_directions,
+                nearest_obstacle=nearest_obstacle,
             )
             push_candidate = compute_push_trajectory(
                 working_scene,
@@ -1692,10 +1972,16 @@ def run_online_surp_push(
                 epsilon,
                 push_distance,
             )
+            # E[risk | belief] for the highest-priority push candidate.
+            _push_belief_risk = 0.0
+            if push_candidate is not None and push_candidate.obstacle_index is not None:
+                _pb = working_scene["obstacles"][push_candidate.obstacle_index].get("belief", {})
+                _push_belief_risk = _belief_dot(_pb, _PUSH_CLASS_COSTS)
             selected_candidate = reconcile_trajectory_decision(
                 avoid_candidate,
                 push_candidate,
                 safety_margin_threshold=max(0.02, epsilon * 0.2),
+                push_belief_risk=_push_belief_risk,
             )
             J_avoid = avoid_candidate.total_cost
             avoid_step_target = avoid_candidate.step_target
@@ -1771,10 +2057,33 @@ def run_online_surp_push(
                 # is wrong: push the obstacle if possible, otherwise fall
                 # through to stall recovery.
                 if (bug_bounce_count >= 3 or pinball) and is_pushable:
-                    push_idx_override = next(
-                        (i for i, o in enumerate(working_scene["obstacles"])
-                         if o["id"] == obs_id),
-                        None,
+                    # Rank all pushable obstacles from the recent-contact pool by
+                    # P(movable) descending, entropy ascending as tie-breaker.
+                    # The pool is the union of the current obstacle and the last
+                    # 6 boundary hits — the full pinball corridor candidate set.
+                    _override_pool = {obs_id} | set(bug_recent_obs_ids)
+                    _override_candidates: list[tuple[float, float, int]] = []
+                    for _bid in _override_pool:
+                        _bidx = next(
+                            (i for i, o in enumerate(working_scene["obstacles"])
+                             if o["id"] == _bid),
+                            None,
+                        )
+                        if _bidx is None:
+                            continue
+                        _bobs = working_scene["obstacles"][_bidx]
+                        _bp_safe, _ = obstacle_safety_probability(_bobs)
+                        if _bobs["true_class"] != "movable" or _bp_safe < SAFE_PROB_THRESHOLD:
+                            continue
+                        _bbelief = _bobs.get("belief", {})
+                        _override_candidates.append((
+                            -_bbelief.get("movable", 0.0),
+                            _belief_entropy(_bbelief),
+                            _bidx,
+                        ))
+                    _override_candidates.sort()
+                    push_idx_override = (
+                        _override_candidates[0][2] if _override_candidates else None
                     )
                     if push_idx_override is not None:
                         moved_distance, moved_chain = move_obstacle_in_direction(
@@ -1784,6 +2093,12 @@ def run_online_surp_push(
                             push_distance,
                             robot_position=position,
                         )
+                        if _apply_cibp(
+                            working_scene["obstacles"][push_idx_override],
+                            "displacement" if moved_distance > 1e-6 else "damage",
+                            _cibp, contact_log,
+                        ):
+                            replan_triggered = True
                         if moved_distance > 1e-6:
                             position = step_until_sense_or_contact(
                                 working_scene, position, goal_direction, step_size, epsilon
@@ -1903,6 +2218,12 @@ def run_online_surp_push(
                     push_distance,
                     robot_position=position,
                 )
+                if _apply_cibp(
+                    pushed_obstacle,
+                    "displacement" if moved_distance > 1e-6 else "damage",
+                    _cibp, contact_log,
+                ):
+                    replan_triggered = True
                 if moved_distance > 1e-6:
                     position = step_until_sense_or_contact(
                         working_scene,
@@ -2017,7 +2338,46 @@ def run_online_surp_push(
                 push_candidate.push_distance,
                 robot_position=position,
             )
-            if moved_distance > 1e-6:
+            if _apply_cibp(
+                working_scene["obstacles"][push_candidate.obstacle_index],
+                "displacement" if moved_distance > 1e-6 else "damage",
+                _cibp, contact_log,
+            ):
+                replan_triggered = True
+
+            # ── Belief-triggered replan (Layer 5) ──────────────────────────────
+            # KL > τ means the push observation significantly updated our belief.
+            # Re-run the Layer-3 reconciler with the fresh belief before deciding
+            # whether to advance the robot in the push direction.
+            _execute_push_step = moved_distance > 1e-6
+            if replan_triggered:
+                _pushed_obs = working_scene["obstacles"][push_candidate.obstacle_index]
+                _updated_belief = _pushed_obs.get("belief", {})
+                _replan_avoid = compute_avoid_trajectory(
+                    working_scene, position, goal, step_size, epsilon,
+                    bad_directions, nearest_obstacle=nearest_obstacle,
+                )
+                _replan_risk = _belief_dot(_updated_belief, _PUSH_CLASS_COSTS)
+                _replan_selected = reconcile_trajectory_decision(
+                    _replan_avoid,
+                    push_candidate,
+                    safety_margin_threshold=max(0.02, epsilon * 0.2),
+                    push_belief_risk=_replan_risk,
+                )
+                if _replan_selected.mode != "push":
+                    _execute_push_step = False
+                    avoid_step_target = _replan_avoid.step_target
+                    contact_log.append(
+                        f"CIBP replan (push→avoid): obs {push_candidate.obstacle_index} "
+                        f"KL>τ={_cibp.tau:.2f}, switching to avoid"
+                    )
+                else:
+                    contact_log.append(
+                        f"CIBP replan (push confirmed): obs {push_candidate.obstacle_index} "
+                        f"KL>τ={_cibp.tau:.2f}, continuing push"
+                    )
+
+            if _execute_push_step:
                 position = step_until_sense_or_contact(
                     working_scene,
                     position,
