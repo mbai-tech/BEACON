@@ -18,17 +18,22 @@ def within_workspace(poly):
     return workspace_poly.contains(poly)
 
 
-def valid_candidate(candidate, placed, start_buffer=None, goal_buffer=None, min_gap=0.05):
+def valid_candidate(candidate, placed, start_buffer=None, goal_buffer=None):
     if not candidate.is_valid:
         return False
     if not within_workspace(candidate):
         return False
-    if start_buffer is not None and candidate.distance(start_buffer) < min_gap:
+
+    # touching allowed, overlap forbidden
+    if start_buffer is not None and candidate.intersection(start_buffer).area > 1e-9:
         return False
-    if goal_buffer is not None and candidate.distance(goal_buffer) < min_gap:
+    if goal_buffer is not None and candidate.intersection(goal_buffer).area > 1e-9:
         return False
-    if any(candidate.distance(p) < min_gap for p in placed):
-        return False
+
+    for p in placed:
+        if candidate.intersection(p).area > 1e-9:
+            return False
+
     return True
 
 
@@ -71,11 +76,12 @@ def obstacle_record(poly, idx, cls):
         "vertices": polygon_to_list(poly)
     }
 
-def try_add_obstacle(poly, cls, placed, obstacles, start=None, goal=None, min_gap=0.05):
+
+def try_add_obstacle(poly, cls, placed, obstacles, start=None, goal=None):
     start_buffer = Point(start).buffer(0.35) if start is not None else None
     goal_buffer = Point(goal).buffer(0.35) if goal is not None else None
 
-    if valid_candidate(poly, placed, start_buffer, goal_buffer, min_gap=min_gap):
+    if valid_candidate(poly, placed, start_buffer, goal_buffer):
         placed.append(poly)
         obstacles.append(obstacle_record(poly, len(obstacles), cls))
         return True
@@ -110,7 +116,7 @@ def sample_background_obstacles(
         attempts += 1
         candidate, _ = make_random_circle()
 
-        if valid_candidate(candidate, placed, start_buffer, goal_buffer, min_gap=0.05):
+        if valid_candidate(candidate, placed, start_buffer, goal_buffer):
             placed.append(candidate)
             cls = random.choices(classes, weights=weights, k=1)[0]
             obstacles.append(obstacle_record(candidate, len(obstacles), cls))
@@ -154,46 +160,128 @@ def generate_collision_required(seed=None):
     if seed is not None:
         random.seed(seed)
 
-    start, goal = random_start_goal(min_dist=4.0)
+    start, goal = random_start_goal(min_dist=4.4)
     placed = []
     obstacles = []
 
     line = LineString([start, goal])
     midpoint = line.interpolate(0.5, normalized=True)
 
+    # Unit direction from start to goal
     dx = goal[0] - start[0]
     dy = goal[1] - start[1]
     length = (dx ** 2 + dy ** 2) ** 0.5
     if length == 0:
         dx, dy, length = 1.0, 0.0, 1.0
+
+    ux = dx / length
+    uy = dy / length
+
+    # Unit perpendicular direction
     px = -dy / length
     py = dx / length
 
-    band_offsets = [-0.9, -0.3, 0.3, 0.9]
-    band_radii = [0.34, 0.38, 0.38, 0.34]
+    # --------------------------------------------------
+    # FULL EXTENDED CLUTTER WALL
+    # Long across the route, thick along the route
+    # --------------------------------------------------
+    row_offsets = [-0.95, -0.60, -0.25, 0.10, 0.45, 0.80]
+    col_offsets = [-2.35, -1.90, -1.45, -1.00, -0.55, -0.10,
+                    0.35, 0.80, 1.25, 1.70, 2.15]
 
-    for offset, r in zip(band_offsets, band_radii):
-        x = midpoint.x + px * offset
-        y = midpoint.y + py * offset
+    for row in row_offsets:
+        for col in col_offsets:
+            # jitter so it looks cluttered, not like a grid
+            jitter_u = random.uniform(-0.08, 0.08)
+            jitter_p = random.uniform(-0.08, 0.08)
+
+            x = midpoint.x + ux * (row + jitter_u) + px * (col + jitter_p)
+            y = midpoint.y + uy * (row + jitter_u) + py * (col + jitter_p)
+
+            r = random.uniform(0.20, 0.28)
+            poly = make_circle_at(x, y, r)
+
+            if not within_workspace(poly):
+                continue
+
+            # Make the core mostly movable so collision through the wall is useful.
+            # Outer regions are more fragile to discourage just smashing anywhere.
+            if abs(col) <= 0.9 and abs(row) <= 0.55:
+                cls = random.choices(
+                    ["movable", "fragile", "safe"],
+                    weights=[0.70, 0.20, 0.10],
+                    k=1
+                )[0]
+            elif abs(col) <= 1.6 and abs(row) <= 0.75:
+                cls = random.choices(
+                    ["movable", "fragile", "safe"],
+                    weights=[0.45, 0.40, 0.15],
+                    k=1
+                )[0]
+            else:
+                cls = random.choices(
+                    ["fragile", "movable", "safe"],
+                    weights=[0.60, 0.25, 0.15],
+                    k=1
+                )[0]
+
+            try_add_obstacle(poly, cls, placed, obstacles, start, goal)
+
+    # --------------------------------------------------
+    # SIDE EXTENSIONS / CAPS
+    # Makes it harder to sneak around the ends
+    # --------------------------------------------------
+    cap_points = [
+        (-2.75, -0.55), (-2.75, -0.15), (-2.75, 0.25), (-2.75, 0.65),
+        ( 2.55, -0.50), ( 2.55, -0.10), ( 2.55, 0.30), ( 2.55, 0.70)
+    ]
+
+    for col, row in cap_points:
+        x = midpoint.x + ux * row + px * col
+        y = midpoint.y + uy * row + py * col
+        r = random.uniform(0.18, 0.25)
         poly = make_circle_at(x, y, r)
-        cls = "movable" if abs(offset) < 0.5 else "fragile"
-        try_add_obstacle(poly, cls, placed, obstacles, start, goal, min_gap=0.05)
 
-    extra_offsets = [-1.35, 1.35]
-    for offset in extra_offsets:
-        x = midpoint.x + px * offset
-        y = midpoint.y + py * offset
-        poly = make_circle_at(x, y, 0.30)
-        try_add_obstacle(poly, "safe", placed, obstacles, start, goal, min_gap=0.05)
+        if within_workspace(poly):
+            try_add_obstacle(poly, "fragile", placed, obstacles, start, goal)
 
-    placed, bg = sample_background_obstacles(
-        6, 10, start, goal, placed=placed,
-        class_weights={"safe": 0.2, "movable": 0.6, "fragile": 0.2}
-    )
+    # --------------------------------------------------
+    # EXTRA OBSTACLES OUTSIDE THE WALL
+    # So the whole scene does not look empty except the barrier
+    # --------------------------------------------------
+    start_buffer = Point(start).buffer(0.35)
+    goal_buffer = Point(goal).buffer(0.35)
 
-    for obs in bg:
-        obs["id"] = len(obstacles)
-        obstacles.append(obs)
+    extra_targets = random.randint(10, 16)
+    attempts = 0
+    max_attempts = 12000
+
+    while extra_targets > 0 and attempts < max_attempts:
+        attempts += 1
+
+        candidate, _ = make_random_circle(r_min=0.14, r_max=0.24)
+        c = candidate.centroid
+
+        # Signed coordinates relative to the wall frame
+        rel_x = c.x - midpoint.x
+        rel_y = c.y - midpoint.y
+        along = rel_x * ux + rel_y * uy
+        across = rel_x * px + rel_y * py
+
+        # keep these extra obstacles mostly outside the main wall region
+        in_main_wall_region = (abs(across) < 2.6 and abs(along) < 1.1)
+        if in_main_wall_region:
+            continue
+
+        if valid_candidate(candidate, placed, start_buffer, goal_buffer):
+            placed.append(candidate)
+            cls = random.choices(
+                ["safe", "movable", "fragile"],
+                weights=[0.25, 0.35, 0.40],
+                k=1
+            )[0]
+            obstacles.append(obstacle_record(candidate, len(obstacles), cls))
+            extra_targets -= 1
 
     return {
         "family": "collision_required",
@@ -219,7 +307,7 @@ def generate_collision_shortcut(seed=None):
         p = line.interpolate(frac, normalized=True)
         r = random.uniform(0.28, 0.40)
         poly = make_circle_at(p.x, p.y, r)
-        try_add_obstacle(poly, "movable", placed, obstacles, start, goal, min_gap=0.05)
+        try_add_obstacle(poly, "movable", placed, obstacles, start, goal)
 
     placed, bg = sample_background_obstacles(
         14, 22, start, goal, placed=placed,
@@ -238,7 +326,7 @@ def generate_collision_shortcut(seed=None):
         "obstacles": obstacles
     }
 
-# Without validator
+
 def generate_scene(family="sparse", seed=None):
     if family == "sparse":
         return generate_sparse(seed=seed)
@@ -253,40 +341,6 @@ def generate_scene(family="sparse", seed=None):
         "family must be one of: "
         "'sparse', 'cluttered', 'collision_required', 'collision_shortcut'"
     )
-
-
-# WITH VALIDATOR.PY
-# def generate_scene(family="sparse", seed=None, validate=True, max_tries=200):
-#     for attempt in range(max_tries):
-#         current_seed = seed if seed is not None and attempt == 0 else random.randrange(0, 10**9)
-
-#         if family == "sparse":
-#             scene = generate_sparse(seed=current_seed)
-#         elif family == "cluttered":
-#             scene = generate_cluttered(seed=current_seed)
-#         elif family == "collision_required":
-#             scene = generate_collision_required(seed=current_seed)
-#         elif family == "collision_shortcut":
-#             scene = generate_collision_shortcut(seed=current_seed)
-#         else:
-#             raise ValueError(
-#                 "family must be one of: "
-#                 "'sparse', 'cluttered', 'collision_required', 'collision_shortcut'"
-#             )
-
-#         scene["seed"] = current_seed
-
-#         if not validate:
-#             return scene
-
-#         validation = validate_scene(scene)
-#         scene["validation"] = validation
-
-#         if validation["valid"]:
-#             return scene
-
-#     raise RuntimeError(f"Could not generate a valid scene for family '{family}' after {max_tries} tries")
-
 
 def save_scene_json(scene, path):
     with open(path, "w") as f:
