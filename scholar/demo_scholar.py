@@ -84,6 +84,7 @@ def load_scene(scene_idx: int, family: str, fragility: str = "mixed", seed: int 
     del fragility
     effective_seed = scene_idx if seed is None else seed
     scene = _generate_complex_scene(family=family, seed=effective_seed)
+    scene["seed"] = effective_seed
     scene["scene_idx"] = scene_idx
     return scene
 
