@@ -7,7 +7,7 @@ from scipy.interpolate import make_interp_spline
 from shapely.geometry import LineString, Point
 
 from NewProject.constants import DEFAULT_SENSING_RANGE
-from NewProject.models import OnlineSurpResult
+from NewProject.models import OnlineSurpResult, SceneSummary
 from NewProject.planner import (
     clip_point_to_workspace,
     normalize,
@@ -27,31 +27,10 @@ from planning.cost_map import (
 )
 from utils.geometry import ray_cast, visibility_range
 
-V_MAX            = 0.15    # max robot speed (m/step)
-N_RAYS           = 36      # rays for visibility polygon
-N_FRONTIER_POS   = 10      # frontier positions sampled per tick
-C_MAX            = 7.0     # max obstacle cost allowed for contact (Stage 3)
-FA               = 2.0     # heading-deviation penalty factor (J_pos)
-HEADING_THRESH   = np.pi / 4
-
-# Fixed objective weights
-W_P   = 1.0   # position term
-W_B   = 0.5   # resource term
-
-# Risk sub-weights  (sum = 1)
-W_GEO = 0.4
-W_SEM = 0.4
-W_DIR = 0.2
-
-# Resource sub-weights  (sum = 1)
-W_DIST = 0.4
-W_TIME = 0.3
-W_COL  = 0.3
-
-# Battery-adaptive weight schedule
-W_R0    = 2.0   # w_r at full battery
-W_V_MIN = 0.5   # w_v at full battery
-W_V_MAX = 4.0   # w_v at empty battery
+V_MAX          = 0.15   # max robot speed (m/step)
+N_RAYS         = 36     # rays for visibility polygon
+N_FRONTIER_POS = 10     # frontier positions sampled per tick
+C_MAX          = 7.0    # max obstacle cost allowed for contact (Stage 3)
 
 # Trajectory generation
 P_SAFE = 1.2    # safety margin on traversal duration
@@ -59,6 +38,62 @@ T_MAP  = 0.2    # minimum trajectory duration (s)
 
 # Maneuver selection
 F_MIN  = 0.3    # minimum f_s to consider PUSH safe
+
+
+@dataclass
+class PlannerConfig:
+    # Top-level objective weights
+    W_P:                float = 1.0          # position term scale
+    W_B:                float = 0.5          # resource term scale
+    # Battery-adaptive schedule: w_r = w_r_scale·b,  w_v = w_v_floor + w_v_range·(1−b)
+    w_r_scale:          float = 2.0
+    w_v_floor:          float = 0.5
+    w_v_range:          float = 3.5
+    # Heading-deviation penalty in J_pos
+    f_alpha_on:         float = 1.0          # multiplier when deviation ≤ threshold
+    f_alpha_off:        float = 2.0          # multiplier when deviation > threshold
+    f_alpha_threshold:  float = np.pi / 4   # radians
+    # Risk sub-weights (must sum to 1)
+    geo_weight:         float = 0.4
+    sem_weight:         float = 0.4
+    dir_weight:         float = 0.2
+    # Resource sub-weights (must sum to 1)
+    resource_d:         float = 0.4
+    resource_T:         float = 0.3
+    resource_contact:   float = 0.3
+    # Kinetic-energy coefficient in J_resource: ΔE = delta_E_coeff · v²
+    delta_E_coeff:      float = 0.5
+    # KL-divergence threshold for belief-triggered cost-map updates
+    kl_threshold:       float = 0.15
+
+    def validate(self) -> None:
+        positive_fields = [
+            "W_P", "W_B", "w_r_scale", "w_v_floor", "w_v_range",
+            "f_alpha_on", "f_alpha_off", "geo_weight", "sem_weight", "dir_weight",
+            "resource_d", "resource_T", "resource_contact", "delta_E_coeff",
+            "kl_threshold",
+        ]
+        for name in positive_fields:
+            val = getattr(self, name)
+            if val <= 0:
+                raise ValueError(f"PlannerConfig.{name} must be positive, got {val}")
+
+        risk_sum = self.geo_weight + self.sem_weight + self.dir_weight
+        if abs(risk_sum - 1.0) > 1e-9:
+            raise ValueError(
+                f"geo_weight + sem_weight + dir_weight must equal 1.0, got {risk_sum:.6f}"
+            )
+
+        res_sum = self.resource_d + self.resource_T + self.resource_contact
+        if abs(res_sum - 1.0) > 1e-9:
+            raise ValueError(
+                f"resource_d + resource_T + resource_contact must equal 1.0, got {res_sum:.6f}"
+            )
+
+        if not (0.0 < self.f_alpha_threshold < np.pi / 2):
+            raise ValueError(
+                f"f_alpha_threshold must be in (0, π/2), got {self.f_alpha_threshold:.6f}"
+            )
 
 # 8 velocity direction unit vectors
 _VEL_DIRS = np.array([
@@ -84,15 +119,19 @@ class CandidateState:
 class Scholar:
     def __init__(
         self,
-        v_max:           float = V_MAX,
-        n_rays:          int   = N_RAYS,
-        n_frontier_pos:  int   = N_FRONTIER_POS,
-        sensing_range:   float = DEFAULT_SENSING_RANGE,
+        v_max:           float         = V_MAX,
+        n_rays:          int           = N_RAYS,
+        n_frontier_pos:  int           = N_FRONTIER_POS,
+        sensing_range:   float         = DEFAULT_SENSING_RANGE,
+        config:          PlannerConfig = None,
     ):
         self.v_max          = v_max
         self.n_rays         = n_rays
         self.n_frontier_pos = n_frontier_pos
         self.sensing_range  = sensing_range
+        self.config         = config if config is not None else PlannerConfig()
+        self.config.validate()
+        self.replan_count   = 0
 
     def select_next_state(
         self,
@@ -121,8 +160,8 @@ class Scholar:
 
         # ── 3. Battery-adaptive weights ────────────────────────────────────
         b_frac = min(1.0, max(0.0, robot.battery / max(robot.battery_max, 1e-9)))
-        w_r = W_R0 * b_frac
-        w_v = W_V_MIN + (W_V_MAX - W_V_MIN) * (1.0 - b_frac)
+        w_r = self.config.w_r_scale * b_frac
+        w_v = self.config.w_v_floor + self.config.w_v_range * (1.0 - b_frac)
 
         # ── 4. Score and return argmin ─────────────────────────────────────
         scores = [
@@ -284,7 +323,7 @@ class Scholar:
         safe = [q for q in candidates if q.contact_cost <= c_max]
         if safe:
             return safe
-        # Relax: keep minimum-cost contact
+        self.replan_count += 1
         return [min(candidates, key=lambda q: q.contact_cost)]
 
     def _score(
@@ -301,7 +340,8 @@ class Scholar:
         j_risk     = self._j_risk_sem(q, goal, cost_map, observed)
         j_vel      = self._j_vel_sem(q, goal, observed)
         j_resource = self._j_resource(q, robot)
-        return W_P * j_pos + w_r * j_risk + w_v * j_vel + W_B * j_resource
+        cfg = self.config
+        return cfg.W_P * j_pos + w_r * j_risk + w_v * j_vel + cfg.W_B * j_resource
 
     def _j_pos(self, q: CandidateState, goal: np.ndarray) -> float:
         dist = float(np.linalg.norm(q.position - goal))
@@ -314,7 +354,8 @@ class Scholar:
         goal_dir = normalize(goal - q.position)
         cos_dev  = float(np.clip(np.dot(heading, goal_dir), -1.0, 1.0))
         deviation = float(np.arccos(cos_dev))
-        fa = FA if deviation > HEADING_THRESH else 1.0
+        cfg = self.config
+        fa  = cfg.f_alpha_off if deviation > cfg.f_alpha_threshold else cfg.f_alpha_on
         return dist * fa
 
     def _j_risk_sem(
@@ -350,7 +391,8 @@ class Scholar:
         f_s = 1.0 - min(1.0, max(0.0, float(aniso_val) / 10.0))
         dir_risk = 1.0 - f_s   # = M'/10
 
-        return W_GEO * geo_risk + W_SEM * sem_risk + W_DIR * dir_risk
+        cfg = self.config
+        return cfg.geo_weight * geo_risk + cfg.sem_weight * sem_risk + cfg.dir_weight * dir_risk
 
     def _j_vel_sem(
         self,
@@ -406,15 +448,49 @@ class Scholar:
         T_trav = dist / max(speed, 1e-6)
 
         in_contact = q.obstacle_contact is not None and q.contact_cost > 0.0
-        if in_contact:
-            # Kinetic energy proxy: ½mv²  (use unit mass for unknown objects)
-            dE_col = 0.5 * speed ** 2
-        else:
-            dE_col = 0.0
+        cfg = self.config
+        dE_col = cfg.delta_E_coeff * speed ** 2 if in_contact else 0.0
 
-        return (W_DIST * dist
-                + W_TIME * T_trav
-                + W_COL  * float(in_contact) * dE_col)
+        return (cfg.resource_d * dist
+                + cfg.resource_T * T_trav
+                + cfg.resource_contact * float(in_contact) * dE_col)
+
+    # ── score_breakdown ───────────────────────────────────────────────────────
+
+    def score_breakdown(
+        self,
+        q:        CandidateState,
+        robot:    RobotState,
+        goal:     np.ndarray,
+        cost_map: CostMap,
+        observed: list,
+    ) -> dict:
+        """Compute individual J components and their weighted contributions for q."""
+        b_frac = min(1.0, max(0.0, robot.battery / max(robot.battery_max, 1e-9)))
+        w_r = self.config.w_r_scale * b_frac
+        w_v = self.config.w_v_floor + self.config.w_v_range * (1.0 - b_frac)
+        cfg = self.config
+
+        j_pos      = self._j_pos(q, goal)
+        j_risk     = self._j_risk_sem(q, goal, cost_map, observed)
+        j_vel      = self._j_vel_sem(q, goal, observed)
+        j_resource = self._j_resource(q, robot)
+
+        weighted = {
+            "J_pos":      cfg.W_P * j_pos,
+            "J_risk":     w_r    * j_risk,
+            "J_vel":      w_v    * j_vel,
+            "J_resource": cfg.W_B * j_resource,
+        }
+        return {
+            "j_pos":      j_pos,
+            "j_risk":     j_risk,
+            "j_vel":      j_vel,
+            "j_resource": j_resource,
+            "w_r":        w_r,
+            "w_v":        w_v,
+            "dominant":   max(weighted, key=weighted.get),
+        }
 
     # ── generate_trajectory ───────────────────────────────────────────────────
 
@@ -554,12 +630,13 @@ def _astar(
     return None
 
 def run_scholar(
-    scene:              dict,
-    sensing_range:      float = DEFAULT_SENSING_RANGE,
-    step_size:          float = V_MAX,
-    max_steps:          int   = 800,
-    cost_map_resolution: float = 0.05,
-    battery_budget:     float = 1.0,
+    scene:               dict,
+    sensing_range:       float         = DEFAULT_SENSING_RANGE,
+    step_size:           float         = V_MAX,
+    max_steps:           int           = 800,
+    cost_map_resolution: float         = 0.05,
+    battery_budget:      float         = 1.0,
+    config:              PlannerConfig = None,
 ) -> OnlineSurpResult:
     working_scene = normalize_scene_for_online_use(scene)
     position = np.array(working_scene["start"][:2], dtype=float)
@@ -572,7 +649,8 @@ def run_scholar(
         battery_max=battery_budget,
     )
 
-    planner      = Scholar(v_max=step_size, sensing_range=sensing_range)
+    planner      = Scholar(v_max=step_size, sensing_range=sensing_range,
+                           config=config)
     path_taken   = [tuple(position)]
     frames       = [snapshot_frame(position, working_scene, "start")]
     sensed_ids:  List[int] = []
@@ -593,6 +671,22 @@ def run_scholar(
     _diag = float(np.linalg.norm([xmax - xmin, ymax - ymin]))
     battery_drain_per_metre = battery_budget / max(_diag, 1.0)
 
+    # ── Diagnostic accumulators ────────────────────────────────────────────────
+    j_risk_hist:    List[float] = []
+    j_vel_hist:     List[float] = []
+    j_resource_hist: List[float] = []
+    dominant_counts: dict = {"J_pos": 0, "J_risk": 0, "J_vel": 0, "J_resource": 0}
+    contact_speeds:  List[float] = []
+    forbidden_steps  = 0
+    fragile_steps    = 0
+    semantic_damage  = 0.0
+    n_stuck          = 0
+    battery_at_first_stuck: Optional[float] = None
+    total_steps      = 0
+    _STUCK_THRESH    = step_size * 0.1
+    _LOW_BATTERY_THRESH = 0.3
+    battery_contact_log: List[dict] = []
+
     for _ in range(max_steps):
         if float(np.linalg.norm(goal - position)) <= step_size:
             position = goal.copy()
@@ -606,7 +700,6 @@ def run_scholar(
         if newly:
             ids = [o["id"] for o in newly]
             sensed_ids.extend(ids)
-            # Slide and recompute cost map around robot
             update_cost_map(cost_map, working_scene, position)
             compute_anisotropic_map(cost_map, working_scene)
             frames.append(snapshot_frame(
@@ -615,7 +708,15 @@ def run_scholar(
 
         # SCHOLAR tick
         robot.position = position.copy()
+        observed_now = [o for o in working_scene["obstacles"] if o.get("observed", False)]
         q_star = planner.select_next_state(robot, working_scene, cost_map, goal)
+
+        # ── Per-step J diagnostics (pre-move, current battery) ────────────────
+        bd = planner.score_breakdown(q_star, robot, goal, cost_map, observed_now)
+        j_risk_hist.append(bd["j_risk"])
+        j_vel_hist.append(bd["j_vel"])
+        j_resource_hist.append(bd["j_resource"])
+        dominant_counts[bd["dominant"]] += 1
 
         # Move to selected position (clamped to one step)
         delta = q_star.position - position
@@ -627,15 +728,73 @@ def run_scholar(
             )
         robot.velocity = q_star.velocity.copy()
 
+        # ── Contact diagnostics ───────────────────────────────────────────────
+        if q_star.obstacle_contact is not None and q_star.contact_cost > 0.0:
+            spd = float(np.linalg.norm(q_star.velocity))
+            contact_speeds.append(spd)
+            battery_contact_log.append({
+                "event": "contact",
+                "b": float(robot.battery),
+                "speed": spd,
+                "w_r": bd["w_r"],
+                "w_v": bd["w_v"],
+            })
+            obs_cls = q_star.obstacle_contact.get("map_class", "movable")
+            if obs_cls == "forbidden":
+                forbidden_steps += 1
+            elif obs_cls == "fragile":
+                fragile_steps += 1
+            semantic_damage += q_star.contact_cost * move
+
+        # ── Stuck detection ───────────────────────────────────────────────────
+        if move < _STUCK_THRESH:
+            n_stuck += 1
+            if battery_at_first_stuck is None:
+                battery_at_first_stuck = float(robot.battery)
+            battery_contact_log.append({
+                "event": "stuck",
+                "b": float(robot.battery),
+                "speed": float(np.linalg.norm(q_star.velocity)),
+                "w_r": bd["w_r"],
+                "w_v": bd["w_v"],
+            })
+
         # Battery drain
         robot.battery = max(0.0, robot.battery - move * battery_drain_per_metre)
 
+        total_steps += 1
         path_taken.append(tuple(position))
         frames.append(snapshot_frame(
             position, working_scene,
             f"SCHOLAR → {tuple(np.round(q_star.position, 2))}  "
             f"B={robot.battery:.2f}"
         ))
+
+    # ── Build SceneSummary ─────────────────────────────────────────────────────
+    contact_events = [e for e in battery_contact_log if e["event"] == "contact"]
+    low_battery_contact_fraction = (
+        sum(1 for e in contact_events if e["b"] < _LOW_BATTERY_THRESH)
+        / max(len(contact_events), 1)
+    )
+    n = max(total_steps, 1)
+    summary = SceneSummary(
+        family=scene.get("family", "unknown"),
+        success=success,
+        final_battery=float(robot.battery),
+        total_semantic_damage=semantic_damage,
+        forbidden_contact_rate=forbidden_steps / n,
+        fragile_contact_rate=fragile_steps / n,
+        mean_j_risk=float(np.mean(j_risk_hist))     if j_risk_hist     else 0.0,
+        mean_j_vel=float(np.mean(j_vel_hist))       if j_vel_hist       else 0.0,
+        mean_j_resource=float(np.mean(j_resource_hist)) if j_resource_hist else 0.0,
+        n_cibp_replans=planner.replan_count,
+        n_stuck_events=n_stuck,
+        mean_speed_at_contact=float(np.mean(contact_speeds)) if contact_speeds else 0.0,
+        dominant_j=max(dominant_counts, key=dominant_counts.get),
+        battery_at_first_stuck=battery_at_first_stuck,
+        battery_contact_log=battery_contact_log,
+        low_battery_contact_fraction=low_battery_contact_fraction,
+    )
 
     return OnlineSurpResult(
         family=scene.get("family", "unknown"),
@@ -647,4 +806,5 @@ def run_scholar(
         initial_scene=normalize_scene_for_online_use(scene),
         contact_log=[],
         sensed_ids=sensed_ids,
+        scene_summary=summary,
     )

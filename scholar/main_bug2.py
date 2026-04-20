@@ -14,15 +14,15 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Polygon as MplPolygon
 
-import NewProject.bug_algorithm as _bug_module
-from NewProject.bug_algorithm import run_bug
+import NewProject.bug2_algorithm as _bug2_module
+from NewProject.bug2_algorithm import run_bug2
 from environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
 
 FAMILIES   = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 SCENES_DIR = Path(__file__).resolve().parent / "environment" / "data" / "scenes"
 
 
-# ── Scene loading (direct JSON — no PyBullet) ─────────────────────────────────
+# ── Scene loading ─────────────────────────────────────────────────────────────
 
 def load_scene(scene_idx: int, family: str) -> dict:
     path = SCENES_DIR / family / f"scene_{scene_idx:03d}.json"
@@ -32,8 +32,8 @@ def load_scene(scene_idx: int, family: str) -> dict:
 
 # ── Real-time frame interception ──────────────────────────────────────────────
 
-_original_snapshot = _bug_module.snapshot_frame
-_frame_queues      = {}   # thread_id → list[SimulationFrame]
+_original_snapshot = _bug2_module.snapshot_frame
+_frame_queues      = {}
 _frame_lock        = threading.Lock()
 
 
@@ -45,7 +45,7 @@ def _patched_snapshot(position, scene, message):
             _frame_queues[tid].append(frame)
     return frame
 
-_bug_module.snapshot_frame = _patched_snapshot
+_bug2_module.snapshot_frame = _patched_snapshot
 
 
 # ── Per-family simulation thread ──────────────────────────────────────────────
@@ -58,10 +58,11 @@ class SimThread(threading.Thread):
         self.max_steps     = max_steps
         self.step_size     = step_size
         self.sensing_range = sensing_range
-        self.frames        = []   # filled live by _patched_snapshot
+        self.frames        = []
         self.path          = []
         self.scene         = None
         self.initial_scene = None
+        self.workspace     = None
         self.success       = None
         self.done          = False
 
@@ -70,7 +71,8 @@ class SimThread(threading.Thread):
             _frame_queues[threading.get_ident()] = self.frames
 
         raw_scene = load_scene(self.scene_idx, self.family)
-        result    = run_bug(
+        self.workspace = raw_scene.get("workspace", [0, 6, 0, 6])
+        result    = run_bug2(
             raw_scene,
             max_steps     = self.max_steps,
             step_size     = self.step_size,
@@ -86,6 +88,9 @@ class SimThread(threading.Thread):
         with _frame_lock:
             _frame_queues.pop(threading.get_ident(), None)
 
+
+# ── Live visualisation ────────────────────────────────────────────────────────
+
 def run_realtime(families, scene_idx, max_steps,
                  step_size=0.07, sensing_range=0.55,
                  save=False, speedup=3):
@@ -98,7 +103,6 @@ def run_realtime(families, scene_idx, max_steps,
     for t in threads:
         t.start()
 
-    # Wait until at least one thread has emitted its first frame
     while not any(len(t.frames) > 0 for t in threads):
         time.sleep(0.05)
 
@@ -106,7 +110,7 @@ def run_realtime(families, scene_idx, max_steps,
     fig, axes = plt.subplots(1, n, figsize=(5 * n, 5.5))
     if n == 1:
         axes = [axes]
-    fig.suptitle(f"Bug1 — scene {scene_idx:03d}  (live)", fontsize=10)
+    fig.suptitle(f"Bug2 — scene {scene_idx:03d}  (live)", fontsize=10)
 
     panels = []
     for ax, t in zip(axes, threads):
@@ -128,7 +132,6 @@ def run_realtime(families, scene_idx, max_steps,
             bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"),
         )
         frame_cursor = [0]
-
         panels.append((t, ax, patches, ghost_built,
                        path_line, robot_dot, status_text, frame_cursor))
 
@@ -138,17 +141,13 @@ def run_realtime(families, scene_idx, max_steps,
              path_line, robot_dot, status_text, cursor) in panels:
 
             frames = t.frames
-
             if not frames:
                 artists += [path_line, robot_dot, status_text]
                 continue
 
-            # First frame: build workspace bounds, ghost outlines, obstacle patches
             if not ghost_built[0]:
                 frame0 = frames[0]
-                xmin, xmax, ymin, ymax = 0, 6, 0, 6
-                if t.scene:
-                    xmin, xmax, ymin, ymax = t.scene["workspace"]
+                xmin, xmax, ymin, ymax = t.workspace or [0, 6, 0, 6]
                 ax.set_xlim(xmin, xmax)
                 ax.set_ylim(ymin, ymax)
 
@@ -178,9 +177,8 @@ def run_realtime(families, scene_idx, max_steps,
 
                 ghost_built[0] = True
 
-            # Always show the latest available frame
-            idx    = len(frames) - 1
-            frame  = frames[idx]
+            idx   = len(frames) - 1
+            frame = frames[idx]
             cursor[0] = idx
 
             for patch, obs in zip(patches, frame.obstacles):
@@ -221,10 +219,12 @@ def run_realtime(families, scene_idx, max_steps,
     if save:
         _save_video(threads, scene_idx, speedup=speedup)
 
+
+# ── Batch mode ────────────────────────────────────────────────────────────────
+
 def run_batch(families, scene_indices, max_steps,
               step_size=0.07, sensing_range=0.55,
               save=False, speedup=3, max_workers=8):
-    """Run multiple scenes fully in parallel (no live animation). Saves logs and optional videos."""
     import concurrent.futures
 
     def _run_scene(scene_idx):
@@ -240,8 +240,7 @@ def run_batch(families, scene_indices, max_steps,
         _save_log(threads, scene_idx)
         if save:
             _save_video(threads, scene_idx, speedup=speedup)
-        results = {t.family: t.success for t in threads}
-        return scene_idx, results
+        return scene_idx, {t.family: t.success for t in threads}
 
     print(f"Running {len(scene_indices)} scenes × {len(families)} families "
           f"({min(max_workers, len(scene_indices))} workers)...")
@@ -258,14 +257,16 @@ def run_batch(families, scene_indices, max_steps,
     print("Done.")
 
 
+# ── Log / video saving ────────────────────────────────────────────────────────
+
 def _save_log(threads, scene_idx):
     log_dir   = Path(__file__).resolve().parent / "environment" / "data" / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_path  = log_dir / f"bug1_scene{scene_idx:03d}_{timestamp}.txt"
+    log_path  = log_dir / f"bug2_scene{scene_idx:03d}_{timestamp}.txt"
 
     with open(log_path, "w") as f:
-        f.write("Bug1 Simulation Log\n")
+        f.write("Bug2 Simulation Log\n")
         f.write(f"Scene: {scene_idx:03d}   Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write("=" * 70 + "\n\n")
 
@@ -282,8 +283,6 @@ def _save_log(threads, scene_idx):
     print(f"Log saved → {log_path}")
 
 
-# ── Video saving ──────────────────────────────────────────────────────────────
-
 def _save_video(threads, scene_idx, speedup=3, fps=30):
     import shutil
 
@@ -296,12 +295,12 @@ def _save_video(threads, scene_idx, speedup=3, fps=30):
     fig, axes = plt.subplots(1, n, figsize=(5 * n, 5.5))
     if n == 1:
         axes = [axes]
-    fig.suptitle(f"Bug1 — scene {scene_idx:03d}", fontsize=10)
+    fig.suptitle(f"Bug2 — scene {scene_idx:03d}", fontsize=10)
 
     panels = []
     for ax, t in zip(axes, threads):
         frame0 = t.frames[0]
-        xmin, xmax, ymin, ymax = t.scene["workspace"] if t.scene else (0, 6, 0, 6)
+        xmin, xmax, ymin, ymax = t.workspace or [0, 6, 0, 6]
         ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)
         ax.set_aspect("equal")
@@ -364,7 +363,7 @@ def _save_video(threads, scene_idx, speedup=3, fps=30):
 
     out_dir  = Path(__file__).resolve().parent / "environment" / "data" / "videos"
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"bug1_scene{scene_idx:03d}.mp4"
+    out_path = out_dir / f"bug2_scene{scene_idx:03d}.mp4"
 
     if shutil.which("ffmpeg"):
         from matplotlib.animation import FFMpegWriter
@@ -382,26 +381,25 @@ def _save_video(threads, scene_idx, speedup=3, fps=30):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--scene",    type=int,   nargs="+", default=[0],
+    parser.add_argument("--scene",   type=int,   nargs="+", default=[0],
                         help="One or more scene indices. Multiple → batch mode (no live viz).")
-    parser.add_argument("--scenes",   type=str,   default=None,
+    parser.add_argument("--scenes",  type=str,   default=None,
                         help="Range of scenes, e.g. '0-99'. Implies batch mode.")
-    parser.add_argument("--family",   nargs="*",  default=None, choices=FAMILIES)
-    parser.add_argument("--steps",    type=int,   default=500)
-    parser.add_argument("--sense",    type=float, default=0.55,
+    parser.add_argument("--family",  nargs="*",  default=None, choices=FAMILIES)
+    parser.add_argument("--steps",   type=int,   default=500)
+    parser.add_argument("--sense",   type=float, default=0.55,
                         help="Sensing radius in metres (default: 0.55)")
-    parser.add_argument("--step",     type=float, default=0.07,
+    parser.add_argument("--step",    type=float, default=0.07,
                         help="Robot step size in metres (default: 0.07)")
-    parser.add_argument("--save",     action="store_true",
+    parser.add_argument("--save",    action="store_true",
                         help="Save video after simulation ends")
-    parser.add_argument("--speedup",  type=int,   default=3)
-    parser.add_argument("--workers",  type=int,   default=8,
+    parser.add_argument("--speedup", type=int,   default=3)
+    parser.add_argument("--workers", type=int,   default=8,
                         help="Max parallel workers in batch mode (default: 8)")
     args = parser.parse_args()
 
     families = args.family or FAMILIES
 
-    # Build scene list
     if args.scenes:
         lo, hi = map(int, args.scenes.split("-"))
         scene_indices = list(range(lo, hi + 1))
@@ -409,7 +407,7 @@ if __name__ == "__main__":
         scene_indices = args.scene
 
     if len(scene_indices) > 1 or args.scenes:
-        print(f"Bug1 batch — {len(scene_indices)} scenes  families: {', '.join(families)}")
+        print(f"Bug2 batch — {len(scene_indices)} scenes  families: {', '.join(families)}")
         run_batch(
             families,
             scene_indices = scene_indices,
@@ -422,7 +420,7 @@ if __name__ == "__main__":
         )
     else:
         scene_idx = scene_indices[0]
-        print(f"Bug1 — scene {scene_idx:03d}  families: {', '.join(families)}")
+        print(f"Bug2 — scene {scene_idx:03d}  families: {', '.join(families)}")
         run_realtime(
             families,
             scene_idx     = scene_idx,

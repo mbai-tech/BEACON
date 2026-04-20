@@ -1,0 +1,1055 @@
+SCHOLAR Simulation Log
+Scene: 053   Date: 2026-04-17 16:27:22
+======================================================================
+
+Family: sparse
+Result: FAILED  (304 steps)
+--------------------------------------------------
+  step    0 | (4.8268, 0.6376) | start
+  step    1 | (4.8268, 0.6376) | sensed obstacle(s) [0]; frontiers=47
+  step    2 | (4.8034, 0.6701) | goal mode: moving directly toward goal
+  step    3 | (4.7801, 0.7026) | goal mode: moving directly toward goal
+  step    4 | (4.7568, 0.7351) | goal mode: moving directly toward goal
+  step    5 | (4.7335, 0.7676) | goal mode: moving directly toward goal
+  step    6 | (4.7102, 0.8001) | goal mode: moving directly toward goal
+  step    7 | (4.6868, 0.8326) | goal mode: moving directly toward goal
+  step    8 | (4.6635, 0.8651) | goal mode: moving directly toward goal
+  step    9 | (4.6402, 0.8976) | CIBP replan: boundary→avoid for obs 0
+  step   10 | (4.6402, 0.8976) | boundary mode: entered near obs 0 (movable, P_safe=0.88)
+  step   11 | (4.6003, 0.9007) | boundary mode: following obs 0 (movable)
+  step   12 | (4.5724, 0.8721) | boundary mode: following obs 0 (movable)
+  step   13 | (4.5399, 0.8487) | boundary mode: following obs 0 (movable)
+  step   14 | (4.5038, 0.8314) | boundary mode: following obs 0 (movable)
+  step   15 | (4.4678, 0.8141) | boundary mode: following obs 0 (movable)
+  step   16 | (4.4292, 0.8033) | boundary mode: following obs 0 (movable)
+  step   17 | (4.3894, 0.7994) | boundary mode: following obs 0 (movable)
+  step   18 | (4.3496, 0.7954) | boundary mode: following obs 0 (movable)
+  step   19 | (4.3097, 0.7985) | boundary mode: following obs 0 (movable)
+  step   20 | (4.2699, 0.8015) | boundary mode: following obs 0 (movable)
+  step   21 | (4.2311, 0.8114) | boundary mode: following obs 0 (movable)
+  step   22 | (4.1947, 0.8279) | boundary mode: following obs 0 (movable)
+  step   23 | (4.1582, 0.8444) | boundary mode: following obs 0 (movable)
+  step   24 | (4.1252, 0.8669) | boundary mode: following obs 0 (movable)
+  step   25 | (4.0922, 0.8895) | boundary mode: following obs 0 (movable)
+  step   26 | (4.0636, 0.9175) | boundary mode: following obs 0 (movable)
+  step   27 | (4.0636, 0.9175) | boundary mode: direct path clear — leaving obs 0
+  step   28 | (4.0431, 0.9518) | goal mode: moving directly toward goal
+  step   29 | (4.0226, 0.9862) | goal mode: moving directly toward goal
+  step   30 | (4.0021, 1.0206) | goal mode: moving directly toward goal
+  step   31 | (3.9817, 1.0549) | goal mode: moving directly toward goal
+  step   32 | (3.9612, 1.0893) | goal mode: moving directly toward goal
+  step   33 | (3.9407, 1.1236) | goal mode: moving directly toward goal
+  step   34 | (3.9203, 1.1580) | goal mode: moving directly toward goal
+  step   35 | (3.8998, 1.1924) | goal mode: moving directly toward goal
+  step   36 | (3.8793, 1.2267) | goal mode: moving directly toward goal
+  step   37 | (3.8589, 1.2611) | goal mode: moving directly toward goal
+  step   38 | (3.8384, 1.2955) | goal mode: moving directly toward goal
+  step   39 | (3.8179, 1.3298) | goal mode: moving directly toward goal
+  step   40 | (3.7974, 1.3642) | goal mode: moving directly toward goal
+  step   41 | (3.7770, 1.3986) | goal mode: moving directly toward goal
+  step   42 | (3.7565, 1.4329) | goal mode: moving directly toward goal
+  step   43 | (3.7360, 1.4673) | goal mode: moving directly toward goal
+  step   44 | (3.7156, 1.5017) | goal mode: moving directly toward goal
+  step   45 | (3.6951, 1.5360) | goal mode: moving directly toward goal
+  step   46 | (3.6746, 1.5704) | goal mode: moving directly toward goal
+  step   47 | (3.6542, 1.6048) | goal mode: moving directly toward goal
+  step   48 | (3.6337, 1.6391) | goal mode: moving directly toward goal
+  step   49 | (3.6132, 1.6735) | goal mode: moving directly toward goal
+  step   50 | (3.5928, 1.7079) | goal mode: moving directly toward goal
+  step   51 | (3.5723, 1.7422) | goal mode: moving directly toward goal
+  step   52 | (3.5518, 1.7766) | goal mode: moving directly toward goal
+  step   53 | (3.5313, 1.8110) | goal mode: moving directly toward goal
+  step   54 | (3.5109, 1.8453) | goal mode: moving directly toward goal
+  step   55 | (3.4904, 1.8797) | goal mode: moving directly toward goal
+  step   56 | (3.4699, 1.9141) | goal mode: moving directly toward goal
+  step   57 | (3.4495, 1.9484) | goal mode: moving directly toward goal
+  step   58 | (3.4290, 1.9828) | goal mode: moving directly toward goal
+  step   59 | (3.4085, 2.0172) | goal mode: moving directly toward goal
+  step   60 | (3.3881, 2.0515) | goal mode: moving directly toward goal
+  step   61 | (3.3676, 2.0859) | goal mode: moving directly toward goal
+  step   62 | (3.3471, 2.1202) | goal mode: moving directly toward goal
+  step   63 | (3.3266, 2.1546) | goal mode: moving directly toward goal
+  step   64 | (3.3062, 2.1890) | goal mode: moving directly toward goal
+  step   65 | (3.2857, 2.2233) | goal mode: moving directly toward goal
+  step   66 | (3.2652, 2.2577) | goal mode: moving directly toward goal
+  step   67 | (3.2652, 2.2577) | sensed obstacle(s) [3]; frontiers=47
+  step   68 | (3.2448, 2.2921) | goal mode: moving directly toward goal
+  step   69 | (3.2243, 2.3264) | goal mode: moving directly toward goal
+  step   70 | (3.2038, 2.3608) | goal mode: moving directly toward goal
+  step   71 | (3.1834, 2.3952) | goal mode: moving directly toward goal
+  step   72 | (3.1629, 2.4295) | goal mode: moving directly toward goal
+  step   73 | (3.1424, 2.4639) | goal mode: moving directly toward goal
+  step   74 | (3.1219, 2.4983) | goal mode: moving directly toward goal
+  step   75 | (3.1015, 2.5326) | goal mode: moving directly toward goal
+  step   76 | (3.0810, 2.5670) | CIBP replan: boundary→avoid for obs 3
+  step   77 | (3.0605, 2.6014) | goal mode: moving directly toward goal
+  step   78 | (3.0401, 2.6357) | goal mode: moving directly toward goal
+  step   79 | (3.0401, 2.6357) | boundary mode: entered near obs 3 (not_movable, P_safe=0.16)
+  step   80 | (3.0269, 2.5980) | boundary mode: following obs 3 (not_movable)
+  step   81 | (3.0205, 2.5585) | boundary mode: following obs 3 (not_movable)
+  step   82 | (3.0073, 2.5207) | boundary mode: following obs 3 (not_movable)
+  step   83 | (2.9942, 2.4829) | boundary mode: following obs 3 (not_movable)
+  step   84 | (2.9746, 2.4480) | boundary mode: following obs 3 (not_movable)
+  step   85 | (2.9551, 2.4131) | boundary mode: following obs 3 (not_movable)
+  step   86 | (2.9356, 2.3782) | boundary mode: following obs 3 (not_movable)
+  step   87 | (2.9103, 2.3472) | boundary mode: following obs 3 (not_movable)
+  step   88 | (2.8800, 2.3211) | boundary mode: following obs 3 (not_movable)
+  step   89 | (2.8497, 2.2950) | boundary mode: following obs 3 (not_movable)
+  step   90 | (2.8194, 2.2688) | boundary mode: following obs 3 (not_movable)
+  step   91 | (2.7851, 2.2484) | boundary mode: following obs 3 (not_movable)
+  step   92 | (2.7507, 2.2279) | boundary mode: following obs 3 (not_movable)
+  step   93 | (2.7133, 2.2137) | boundary mode: following obs 3 (not_movable)
+  step   94 | (2.6759, 2.1995) | boundary mode: following obs 3 (not_movable)
+  step   95 | (2.6366, 2.1920) | boundary mode: following obs 3 (not_movable)
+  step   96 | (2.5973, 2.1846) | boundary mode: following obs 3 (not_movable)
+  step   97 | (2.5573, 2.1840) | boundary mode: following obs 3 (not_movable)
+  step   98 | (2.5173, 2.1835) | boundary mode: following obs 3 (not_movable)
+  step   99 | (2.4773, 2.1829) | boundary mode: following obs 3 (not_movable)
+  step  100 | (2.4378, 2.1893) | boundary mode: following obs 3 (not_movable)
+  step  101 | (2.4001, 2.2025) | boundary mode: following obs 3 (not_movable)
+  step  102 | (2.3623, 2.2157) | boundary mode: following obs 3 (not_movable)
+  step  103 | (2.3245, 2.2288) | boundary mode: following obs 3 (not_movable)
+  step  104 | (2.2896, 2.2484) | boundary mode: following obs 3 (not_movable)
+  step  105 | (2.2547, 2.2679) | boundary mode: following obs 3 (not_movable)
+  step  106 | (2.2547, 2.2679) | sensed obstacle(s) [7]; frontiers=23
+  step  107 | (2.2237, 2.2932) | boundary mode: following obs 3 (not_movable)
+  step  108 | (2.1927, 2.3185) | boundary mode: following obs 3 (not_movable)
+  step  109 | (2.1666, 2.3488) | boundary mode: following obs 3 (not_movable)
+  step  110 | (2.1405, 2.3791) | boundary mode: following obs 3 (not_movable)
+  step  111 | (2.1200, 2.4134) | boundary mode: following obs 3 (not_movable)
+  step  112 | (2.0995, 2.4478) | boundary mode: following obs 3 (not_movable)
+  step  113 | (2.0791, 2.4821) | boundary mode: following obs 3 (not_movable)
+  step  114 | (2.0791, 2.4821) | boundary mode: direct path clear — leaving obs 3
+  step  115 | (2.0693, 2.5209) | goal mode: moving directly toward goal
+  step  116 | (2.0693, 2.5209) | sensed obstacle(s) [8]; frontiers=9
+  step  117 | (2.0693, 2.5209) | boundary mode: entered near obs 3 (not_movable, P_safe=0.47)
+  step  118 | (2.0530, 2.5575) | boundary mode: following obs 3 (not_movable)
+  step  119 | (2.0530, 2.5575) | boundary mode: direct path clear — leaving obs 3
+  step  120 | (2.0434, 2.5963) | goal mode: moving directly toward goal
+  step  121 | (2.0337, 2.6351) | goal mode: moving directly toward goal
+  step  122 | (2.0241, 2.6739) | goal mode: moving directly toward goal
+  step  123 | (2.0144, 2.7127) | goal mode: moving directly toward goal
+  step  124 | (2.0048, 2.7516) | goal mode: moving directly toward goal
+  step  125 | (1.9951, 2.7904) | goal mode: moving directly toward goal
+  step  126 | (1.9855, 2.8292) | goal mode: moving directly toward goal
+  step  127 | (1.9759, 2.8680) | CIBP replan: boundary→avoid for obs 8
+  step  128 | (1.9662, 2.9068) | goal mode: moving directly toward goal
+  step  129 | (1.9662, 2.9068) | boundary mode: entered near obs 8 (not_movable, P_safe=0.14)
+  step  130 | (1.9374, 2.8791) | boundary mode: following obs 8 (not_movable)
+  step  131 | (1.9139, 2.8467) | boundary mode: following obs 8 (not_movable)
+  step  132 | (1.8903, 2.8144) | boundary mode: following obs 8 (not_movable)
+  step  133 | (1.8615, 2.7866) | boundary mode: following obs 8 (not_movable)
+  step  134 | (1.8327, 2.7589) | boundary mode: following obs 8 (not_movable)
+  step  135 | (1.8039, 2.7311) | boundary mode: following obs 8 (not_movable)
+  step  136 | (1.7708, 2.7088) | boundary mode: following obs 8 (not_movable)
+  step  137 | (1.7804, 2.6700) | boundary mode: following obs 8 (not_movable)
+  step  138 | (1.7740, 2.7094) | CIBP replan: boundary→avoid for obs 7
+  step  139 | (1.7765, 2.7156) | CIBP replan: boundary→avoid for obs 8
+  step  140 | (1.7723, 2.6758) | boundary mode: following obs 8 (not_movable)
+  step  141 | (1.7770, 2.7155) | CIBP replan: boundary→avoid for obs 7
+  step  142 | (1.7770, 2.7155) | stopped at epsilon boundary near obstacle 8
+  step  143 | (1.7728, 2.6758) | boundary mode: following obs 8 (not_movable)
+  step  144 | (1.8095, 2.7125) | frontier detour: around blocked corridor (obs 8/7)
+  step  145 | (1.8412, 2.7538) | frontier detour: around blocked corridor (obs 8/7)
+  step  146 | (1.8046, 2.7375) | boundary mode: following obs 8 (not_movable)
+  step  147 | (1.7758, 2.7098) | boundary mode: following obs 8 (not_movable)
+  step  148 | (1.7855, 2.6710) | boundary mode: following obs 8 (not_movable)
+  step  149 | (1.8171, 2.7122) | frontier detour: around blocked corridor (obs 8/7)
+  step  150 | (1.8488, 2.7535) | frontier detour: around blocked corridor (obs 8/7)
+  step  151 | (1.8122, 2.7372) | boundary mode: following obs 8 (not_movable)
+  step  152 | (1.7791, 2.7149) | boundary mode: following obs 8 (not_movable)
+  step  153 | (1.7748, 2.6751) | boundary mode: following obs 8 (not_movable)
+  step  154 | (1.8116, 2.7119) | frontier detour: around blocked corridor (obs 8/7)
+  step  155 | (1.8433, 2.7531) | frontier detour: around blocked corridor (obs 8/7)
+  step  156 | (1.8067, 2.7369) | boundary mode: following obs 8 (not_movable)
+  step  157 | (1.7735, 2.7146) | boundary mode: following obs 8 (not_movable)
+  step  158 | (1.7763, 2.6747) | boundary mode: following obs 8 (not_movable)
+  step  159 | (1.8131, 2.7114) | frontier detour: around blocked corridor (obs 8/7)
+  step  160 | (1.8447, 2.7527) | frontier detour: around blocked corridor (obs 8/7)
+  step  161 | (1.8082, 2.7364) | boundary mode: following obs 8 (not_movable)
+  step  162 | (1.7750, 2.7141) | boundary mode: following obs 8 (not_movable)
+  step  163 | (1.7777, 2.6742) | boundary mode: following obs 8 (not_movable)
+  step  164 | (1.8094, 2.7154) | frontier detour: around blocked corridor (obs 8/7)
+  step  165 | (1.8410, 2.7567) | frontier detour: around blocked corridor (obs 8/7)
+  step  166 | (1.8079, 2.7344) | boundary mode: following obs 8 (not_movable)
+  step  167 | (1.7747, 2.7120) | boundary mode: following obs 8 (not_movable)
+  step  168 | (1.7774, 2.6721) | boundary mode: following obs 8 (not_movable)
+  step  169 | (1.8091, 2.7134) | frontier detour: around blocked corridor (obs 8/7)
+  step  170 | (1.8408, 2.7546) | frontier detour: around blocked corridor (obs 8/7)
+  step  171 | (1.8076, 2.7323) | boundary mode: following obs 8 (not_movable)
+  step  172 | (1.7744, 2.7099) | boundary mode: following obs 8 (not_movable)
+  step  173 | (1.7840, 2.6711) | boundary mode: following obs 8 (not_movable)
+  step  174 | (1.8157, 2.7124) | frontier detour: around blocked corridor (obs 8/7)
+  step  175 | (1.8473, 2.7536) | frontier detour: around blocked corridor (obs 8/7)
+  step  176 | (1.8108, 2.7374) | boundary mode: following obs 8 (not_movable)
+  step  177 | (1.7776, 2.7151) | boundary mode: following obs 8 (not_movable)
+  step  178 | (1.7734, 2.6753) | boundary mode: following obs 8 (not_movable)
+  step  179 | (1.8102, 2.7121) | frontier detour: around blocked corridor (obs 8/7)
+  step  180 | (1.8418, 2.7533) | frontier detour: around blocked corridor (obs 8/7)
+  step  181 | (1.8053, 2.7371) | boundary mode: following obs 8 (not_movable)
+  step  182 | (1.7765, 2.7093) | boundary mode: following obs 8 (not_movable)
+  step  183 | (1.7861, 2.6705) | boundary mode: following obs 8 (not_movable)
+  step  184 | (1.8178, 2.7117) | frontier detour: around blocked corridor (obs 8/7)
+  step  185 | (1.8494, 2.7530) | frontier detour: around blocked corridor (obs 8/7)
+  step  186 | (1.8129, 2.7368) | boundary mode: following obs 8 (not_movable)
+  step  187 | (1.7797, 2.7144) | boundary mode: following obs 8 (not_movable)
+  step  188 | (1.7755, 2.6746) | boundary mode: following obs 8 (not_movable)
+  step  189 | (1.8122, 2.7114) | frontier detour: around blocked corridor (obs 8/7)
+  step  190 | (1.8439, 2.7527) | frontier detour: around blocked corridor (obs 8/7)
+  step  191 | (1.8073, 2.7364) | boundary mode: following obs 8 (not_movable)
+  step  192 | (1.7742, 2.7141) | boundary mode: following obs 8 (not_movable)
+  step  193 | (1.7769, 2.6742) | boundary mode: following obs 8 (not_movable)
+  step  194 | (1.8086, 2.7154) | frontier detour: around blocked corridor (obs 8/7)
+  step  195 | (1.8402, 2.7567) | frontier detour: around blocked corridor (obs 8/7)
+  step  196 | (1.8070, 2.7343) | boundary mode: following obs 8 (not_movable)
+  step  197 | (1.7739, 2.7120) | boundary mode: following obs 8 (not_movable)
+  step  198 | (1.7835, 2.6732) | boundary mode: following obs 8 (not_movable)
+  step  199 | (1.8152, 2.7144) | frontier detour: around blocked corridor (obs 8/7)
+  step  200 | (1.8468, 2.7557) | frontier detour: around blocked corridor (obs 8/7)
+  step  201 | (1.8103, 2.7395) | boundary mode: following obs 8 (not_movable)
+  step  202 | (1.7771, 2.7171) | boundary mode: following obs 8 (not_movable)
+  step  203 | (1.7439, 2.6948) | boundary mode: following obs 8 (not_movable)
+  step  204 | (1.7889, 2.7208) | frontier detour: around blocked corridor (obs 8/7)
+  step  205 | (1.8302, 2.7524) | frontier detour: around blocked corridor (obs 8/7)
+  step  206 | (1.7970, 2.7301) | boundary mode: following obs 8 (not_movable)
+  step  207 | (1.7638, 2.7078) | boundary mode: following obs 8 (not_movable)
+  step  208 | (1.7801, 2.6712) | boundary mode: following obs 8 (not_movable)
+  step  209 | (1.8117, 2.7125) | frontier detour: around blocked corridor (obs 8/7)
+  step  210 | (1.8434, 2.7537) | frontier detour: around blocked corridor (obs 8/7)
+  step  211 | (1.8068, 2.7375) | boundary mode: following obs 8 (not_movable)
+  step  212 | (1.7780, 2.7097) | boundary mode: following obs 8 (not_movable)
+  step  213 | (1.7808, 2.6698) | boundary mode: following obs 8 (not_movable)
+  step  214 | (1.8124, 2.7111) | frontier detour: around blocked corridor (obs 8/7)
+  step  215 | (1.8441, 2.7523) | frontier detour: around blocked corridor (obs 8/7)
+  step  216 | (1.8075, 2.7361) | boundary mode: following obs 8 (not_movable)
+  step  217 | (1.7744, 2.7137) | boundary mode: following obs 8 (not_movable)
+  step  218 | (1.7771, 2.6738) | boundary mode: following obs 8 (not_movable)
+  step  219 | (1.8088, 2.7151) | frontier detour: around blocked corridor (obs 8/7)
+  step  220 | (1.8404, 2.7563) | frontier detour: around blocked corridor (obs 8/7)
+  step  221 | (1.8073, 2.7340) | boundary mode: following obs 8 (not_movable)
+  step  222 | (1.7741, 2.7117) | boundary mode: following obs 8 (not_movable)
+  step  223 | (1.7837, 2.6728) | boundary mode: following obs 8 (not_movable)
+  step  224 | (1.8154, 2.7141) | frontier detour: around blocked corridor (obs 8/7)
+  step  225 | (1.8470, 2.7553) | frontier detour: around blocked corridor (obs 8/7)
+  step  226 | (1.8105, 2.7391) | boundary mode: following obs 8 (not_movable)
+  step  227 | (1.7773, 2.7168) | boundary mode: following obs 8 (not_movable)
+  step  228 | (1.7731, 2.6770) | boundary mode: following obs 8 (not_movable)
+  step  229 | (1.8098, 2.7138) | frontier detour: around blocked corridor (obs 8/7)
+  step  230 | (1.8415, 2.7550) | frontier detour: around blocked corridor (obs 8/7)
+  step  231 | (1.8083, 2.7327) | boundary mode: following obs 8 (not_movable)
+  step  232 | (1.7751, 2.7103) | boundary mode: following obs 8 (not_movable)
+  step  233 | (1.7848, 2.6715) | boundary mode: following obs 8 (not_movable)
+  step  234 | (1.8164, 2.7128) | frontier detour: around blocked corridor (obs 8/7)
+  step  235 | (1.8481, 2.7540) | frontier detour: around blocked corridor (obs 8/7)
+  step  236 | (1.8115, 2.7378) | boundary mode: following obs 8 (not_movable)
+  step  237 | (1.7784, 2.7154) | boundary mode: following obs 8 (not_movable)
+  step  238 | (1.7741, 2.6757) | boundary mode: following obs 8 (not_movable)
+  step  239 | (1.8109, 2.7124) | frontier detour: around blocked corridor (obs 8/7)
+  step  240 | (1.8426, 2.7537) | frontier detour: around blocked corridor (obs 8/7)
+  step  241 | (1.8060, 2.7375) | boundary mode: following obs 8 (not_movable)
+  step  242 | (1.7772, 2.7097) | boundary mode: following obs 8 (not_movable)
+  step  243 | (1.7800, 2.6698) | boundary mode: following obs 8 (not_movable)
+  step  244 | (1.8116, 2.7110) | frontier detour: around blocked corridor (obs 8/7)
+  step  245 | (1.8433, 2.7523) | frontier detour: around blocked corridor (obs 8/7)
+  step  246 | (1.8067, 2.7361) | boundary mode: following obs 8 (not_movable)
+  step  247 | (1.7736, 2.7137) | boundary mode: following obs 8 (not_movable)
+  step  248 | (1.7763, 2.6738) | boundary mode: following obs 8 (not_movable)
+  step  249 | (1.8080, 2.7151) | frontier detour: around blocked corridor (obs 8/7)
+  step  250 | (1.8447, 2.7518) | frontier detour: around blocked corridor (obs 8/7)
+  step  251 | (1.8082, 2.7356) | boundary mode: following obs 8 (not_movable)
+  step  252 | (1.7750, 2.7133) | boundary mode: following obs 8 (not_movable)
+  step  253 | (1.7778, 2.6733) | boundary mode: following obs 8 (not_movable)
+  step  254 | (1.8094, 2.7146) | frontier detour: around blocked corridor (obs 8/7)
+  step  255 | (1.8411, 2.7559) | frontier detour: around blocked corridor (obs 8/7)
+  step  256 | (1.8079, 2.7335) | boundary mode: following obs 8 (not_movable)
+  step  257 | (1.7747, 2.7112) | boundary mode: following obs 8 (not_movable)
+  step  258 | (1.7843, 2.6724) | boundary mode: following obs 8 (not_movable)
+  step  259 | (1.8160, 2.7136) | frontier detour: around blocked corridor (obs 8/7)
+  step  260 | (1.8477, 2.7549) | frontier detour: around blocked corridor (obs 8/7)
+  step  261 | (1.8111, 2.7386) | boundary mode: following obs 8 (not_movable)
+  step  262 | (1.7779, 2.7163) | boundary mode: following obs 8 (not_movable)
+  step  263 | (1.7737, 2.6765) | boundary mode: following obs 8 (not_movable)
+  step  264 | (1.8105, 2.7133) | frontier detour: around blocked corridor (obs 8/7)
+  step  265 | (1.8421, 2.7545) | frontier detour: around blocked corridor (obs 8/7)
+  step  266 | (1.8056, 2.7383) | boundary mode: following obs 8 (not_movable)
+  step  267 | (1.7768, 2.7105) | boundary mode: following obs 8 (not_movable)
+  step  268 | (1.7795, 2.6706) | boundary mode: following obs 8 (not_movable)
+  step  269 | (1.8112, 2.7119) | frontier detour: around blocked corridor (obs 8/7)
+  step  270 | (1.8429, 2.7531) | frontier detour: around blocked corridor (obs 8/7)
+  step  271 | (1.8063, 2.7369) | boundary mode: following obs 8 (not_movable)
+  step  272 | (1.7731, 2.7146) | boundary mode: following obs 8 (not_movable)
+  step  273 | (1.7759, 2.6747) | boundary mode: following obs 8 (not_movable)
+  step  274 | (1.8126, 2.7114) | frontier detour: around blocked corridor (obs 8/7)
+  step  275 | (1.8443, 2.7527) | frontier detour: around blocked corridor (obs 8/7)
+  step  276 | (1.8077, 2.7364) | boundary mode: following obs 8 (not_movable)
+  step  277 | (1.7746, 2.7141) | boundary mode: following obs 8 (not_movable)
+  step  278 | (1.7773, 2.6742) | boundary mode: following obs 8 (not_movable)
+  step  279 | (1.8090, 2.7155) | frontier detour: around blocked corridor (obs 8/7)
+  step  280 | (1.8406, 2.7567) | frontier detour: around blocked corridor (obs 8/7)
+  step  281 | (1.8074, 2.7344) | boundary mode: following obs 8 (not_movable)
+  step  282 | (1.7743, 2.7120) | boundary mode: following obs 8 (not_movable)
+  step  283 | (1.7770, 2.6721) | boundary mode: following obs 8 (not_movable)
+  step  284 | (1.8087, 2.7134) | frontier detour: around blocked corridor (obs 8/7)
+  step  285 | (1.8403, 2.7546) | frontier detour: around blocked corridor (obs 8/7)
+  step  286 | (1.8072, 2.7323) | boundary mode: following obs 8 (not_movable)
+  step  287 | (1.7740, 2.7099) | boundary mode: following obs 8 (not_movable)
+  step  288 | (1.7836, 2.6711) | boundary mode: following obs 8 (not_movable)
+  step  289 | (1.8153, 2.7124) | frontier detour: around blocked corridor (obs 8/7)
+  step  290 | (1.8469, 2.7536) | frontier detour: around blocked corridor (obs 8/7)
+  step  291 | (1.8104, 2.7374) | boundary mode: following obs 8 (not_movable)
+  step  292 | (1.7772, 2.7151) | boundary mode: following obs 8 (not_movable)
+  step  293 | (1.7730, 2.6753) | boundary mode: following obs 8 (not_movable)
+  step  294 | (1.8098, 2.7121) | frontier detour: around blocked corridor (obs 8/7)
+  step  295 | (1.8414, 2.7533) | frontier detour: around blocked corridor (obs 8/7)
+  step  296 | (1.8049, 2.7371) | boundary mode: following obs 8 (not_movable)
+  step  297 | (1.7761, 2.7093) | boundary mode: following obs 8 (not_movable)
+  step  298 | (1.7857, 2.6705) | boundary mode: following obs 8 (not_movable)
+  step  299 | (1.8174, 2.7117) | frontier detour: around blocked corridor (obs 8/7)
+  step  300 | (1.8490, 2.7530) | frontier detour: around blocked corridor (obs 8/7)
+  step  301 | (1.8125, 2.7368) | boundary mode: following obs 8 (not_movable)
+  step  302 | (1.7793, 2.7144) | boundary mode: following obs 8 (not_movable)
+  step  303 | (1.7751, 2.6746) | boundary mode: following obs 8 (not_movable)
+
+Family: cluttered
+Result: FAILED  (304 steps)
+--------------------------------------------------
+  step    0 | (4.8268, 0.6376) | start
+  step    1 | (4.8268, 0.6376) | sensed obstacle(s) [0]; frontiers=47
+  step    2 | (4.8034, 0.6701) | goal mode: moving directly toward goal
+  step    3 | (4.7801, 0.7026) | goal mode: moving directly toward goal
+  step    4 | (4.7568, 0.7351) | goal mode: moving directly toward goal
+  step    5 | (4.7335, 0.7676) | goal mode: moving directly toward goal
+  step    6 | (4.7102, 0.8001) | goal mode: moving directly toward goal
+  step    7 | (4.6868, 0.8326) | goal mode: moving directly toward goal
+  step    8 | (4.6635, 0.8651) | goal mode: moving directly toward goal
+  step    9 | (4.6402, 0.8976) | CIBP replan: boundary→avoid for obs 0
+  step   10 | (4.6402, 0.8976) | boundary mode: entered near obs 0 (movable, P_safe=0.88)
+  step   11 | (4.6003, 0.9007) | boundary mode: following obs 0 (movable)
+  step   12 | (4.5724, 0.8721) | boundary mode: following obs 0 (movable)
+  step   13 | (4.5399, 0.8487) | boundary mode: following obs 0 (movable)
+  step   14 | (4.5038, 0.8314) | boundary mode: following obs 0 (movable)
+  step   15 | (4.4678, 0.8141) | boundary mode: following obs 0 (movable)
+  step   16 | (4.4292, 0.8033) | boundary mode: following obs 0 (movable)
+  step   17 | (4.3894, 0.7994) | boundary mode: following obs 0 (movable)
+  step   18 | (4.3496, 0.7954) | boundary mode: following obs 0 (movable)
+  step   19 | (4.3097, 0.7985) | boundary mode: following obs 0 (movable)
+  step   20 | (4.2699, 0.8015) | boundary mode: following obs 0 (movable)
+  step   21 | (4.2311, 0.8114) | boundary mode: following obs 0 (movable)
+  step   22 | (4.1947, 0.8279) | boundary mode: following obs 0 (movable)
+  step   23 | (4.1582, 0.8444) | boundary mode: following obs 0 (movable)
+  step   24 | (4.1252, 0.8669) | boundary mode: following obs 0 (movable)
+  step   25 | (4.0922, 0.8895) | boundary mode: following obs 0 (movable)
+  step   26 | (4.0636, 0.9175) | boundary mode: following obs 0 (movable)
+  step   27 | (4.0636, 0.9175) | boundary mode: direct path clear — leaving obs 0
+  step   28 | (4.0431, 0.9518) | goal mode: moving directly toward goal
+  step   29 | (4.0431, 0.9518) | sensed obstacle(s) [15]; frontiers=25
+  step   30 | (4.0226, 0.9862) | goal mode: moving directly toward goal
+  step   31 | (4.0021, 1.0206) | goal mode: moving directly toward goal
+  step   32 | (3.9817, 1.0549) | goal mode: moving directly toward goal
+  step   33 | (3.9612, 1.0893) | goal mode: moving directly toward goal
+  step   34 | (3.9407, 1.1236) | goal mode: moving directly toward goal
+  step   35 | (3.9203, 1.1580) | goal mode: moving directly toward goal
+  step   36 | (3.8998, 1.1924) | goal mode: moving directly toward goal
+  step   37 | (3.8793, 1.2267) | goal mode: moving directly toward goal
+  step   38 | (3.8589, 1.2611) | goal mode: moving directly toward goal
+  step   39 | (3.8384, 1.2955) | CIBP replan: boundary→avoid for obs 15
+  step   40 | (3.8179, 1.3298) | goal mode: moving directly toward goal
+  step   41 | (3.7974, 1.3642) | goal mode: moving directly toward goal
+  step   42 | (3.7770, 1.3986) | goal mode: moving directly toward goal
+  step   43 | (3.7770, 1.3986) | sensed obstacle(s) [19]; frontiers=24
+  step   44 | (3.7565, 1.4329) | goal mode: moving directly toward goal
+  step   45 | (3.7360, 1.4673) | goal mode: moving directly toward goal
+  step   46 | (3.7156, 1.5017) | goal mode: moving directly toward goal
+  step   47 | (3.6951, 1.5360) | goal mode: moving directly toward goal
+  step   48 | (3.6746, 1.5704) | contact mode: pushed obstacle 19 by 0.12; push_history=1
+  step   49 | (3.6542, 1.6048) | goal mode: moving directly toward goal
+  step   50 | (3.6337, 1.6391) | goal mode: moving directly toward goal
+  step   51 | (3.6132, 1.6735) | contact mode: pushed obstacle 19 by 0.12; push_history=2
+  step   52 | (3.5928, 1.7079) | goal mode: moving directly toward goal
+  step   53 | (3.5723, 1.7422) | goal mode: moving directly toward goal
+  step   54 | (3.5723, 1.7422) | sensed obstacle(s) [24]; frontiers=24
+  step   55 | (3.5518, 1.7766) | goal mode: moving directly toward goal
+  step   56 | (3.5313, 1.8110) | goal mode: moving directly toward goal
+  step   57 | (3.5109, 1.8453) | goal mode: moving directly toward goal
+  step   58 | (3.4904, 1.8797) | CIBP replan: boundary→push obs 19 by 0.02
+  step   59 | (3.4699, 1.9141) | goal mode: moving directly toward goal
+  step   60 | (3.4699, 1.9141) | boundary mode: entered near obs 19 (movable, P_safe=0.96)
+  step   61 | (3.4389, 1.9393) | boundary mode: following obs 19 (movable)
+  step   62 | (3.4012, 1.9525) | boundary mode: following obs 19 (movable)
+  step   63 | (3.3634, 1.9657) | boundary mode: following obs 19 (movable)
+  step   64 | (3.3260, 1.9515) | boundary mode: following obs 19 (movable)
+  step   65 | (3.3260, 1.9515) | sensed obstacle(s) [10]; frontiers=16
+  step   66 | (3.3227, 1.9522) | CIBP replan: boundary→avoid for obs 24
+  step   67 | (3.3227, 1.9522) | boundary mode: entered near obs 24 (not_movable, P_safe=0.12)
+  step   68 | (3.2879, 1.9326) | boundary mode: following obs 24 (not_movable)
+  step   69 | (3.2501, 1.9194) | boundary mode: following obs 24 (not_movable)
+  step   70 | (3.2106, 1.9129) | boundary mode: following obs 24 (not_movable)
+  step   71 | (3.1706, 1.9134) | boundary mode: following obs 24 (not_movable)
+  step   72 | (3.1306, 1.9139) | boundary mode: following obs 24 (not_movable)
+  step   73 | (3.0913, 1.9214) | boundary mode: following obs 24 (not_movable)
+  step   74 | (3.0539, 1.9355) | boundary mode: following obs 24 (not_movable)
+  step   75 | (3.0195, 1.9560) | boundary mode: following obs 24 (not_movable)
+  step   76 | (2.9851, 1.9764) | boundary mode: following obs 24 (not_movable)
+  step   77 | (2.9851, 1.9764) | sensed obstacle(s) [3]; frontiers=14
+  step   78 | (2.9548, 2.0025) | boundary mode: following obs 24 (not_movable)
+  step   79 | (2.9295, 2.0334) | boundary mode: following obs 24 (not_movable)
+  step   80 | (2.9042, 2.0644) | boundary mode: following obs 24 (not_movable)
+  step   81 | (2.9042, 2.0644) | boundary mode: direct path clear — leaving obs 24
+  step   82 | (2.8875, 2.1008) | goal mode: moving directly toward goal
+  step   83 | (2.8708, 2.1371) | goal mode: moving directly toward goal
+  step   84 | (2.8542, 2.1735) | goal mode: moving directly toward goal
+  step   85 | (2.8375, 2.2098) | goal mode: moving directly toward goal
+  step   86 | (2.8208, 2.2462) | goal mode: moving directly toward goal
+  step   87 | (2.8222, 2.2762) | CIBP replan: boundary→avoid for obs 3
+  step   88 | (2.8222, 2.2762) | boundary mode: entered near obs 3 (not_movable, P_safe=0.12)
+  step   89 | (2.7894, 2.2533) | boundary mode: following obs 3 (not_movable)
+  step   90 | (2.7566, 2.2305) | boundary mode: following obs 3 (not_movable)
+  step   91 | (2.7179, 2.2202) | boundary mode: following obs 3 (not_movable)
+  step   92 | (2.6816, 2.2034) | boundary mode: following obs 3 (not_movable)
+  step   93 | (2.6429, 2.1931) | boundary mode: following obs 3 (not_movable)
+  step   94 | (2.6031, 2.1898) | boundary mode: following obs 3 (not_movable)
+  step   95 | (2.5632, 2.1864) | boundary mode: following obs 3 (not_movable)
+  step   96 | (2.5234, 2.1830) | boundary mode: following obs 3 (not_movable)
+  step   97 | (2.4835, 2.1866) | boundary mode: following obs 3 (not_movable)
+  step   98 | (2.4437, 2.1902) | boundary mode: following obs 3 (not_movable)
+  step   99 | (2.4051, 2.2006) | boundary mode: following obs 3 (not_movable)
+  step  100 | (2.3665, 2.2111) | boundary mode: following obs 3 (not_movable)
+  step  101 | (2.3303, 2.2281) | boundary mode: following obs 3 (not_movable)
+  step  102 | (2.2941, 2.2451) | boundary mode: following obs 3 (not_movable)
+  step  103 | (2.2614, 2.2681) | boundary mode: following obs 3 (not_movable)
+  step  104 | (2.2614, 2.2681) | sensed obstacle(s) [7]; frontiers=23
+  step  105 | (2.2287, 2.2912) | boundary mode: following obs 3 (not_movable)
+  step  106 | (2.1960, 2.3142) | boundary mode: following obs 3 (not_movable)
+  step  107 | (2.1677, 2.3426) | boundary mode: following obs 3 (not_movable)
+  step  108 | (2.1449, 2.3754) | boundary mode: following obs 3 (not_movable)
+  step  109 | (2.1220, 2.4082) | boundary mode: following obs 3 (not_movable)
+  step  110 | (2.0992, 2.4410) | boundary mode: following obs 3 (not_movable)
+  step  111 | (2.0824, 2.4773) | boundary mode: following obs 3 (not_movable)
+  step  112 | (2.0656, 2.5136) | boundary mode: following obs 3 (not_movable)
+  step  113 | (2.0656, 2.5136) | sensed obstacle(s) [8]; frontiers=11
+  step  114 | (2.0656, 2.5136) | boundary mode: direct path clear — leaving obs 3
+  step  115 | (2.0559, 2.5524) | goal mode: moving directly toward goal
+  step  116 | (2.0462, 2.5913) | goal mode: moving directly toward goal
+  step  117 | (2.0366, 2.6301) | goal mode: moving directly toward goal
+  step  118 | (2.0269, 2.6689) | goal mode: moving directly toward goal
+  step  119 | (2.0172, 2.7077) | goal mode: moving directly toward goal
+  step  120 | (2.0076, 2.7465) | goal mode: moving directly toward goal
+  step  121 | (1.9979, 2.7853) | goal mode: moving directly toward goal
+  step  122 | (1.9882, 2.8242) | goal mode: moving directly toward goal
+  step  123 | (1.9786, 2.8630) | goal mode: moving directly toward goal
+  step  124 | (1.9689, 2.9018) | CIBP replan: boundary→avoid for obs 8
+  step  125 | (1.9689, 2.9018) | boundary mode: entered near obs 8 (not_movable, P_safe=0.12)
+  step  126 | (1.9357, 2.8794) | boundary mode: following obs 8 (not_movable)
+  step  127 | (1.9122, 2.8471) | boundary mode: following obs 8 (not_movable)
+  step  128 | (1.8887, 2.8147) | boundary mode: following obs 8 (not_movable)
+  step  129 | (1.8599, 2.7869) | boundary mode: following obs 8 (not_movable)
+  step  130 | (1.8311, 2.7592) | boundary mode: following obs 8 (not_movable)
+  step  131 | (1.8024, 2.7314) | boundary mode: following obs 8 (not_movable)
+  step  132 | (1.7692, 2.7090) | boundary mode: following obs 8 (not_movable)
+  step  133 | (1.7854, 2.6725) | boundary mode: following obs 8 (not_movable)
+  step  134 | (1.7789, 2.7120) | CIBP replan: boundary→avoid for obs 7
+  step  135 | (1.7828, 2.7212) | CIBP replan: boundary→avoid for obs 8
+  step  136 | (1.7496, 2.6988) | boundary mode: following obs 8 (not_movable)
+  step  137 | (1.7820, 2.6753) | boundary mode: following obs 8 (not_movable)
+  step  138 | (1.7755, 2.7148) | CIBP replan: boundary→avoid for obs 7
+  step  139 | (1.7755, 2.7148) | stopped at epsilon boundary near obstacle 8
+  step  140 | (1.7783, 2.6749) | boundary mode: following obs 8 (not_movable)
+  step  141 | (1.8099, 2.7161) | frontier detour: around blocked corridor (obs 8/7)
+  step  142 | (1.8416, 2.7574) | frontier detour: around blocked corridor (obs 8/7)
+  step  143 | (1.8084, 2.7350) | boundary mode: following obs 8 (not_movable)
+  step  144 | (1.7752, 2.7127) | boundary mode: following obs 8 (not_movable)
+  step  145 | (1.7780, 2.6728) | boundary mode: following obs 8 (not_movable)
+  step  146 | (1.8097, 2.7140) | frontier detour: around blocked corridor (obs 8/7)
+  step  147 | (1.8413, 2.7553) | frontier detour: around blocked corridor (obs 8/7)
+  step  148 | (1.8082, 2.7329) | boundary mode: following obs 8 (not_movable)
+  step  149 | (1.7750, 2.7106) | boundary mode: following obs 8 (not_movable)
+  step  150 | (1.7847, 2.6718) | boundary mode: following obs 8 (not_movable)
+  step  151 | (1.8163, 2.7130) | frontier detour: around blocked corridor (obs 8/7)
+  step  152 | (1.8480, 2.7543) | frontier detour: around blocked corridor (obs 8/7)
+  step  153 | (1.8114, 2.7380) | boundary mode: following obs 8 (not_movable)
+  step  154 | (1.7782, 2.7156) | boundary mode: following obs 8 (not_movable)
+  step  155 | (1.7741, 2.6759) | boundary mode: following obs 8 (not_movable)
+  step  156 | (1.8108, 2.7126) | frontier detour: around blocked corridor (obs 8/7)
+  step  157 | (1.8425, 2.7539) | frontier detour: around blocked corridor (obs 8/7)
+  step  158 | (1.8059, 2.7376) | boundary mode: following obs 8 (not_movable)
+  step  159 | (1.7771, 2.7099) | boundary mode: following obs 8 (not_movable)
+  step  160 | (1.7799, 2.6700) | boundary mode: following obs 8 (not_movable)
+  step  161 | (1.8116, 2.7112) | frontier detour: around blocked corridor (obs 8/7)
+  step  162 | (1.8432, 2.7525) | frontier detour: around blocked corridor (obs 8/7)
+  step  163 | (1.8067, 2.7362) | boundary mode: following obs 8 (not_movable)
+  step  164 | (1.7735, 2.7138) | boundary mode: following obs 8 (not_movable)
+  step  165 | (1.7763, 2.6739) | boundary mode: following obs 8 (not_movable)
+  step  166 | (1.8080, 2.7152) | frontier detour: around blocked corridor (obs 8/7)
+  step  167 | (1.8447, 2.7520) | frontier detour: around blocked corridor (obs 8/7)
+  step  168 | (1.8082, 2.7357) | boundary mode: following obs 8 (not_movable)
+  step  169 | (1.7750, 2.7134) | boundary mode: following obs 8 (not_movable)
+  step  170 | (1.7778, 2.6734) | boundary mode: following obs 8 (not_movable)
+  step  171 | (1.8094, 2.7147) | frontier detour: around blocked corridor (obs 8/7)
+  step  172 | (1.8411, 2.7560) | frontier detour: around blocked corridor (obs 8/7)
+  step  173 | (1.8079, 2.7336) | boundary mode: following obs 8 (not_movable)
+  step  174 | (1.7748, 2.7112) | boundary mode: following obs 8 (not_movable)
+  step  175 | (1.7844, 2.6724) | boundary mode: following obs 8 (not_movable)
+  step  176 | (1.8161, 2.7137) | frontier detour: around blocked corridor (obs 8/7)
+  step  177 | (1.8477, 2.7549) | frontier detour: around blocked corridor (obs 8/7)
+  step  178 | (1.8112, 2.7387) | boundary mode: following obs 8 (not_movable)
+  step  179 | (1.7780, 2.7163) | boundary mode: following obs 8 (not_movable)
+  step  180 | (1.7738, 2.6765) | boundary mode: following obs 8 (not_movable)
+  step  181 | (1.8106, 2.7133) | frontier detour: around blocked corridor (obs 8/7)
+  step  182 | (1.8423, 2.7546) | frontier detour: around blocked corridor (obs 8/7)
+  step  183 | (1.8057, 2.7383) | boundary mode: following obs 8 (not_movable)
+  step  184 | (1.7769, 2.7105) | boundary mode: following obs 8 (not_movable)
+  step  185 | (1.7797, 2.6706) | boundary mode: following obs 8 (not_movable)
+  step  186 | (1.8114, 2.7119) | frontier detour: around blocked corridor (obs 8/7)
+  step  187 | (1.8430, 2.7531) | frontier detour: around blocked corridor (obs 8/7)
+  step  188 | (1.8065, 2.7369) | boundary mode: following obs 8 (not_movable)
+  step  189 | (1.7733, 2.7145) | boundary mode: following obs 8 (not_movable)
+  step  190 | (1.7761, 2.6746) | boundary mode: following obs 8 (not_movable)
+  step  191 | (1.8128, 2.7114) | frontier detour: around blocked corridor (obs 8/7)
+  step  192 | (1.8445, 2.7526) | frontier detour: around blocked corridor (obs 8/7)
+  step  193 | (1.8079, 2.7364) | boundary mode: following obs 8 (not_movable)
+  step  194 | (1.7748, 2.7140) | boundary mode: following obs 8 (not_movable)
+  step  195 | (1.7776, 2.6741) | boundary mode: following obs 8 (not_movable)
+  step  196 | (1.8092, 2.7154) | frontier detour: around blocked corridor (obs 8/7)
+  step  197 | (1.8409, 2.7566) | frontier detour: around blocked corridor (obs 8/7)
+  step  198 | (1.8077, 2.7343) | boundary mode: following obs 8 (not_movable)
+  step  199 | (1.7745, 2.7119) | boundary mode: following obs 8 (not_movable)
+  step  200 | (1.7773, 2.6720) | boundary mode: following obs 8 (not_movable)
+  step  201 | (1.8090, 2.7133) | frontier detour: around blocked corridor (obs 8/7)
+  step  202 | (1.8406, 2.7545) | frontier detour: around blocked corridor (obs 8/7)
+  step  203 | (1.8075, 2.7322) | boundary mode: following obs 8 (not_movable)
+  step  204 | (1.7743, 2.7098) | boundary mode: following obs 8 (not_movable)
+  step  205 | (1.7839, 2.6710) | boundary mode: following obs 8 (not_movable)
+  step  206 | (1.8156, 2.7122) | frontier detour: around blocked corridor (obs 8/7)
+  step  207 | (1.8473, 2.7535) | frontier detour: around blocked corridor (obs 8/7)
+  step  208 | (1.8107, 2.7372) | boundary mode: following obs 8 (not_movable)
+  step  209 | (1.7775, 2.7149) | boundary mode: following obs 8 (not_movable)
+  step  210 | (1.7733, 2.6751) | boundary mode: following obs 8 (not_movable)
+  step  211 | (1.8101, 2.7119) | frontier detour: around blocked corridor (obs 8/7)
+  step  212 | (1.8418, 2.7531) | frontier detour: around blocked corridor (obs 8/7)
+  step  213 | (1.8052, 2.7369) | boundary mode: following obs 8 (not_movable)
+  step  214 | (1.7764, 2.7091) | boundary mode: following obs 8 (not_movable)
+  step  215 | (1.7861, 2.6703) | boundary mode: following obs 8 (not_movable)
+  step  216 | (1.8178, 2.7115) | frontier detour: around blocked corridor (obs 8/7)
+  step  217 | (1.8494, 2.7528) | frontier detour: around blocked corridor (obs 8/7)
+  step  218 | (1.8129, 2.7365) | boundary mode: following obs 8 (not_movable)
+  step  219 | (1.7797, 2.7142) | boundary mode: following obs 8 (not_movable)
+  step  220 | (1.7755, 2.6744) | boundary mode: following obs 8 (not_movable)
+  step  221 | (1.8123, 2.7112) | frontier detour: around blocked corridor (obs 8/7)
+  step  222 | (1.8439, 2.7524) | frontier detour: around blocked corridor (obs 8/7)
+  step  223 | (1.8074, 2.7362) | boundary mode: following obs 8 (not_movable)
+  step  224 | (1.7742, 2.7138) | boundary mode: following obs 8 (not_movable)
+  step  225 | (1.7770, 2.6739) | boundary mode: following obs 8 (not_movable)
+  step  226 | (1.8087, 2.7152) | frontier detour: around blocked corridor (obs 8/7)
+  step  227 | (1.8403, 2.7564) | frontier detour: around blocked corridor (obs 8/7)
+  step  228 | (1.8071, 2.7341) | boundary mode: following obs 8 (not_movable)
+  step  229 | (1.7740, 2.7117) | boundary mode: following obs 8 (not_movable)
+  step  230 | (1.7836, 2.6729) | boundary mode: following obs 8 (not_movable)
+  step  231 | (1.8153, 2.7141) | frontier detour: around blocked corridor (obs 8/7)
+  step  232 | (1.8469, 2.7554) | frontier detour: around blocked corridor (obs 8/7)
+  step  233 | (1.8104, 2.7391) | boundary mode: following obs 8 (not_movable)
+  step  234 | (1.7772, 2.7168) | boundary mode: following obs 8 (not_movable)
+  step  235 | (1.7730, 2.6770) | boundary mode: following obs 8 (not_movable)
+  step  236 | (1.8098, 2.7138) | frontier detour: around blocked corridor (obs 8/7)
+  step  237 | (1.8415, 2.7550) | frontier detour: around blocked corridor (obs 8/7)
+  step  238 | (1.8083, 2.7327) | boundary mode: following obs 8 (not_movable)
+  step  239 | (1.7751, 2.7103) | boundary mode: following obs 8 (not_movable)
+  step  240 | (1.7848, 2.6715) | boundary mode: following obs 8 (not_movable)
+  step  241 | (1.8164, 2.7127) | frontier detour: around blocked corridor (obs 8/7)
+  step  242 | (1.8481, 2.7540) | frontier detour: around blocked corridor (obs 8/7)
+  step  243 | (1.8116, 2.7377) | boundary mode: following obs 8 (not_movable)
+  step  244 | (1.7784, 2.7154) | boundary mode: following obs 8 (not_movable)
+  step  245 | (1.7742, 2.6756) | boundary mode: following obs 8 (not_movable)
+  step  246 | (1.8110, 2.7124) | frontier detour: around blocked corridor (obs 8/7)
+  step  247 | (1.8426, 2.7536) | frontier detour: around blocked corridor (obs 8/7)
+  step  248 | (1.8061, 2.7374) | boundary mode: following obs 8 (not_movable)
+  step  249 | (1.7773, 2.7096) | boundary mode: following obs 8 (not_movable)
+  step  250 | (1.7801, 2.6697) | boundary mode: following obs 8 (not_movable)
+  step  251 | (1.8117, 2.7109) | frontier detour: around blocked corridor (obs 8/7)
+  step  252 | (1.8434, 2.7522) | frontier detour: around blocked corridor (obs 8/7)
+  step  253 | (1.8068, 2.7359) | boundary mode: following obs 8 (not_movable)
+  step  254 | (1.7737, 2.7136) | boundary mode: following obs 8 (not_movable)
+  step  255 | (1.7764, 2.6737) | boundary mode: following obs 8 (not_movable)
+  step  256 | (1.8081, 2.7149) | frontier detour: around blocked corridor (obs 8/7)
+  step  257 | (1.8397, 2.7562) | frontier detour: around blocked corridor (obs 8/7)
+  step  258 | (1.8066, 2.7338) | boundary mode: following obs 8 (not_movable)
+  step  259 | (1.7734, 2.7115) | boundary mode: following obs 8 (not_movable)
+  step  260 | (1.7831, 2.6727) | boundary mode: following obs 8 (not_movable)
+  step  261 | (1.8147, 2.7139) | frontier detour: around blocked corridor (obs 8/7)
+  step  262 | (1.8464, 2.7552) | frontier detour: around blocked corridor (obs 8/7)
+  step  263 | (1.8098, 2.7389) | boundary mode: following obs 8 (not_movable)
+  step  264 | (1.7767, 2.7166) | boundary mode: following obs 8 (not_movable)
+  step  265 | (1.7725, 2.6768) | boundary mode: following obs 8 (not_movable)
+  step  266 | (1.8092, 2.7135) | frontier detour: around blocked corridor (obs 8/7)
+  step  267 | (1.8409, 2.7548) | frontier detour: around blocked corridor (obs 8/7)
+  step  268 | (1.8077, 2.7324) | boundary mode: following obs 8 (not_movable)
+  step  269 | (1.7746, 2.7101) | boundary mode: following obs 8 (not_movable)
+  step  270 | (1.7842, 2.6713) | boundary mode: following obs 8 (not_movable)
+  step  271 | (1.8159, 2.7125) | frontier detour: around blocked corridor (obs 8/7)
+  step  272 | (1.8475, 2.7538) | frontier detour: around blocked corridor (obs 8/7)
+  step  273 | (1.8110, 2.7375) | boundary mode: following obs 8 (not_movable)
+  step  274 | (1.7778, 2.7152) | boundary mode: following obs 8 (not_movable)
+  step  275 | (1.7736, 2.6754) | boundary mode: following obs 8 (not_movable)
+  step  276 | (1.8104, 2.7122) | frontier detour: around blocked corridor (obs 8/7)
+  step  277 | (1.8421, 2.7534) | frontier detour: around blocked corridor (obs 8/7)
+  step  278 | (1.8055, 2.7372) | boundary mode: following obs 8 (not_movable)
+  step  279 | (1.7767, 2.7094) | boundary mode: following obs 8 (not_movable)
+  step  280 | (1.7864, 2.6706) | boundary mode: following obs 8 (not_movable)
+  step  281 | (1.8180, 2.7118) | frontier detour: around blocked corridor (obs 8/7)
+  step  282 | (1.8497, 2.7531) | frontier detour: around blocked corridor (obs 8/7)
+  step  283 | (1.8132, 2.7368) | boundary mode: following obs 8 (not_movable)
+  step  284 | (1.7800, 2.7145) | boundary mode: following obs 8 (not_movable)
+  step  285 | (1.7758, 2.6747) | boundary mode: following obs 8 (not_movable)
+  step  286 | (1.8126, 2.7114) | frontier detour: around blocked corridor (obs 8/7)
+  step  287 | (1.8442, 2.7527) | frontier detour: around blocked corridor (obs 8/7)
+  step  288 | (1.8077, 2.7364) | boundary mode: following obs 8 (not_movable)
+  step  289 | (1.7745, 2.7141) | boundary mode: following obs 8 (not_movable)
+  step  290 | (1.7773, 2.6742) | boundary mode: following obs 8 (not_movable)
+  step  291 | (1.8089, 2.7154) | frontier detour: around blocked corridor (obs 8/7)
+  step  292 | (1.8406, 2.7567) | frontier detour: around blocked corridor (obs 8/7)
+  step  293 | (1.8074, 2.7343) | boundary mode: following obs 8 (not_movable)
+  step  294 | (1.7742, 2.7120) | boundary mode: following obs 8 (not_movable)
+  step  295 | (1.7770, 2.6721) | boundary mode: following obs 8 (not_movable)
+  step  296 | (1.8087, 2.7133) | frontier detour: around blocked corridor (obs 8/7)
+  step  297 | (1.8403, 2.7546) | frontier detour: around blocked corridor (obs 8/7)
+  step  298 | (1.8072, 2.7322) | boundary mode: following obs 8 (not_movable)
+  step  299 | (1.7740, 2.7099) | boundary mode: following obs 8 (not_movable)
+  step  300 | (1.7837, 2.6711) | boundary mode: following obs 8 (not_movable)
+  step  301 | (1.8153, 2.7123) | frontier detour: around blocked corridor (obs 8/7)
+  step  302 | (1.8470, 2.7536) | frontier detour: around blocked corridor (obs 8/7)
+  step  303 | (1.8104, 2.7373) | boundary mode: following obs 8 (not_movable)
+
+Family: collision_required
+Result: SUCCESS  (185 steps)
+--------------------------------------------------
+  step    0 | (4.8268, 0.6376) | start
+  step    1 | (4.8268, 0.6376) | sensed obstacle(s) [3]; frontiers=47
+  step    2 | (4.8034, 0.6701) | goal mode: moving directly toward goal
+  step    3 | (4.7801, 0.7026) | goal mode: moving directly toward goal
+  step    4 | (4.7568, 0.7351) | goal mode: moving directly toward goal
+  step    5 | (4.7335, 0.7676) | goal mode: moving directly toward goal
+  step    6 | (4.7102, 0.8001) | goal mode: moving directly toward goal
+  step    7 | (4.6868, 0.8326) | goal mode: moving directly toward goal
+  step    8 | (4.6635, 0.8651) | goal mode: moving directly toward goal
+  step    9 | (4.6402, 0.8976) | CIBP replan: boundary→avoid for obs 3
+  step   10 | (4.6402, 0.8976) | boundary mode: entered near obs 3 (not_movable, P_safe=0.12)
+  step   11 | (4.6003, 0.9007) | boundary mode: following obs 3 (not_movable)
+  step   12 | (4.5724, 0.8721) | boundary mode: following obs 3 (not_movable)
+  step   13 | (4.5399, 0.8487) | boundary mode: following obs 3 (not_movable)
+  step   14 | (4.5038, 0.8314) | boundary mode: following obs 3 (not_movable)
+  step   15 | (4.4678, 0.8141) | boundary mode: following obs 3 (not_movable)
+  step   16 | (4.4292, 0.8033) | boundary mode: following obs 3 (not_movable)
+  step   17 | (4.3894, 0.7994) | boundary mode: following obs 3 (not_movable)
+  step   18 | (4.3496, 0.7954) | boundary mode: following obs 3 (not_movable)
+  step   19 | (4.3097, 0.7985) | boundary mode: following obs 3 (not_movable)
+  step   20 | (4.2699, 0.8015) | boundary mode: following obs 3 (not_movable)
+  step   21 | (4.2311, 0.8114) | boundary mode: following obs 3 (not_movable)
+  step   22 | (4.1947, 0.8279) | boundary mode: following obs 3 (not_movable)
+  step   23 | (4.1582, 0.8444) | boundary mode: following obs 3 (not_movable)
+  step   24 | (4.1252, 0.8669) | boundary mode: following obs 3 (not_movable)
+  step   25 | (4.0922, 0.8895) | boundary mode: following obs 3 (not_movable)
+  step   26 | (4.0636, 0.9175) | boundary mode: following obs 3 (not_movable)
+  step   27 | (4.0636, 0.9175) | boundary mode: direct path clear — leaving obs 3
+  step   28 | (4.0431, 0.9518) | goal mode: moving directly toward goal
+  step   29 | (4.0226, 0.9862) | goal mode: moving directly toward goal
+  step   30 | (4.0021, 1.0206) | goal mode: moving directly toward goal
+  step   31 | (3.9817, 1.0549) | goal mode: moving directly toward goal
+  step   32 | (3.9612, 1.0893) | goal mode: moving directly toward goal
+  step   33 | (3.9407, 1.1236) | goal mode: moving directly toward goal
+  step   34 | (3.9203, 1.1580) | goal mode: moving directly toward goal
+  step   35 | (3.8998, 1.1924) | goal mode: moving directly toward goal
+  step   36 | (3.8793, 1.2267) | goal mode: moving directly toward goal
+  step   37 | (3.8589, 1.2611) | goal mode: moving directly toward goal
+  step   38 | (3.8384, 1.2955) | goal mode: moving directly toward goal
+  step   39 | (3.8179, 1.3298) | goal mode: moving directly toward goal
+  step   40 | (3.7974, 1.3642) | goal mode: moving directly toward goal
+  step   41 | (3.7770, 1.3986) | goal mode: moving directly toward goal
+  step   42 | (3.7565, 1.4329) | goal mode: moving directly toward goal
+  step   43 | (3.7360, 1.4673) | goal mode: moving directly toward goal
+  step   44 | (3.7156, 1.5017) | goal mode: moving directly toward goal
+  step   45 | (3.6951, 1.5360) | goal mode: moving directly toward goal
+  step   46 | (3.6746, 1.5704) | goal mode: moving directly toward goal
+  step   47 | (3.6542, 1.6048) | goal mode: moving directly toward goal
+  step   48 | (3.6337, 1.6391) | goal mode: moving directly toward goal
+  step   49 | (3.6132, 1.6735) | goal mode: moving directly toward goal
+  step   50 | (3.5928, 1.7079) | goal mode: moving directly toward goal
+  step   51 | (3.5723, 1.7422) | goal mode: moving directly toward goal
+  step   52 | (3.5518, 1.7766) | goal mode: moving directly toward goal
+  step   53 | (3.5313, 1.8110) | goal mode: moving directly toward goal
+  step   54 | (3.5109, 1.8453) | goal mode: moving directly toward goal
+  step   55 | (3.4904, 1.8797) | goal mode: moving directly toward goal
+  step   56 | (3.4699, 1.9141) | goal mode: moving directly toward goal
+  step   57 | (3.4495, 1.9484) | goal mode: moving directly toward goal
+  step   58 | (3.4290, 1.9828) | goal mode: moving directly toward goal
+  step   59 | (3.4085, 2.0172) | goal mode: moving directly toward goal
+  step   60 | (3.3881, 2.0515) | goal mode: moving directly toward goal
+  step   61 | (3.3676, 2.0859) | goal mode: moving directly toward goal
+  step   62 | (3.3471, 2.1202) | goal mode: moving directly toward goal
+  step   63 | (3.3266, 2.1546) | goal mode: moving directly toward goal
+  step   64 | (3.3062, 2.1890) | goal mode: moving directly toward goal
+  step   65 | (3.3062, 2.1890) | sensed obstacle(s) [1]; frontiers=46
+  step   66 | (3.2857, 2.2233) | goal mode: moving directly toward goal
+  step   67 | (3.2652, 2.2577) | goal mode: moving directly toward goal
+  step   68 | (3.2448, 2.2921) | goal mode: moving directly toward goal
+  step   69 | (3.2243, 2.3264) | goal mode: moving directly toward goal
+  step   70 | (3.2038, 2.3608) | goal mode: moving directly toward goal
+  step   71 | (3.1834, 2.3952) | goal mode: moving directly toward goal
+  step   72 | (3.1629, 2.4295) | goal mode: moving directly toward goal
+  step   73 | (3.1424, 2.4639) | CIBP replan: boundary→avoid for obs 1
+  step   74 | (3.1424, 2.4639) | boundary mode: entered near obs 1 (not_movable, P_safe=0.12)
+  step   75 | (3.1029, 2.4703) | boundary mode: following obs 1 (not_movable)
+  step   76 | (3.0686, 2.4498) | boundary mode: following obs 1 (not_movable)
+  step   77 | (3.0342, 2.4294) | boundary mode: following obs 1 (not_movable)
+  step   78 | (2.9968, 2.4152) | boundary mode: following obs 1 (not_movable)
+  step   79 | (2.9575, 2.4077) | boundary mode: following obs 1 (not_movable)
+  step   80 | (2.9201, 2.3935) | boundary mode: following obs 1 (not_movable)
+  step   81 | (2.8801, 2.3930) | boundary mode: following obs 1 (not_movable)
+  step   82 | (2.8408, 2.3855) | boundary mode: following obs 1 (not_movable)
+  step   83 | (2.8008, 2.3849) | boundary mode: following obs 1 (not_movable)
+  step   84 | (2.7613, 2.3913) | boundary mode: following obs 1 (not_movable)
+  step   85 | (2.7219, 2.3978) | boundary mode: following obs 1 (not_movable)
+  step   86 | (2.7219, 2.3978) | sensed obstacle(s) [2]; frontiers=21
+  step   87 | (2.6841, 2.4109) | boundary mode: following obs 1 (not_movable)
+  step   88 | (2.6446, 2.4173) | boundary mode: following obs 1 (not_movable)
+  step   89 | (2.6097, 2.4369) | boundary mode: following obs 1 (not_movable)
+  step   90 | (2.5719, 2.4500) | boundary mode: following obs 1 (not_movable)
+  step   91 | (2.5409, 2.4753) | boundary mode: following obs 1 (not_movable)
+  step   92 | (2.5060, 2.4948) | boundary mode: following obs 1 (not_movable)
+  step   93 | (2.4750, 2.5201) | boundary mode: following obs 1 (not_movable)
+  step   94 | (2.4489, 2.5504) | boundary mode: following obs 1 (not_movable)
+  step   95 | (2.4228, 2.5807) | boundary mode: following obs 1 (not_movable)
+  step   96 | (2.3967, 2.6110) | boundary mode: following obs 1 (not_movable)
+  step   97 | (2.3762, 2.6454) | boundary mode: following obs 1 (not_movable)
+  step   98 | (2.3557, 2.6797) | boundary mode: following obs 1 (not_movable)
+  step   99 | (2.3557, 2.6797) | boundary mode: direct path clear — leaving obs 1
+  step  100 | (2.3420, 2.7173) | goal mode: moving directly toward goal
+  step  101 | (2.3283, 2.7549) | goal mode: moving directly toward goal
+  step  102 | (2.3146, 2.7925) | goal mode: moving directly toward goal
+  step  103 | (2.3008, 2.8300) | goal mode: moving directly toward goal
+  step  104 | (2.2871, 2.8676) | goal mode: moving directly toward goal
+  step  105 | (2.2734, 2.9052) | goal mode: moving directly toward goal
+  step  106 | (2.2597, 2.9428) | goal mode: moving directly toward goal
+  step  107 | (2.2460, 2.9803) | goal mode: moving directly toward goal
+  step  108 | (2.2323, 3.0179) | goal mode: moving directly toward goal
+  step  109 | (2.2185, 3.0555) | goal mode: moving directly toward goal
+  step  110 | (2.2185, 3.0555) | sensed obstacle(s) [5]; frontiers=29
+  step  111 | (2.2048, 3.0931) | goal mode: moving directly toward goal
+  step  112 | (2.1911, 3.1306) | goal mode: moving directly toward goal
+  step  113 | (2.1774, 3.1682) | goal mode: moving directly toward goal
+  step  114 | (2.1637, 3.2058) | goal mode: moving directly toward goal
+  step  115 | (2.1499, 3.2433) | goal mode: moving directly toward goal
+  step  116 | (2.1362, 3.2809) | goal mode: moving directly toward goal
+  step  117 | (2.1225, 3.3185) | CIBP replan: boundary→avoid for obs 5
+  step  118 | (2.1088, 3.3561) | goal mode: moving directly toward goal
+  step  119 | (2.1088, 3.3561) | boundary mode: entered near obs 5 (movable, P_safe=0.88)
+  step  120 | (2.0694, 3.3630) | boundary mode: following obs 5 (movable)
+  step  121 | (2.0294, 3.3629) | boundary mode: following obs 5 (movable)
+  step  122 | (1.9894, 3.3629) | boundary mode: following obs 5 (movable)
+  step  123 | (1.9500, 3.3698) | boundary mode: following obs 5 (movable)
+  step  124 | (1.9106, 3.3767) | boundary mode: following obs 5 (movable)
+  step  125 | (1.8730, 3.3904) | boundary mode: following obs 5 (movable)
+  step  126 | (1.8354, 3.4040) | boundary mode: following obs 5 (movable)
+  step  127 | (1.8007, 3.4240) | boundary mode: following obs 5 (movable)
+  step  128 | (1.7661, 3.4439) | boundary mode: following obs 5 (movable)
+  step  129 | (1.7354, 3.4696) | boundary mode: following obs 5 (movable)
+  step  130 | (1.7047, 3.4953) | boundary mode: following obs 5 (movable)
+  step  131 | (1.6741, 3.5210) | boundary mode: following obs 5 (movable)
+  step  132 | (1.6483, 3.5516) | boundary mode: following obs 5 (movable)
+  step  133 | (1.6283, 3.5862) | boundary mode: following obs 5 (movable)
+  step  134 | (1.6082, 3.6208) | boundary mode: following obs 5 (movable)
+  step  135 | (1.5882, 3.6554) | boundary mode: following obs 5 (movable)
+  step  136 | (1.5745, 3.6930) | boundary mode: following obs 5 (movable)
+  step  137 | (1.5608, 3.7306) | boundary mode: following obs 5 (movable)
+  step  138 | (1.5608, 3.7306) | boundary mode: direct path clear — leaving obs 5
+  step  139 | (1.5553, 3.7702) | goal mode: moving directly toward goal
+  step  140 | (1.5499, 3.8098) | goal mode: moving directly toward goal
+  step  141 | (1.5445, 3.8495) | goal mode: moving directly toward goal
+  step  142 | (1.5390, 3.8891) | goal mode: moving directly toward goal
+  step  143 | (1.5336, 3.9287) | goal mode: moving directly toward goal
+  step  144 | (1.5282, 3.9684) | goal mode: moving directly toward goal
+  step  145 | (1.5227, 4.0080) | goal mode: moving directly toward goal
+  step  146 | (1.5173, 4.0476) | goal mode: moving directly toward goal
+  step  147 | (1.5119, 4.0873) | goal mode: moving directly toward goal
+  step  148 | (1.5064, 4.1269) | goal mode: moving directly toward goal
+  step  149 | (1.5010, 4.1665) | goal mode: moving directly toward goal
+  step  150 | (1.4956, 4.2061) | goal mode: moving directly toward goal
+  step  151 | (1.4901, 4.2458) | goal mode: moving directly toward goal
+  step  152 | (1.4847, 4.2854) | goal mode: moving directly toward goal
+  step  153 | (1.4793, 4.3250) | goal mode: moving directly toward goal
+  step  154 | (1.4738, 4.3647) | goal mode: moving directly toward goal
+  step  155 | (1.4684, 4.4043) | goal mode: moving directly toward goal
+  step  156 | (1.4630, 4.4439) | goal mode: moving directly toward goal
+  step  157 | (1.4575, 4.4835) | goal mode: moving directly toward goal
+  step  158 | (1.4521, 4.5232) | goal mode: moving directly toward goal
+  step  159 | (1.4467, 4.5628) | goal mode: moving directly toward goal
+  step  160 | (1.4412, 4.6024) | goal mode: moving directly toward goal
+  step  161 | (1.4358, 4.6421) | goal mode: moving directly toward goal
+  step  162 | (1.4303, 4.6817) | goal mode: moving directly toward goal
+  step  163 | (1.4249, 4.7213) | goal mode: moving directly toward goal
+  step  164 | (1.4195, 4.7609) | goal mode: moving directly toward goal
+  step  165 | (1.4140, 4.8006) | goal mode: moving directly toward goal
+  step  166 | (1.4086, 4.8402) | goal mode: moving directly toward goal
+  step  167 | (1.4032, 4.8798) | goal mode: moving directly toward goal
+  step  168 | (1.3977, 4.9195) | goal mode: moving directly toward goal
+  step  169 | (1.3923, 4.9591) | goal mode: moving directly toward goal
+  step  170 | (1.3869, 4.9987) | goal mode: moving directly toward goal
+  step  171 | (1.3814, 5.0384) | goal mode: moving directly toward goal
+  step  172 | (1.3760, 5.0780) | goal mode: moving directly toward goal
+  step  173 | (1.3706, 5.1176) | goal mode: moving directly toward goal
+  step  174 | (1.3651, 5.1572) | goal mode: moving directly toward goal
+  step  175 | (1.3597, 5.1969) | goal mode: moving directly toward goal
+  step  176 | (1.3543, 5.2365) | goal mode: moving directly toward goal
+  step  177 | (1.3488, 5.2761) | goal mode: moving directly toward goal
+  step  178 | (1.3434, 5.3158) | goal mode: moving directly toward goal
+  step  179 | (1.3380, 5.3554) | goal mode: moving directly toward goal
+  step  180 | (1.3325, 5.3950) | goal mode: moving directly toward goal
+  step  181 | (1.3271, 5.4346) | goal mode: moving directly toward goal
+  step  182 | (1.3217, 5.4743) | goal mode: moving directly toward goal
+  step  183 | (1.3162, 5.5139) | goal mode: moving directly toward goal
+  step  184 | (1.3134, 5.5346) | goal reached
+
+Family: collision_shortcut
+Result: SUCCESS  (242 steps)
+--------------------------------------------------
+  step    0 | (4.8268, 0.6376) | start
+  step    1 | (4.8034, 0.6701) | goal mode: moving directly toward goal
+  step    2 | (4.7801, 0.7026) | goal mode: moving directly toward goal
+  step    3 | (4.7568, 0.7351) | goal mode: moving directly toward goal
+  step    4 | (4.7335, 0.7676) | goal mode: moving directly toward goal
+  step    5 | (4.7102, 0.8001) | goal mode: moving directly toward goal
+  step    6 | (4.6868, 0.8326) | goal mode: moving directly toward goal
+  step    7 | (4.6635, 0.8651) | goal mode: moving directly toward goal
+  step    8 | (4.6402, 0.8976) | goal mode: moving directly toward goal
+  step    9 | (4.6402, 0.8976) | sensed obstacle(s) [6]; frontiers=43
+  step   10 | (4.6169, 0.9301) | goal mode: moving directly toward goal
+  step   11 | (4.5936, 0.9626) | goal mode: moving directly toward goal
+  step   12 | (4.5703, 0.9951) | goal mode: moving directly toward goal
+  step   13 | (4.5469, 1.0276) | goal mode: moving directly toward goal
+  step   14 | (4.5236, 1.0601) | goal mode: moving directly toward goal
+  step   15 | (4.5236, 1.0601) | sensed obstacle(s) [12]; frontiers=33
+  step   16 | (4.5003, 1.0926) | goal mode: moving directly toward goal
+  step   17 | (4.4770, 1.1251) | goal mode: moving directly toward goal
+  step   18 | (4.4537, 1.1576) | CIBP replan: boundary→avoid for obs 6
+  step   19 | (4.4303, 1.1901) | goal mode: moving directly toward goal
+  step   20 | (4.4070, 1.2226) | goal mode: moving directly toward goal
+  step   21 | (4.4070, 1.2226) | boundary mode: entered near obs 6 (not_movable, P_safe=0.16)
+  step   22 | (4.3905, 1.1862) | boundary mode: following obs 6 (not_movable)
+  step   23 | (4.3875, 1.1463) | boundary mode: following obs 6 (not_movable)
+  step   24 | (4.3776, 1.1076) | boundary mode: following obs 6 (not_movable)
+  step   25 | (4.3677, 1.0688) | boundary mode: following obs 6 (not_movable)
+  step   26 | (4.3512, 1.0324) | boundary mode: following obs 6 (not_movable)
+  step   27 | (4.3413, 0.9936) | boundary mode: following obs 6 (not_movable)
+  step   28 | (4.3413, 0.9936) | sensed obstacle(s) [10]; frontiers=26
+  step   29 | (4.3187, 0.9606) | boundary mode: following obs 6 (not_movable)
+  step   30 | (4.3023, 0.9241) | boundary mode: following obs 6 (not_movable)
+  step   31 | (4.2797, 0.8911) | boundary mode: following obs 6 (not_movable)
+  step   32 | (4.2517, 0.8625) | boundary mode: following obs 6 (not_movable)
+  step   33 | (4.2292, 0.8295) | boundary mode: following obs 6 (not_movable)
+  step   34 | (4.2012, 0.8009) | boundary mode: following obs 6 (not_movable)
+  step   35 | (4.1687, 0.7776) | boundary mode: following obs 6 (not_movable)
+  step   36 | (4.1362, 0.7542) | boundary mode: following obs 6 (not_movable)
+  step   37 | (4.1401, 0.7144) | boundary mode: following obs 6 (not_movable)
+  step   38 | (4.1216, 0.7461) | CIBP replan: boundary→avoid for obs 10
+  step   39 | (4.1236, 0.7487) | CIBP replan: boundary→avoid for obs 6
+  step   40 | (4.1409, 0.7127) | boundary mode: following obs 6 (not_movable)
+  step   41 | (4.1207, 0.7472) | CIBP replan: boundary→avoid for obs 10
+  step   42 | (4.1207, 0.7472) | stopped at epsilon boundary near obstacle 6
+  step   43 | (4.1380, 0.7111) | boundary mode: following obs 6 (not_movable)
+  step   44 | (4.1192, 0.7432) | corridor widening: pushed obs 10 by 0.12
+  step   45 | (4.1192, 0.7432) | corridor widening: pushed obs 10 by 0.12
+  step   46 | (4.0867, 0.7199) | boundary mode: following obs 6 (not_movable)
+  step   47 | (4.0507, 0.7026) | boundary mode: following obs 6 (not_movable)
+  step   48 | (4.0121, 0.6918) | boundary mode: following obs 6 (not_movable)
+  step   49 | (3.9761, 0.6744) | boundary mode: following obs 6 (not_movable)
+  step   50 | (3.9376, 0.6636) | boundary mode: following obs 6 (not_movable)
+  step   51 | (3.9345, 0.6238) | boundary mode: following obs 6 (not_movable)
+  step   52 | (3.9157, 0.6590) | corridor widening: pushed obs 10 by 0.12
+  step   53 | (3.9144, 0.6616) | corridor widening: pushed obs 10 by 0.12
+  step   54 | (3.8758, 0.6508) | boundary mode: following obs 6 (not_movable)
+  step   55 | (3.8360, 0.6538) | boundary mode: following obs 6 (not_movable)
+  step   56 | (3.7962, 0.6499) | boundary mode: following obs 6 (not_movable)
+  step   57 | (3.7563, 0.6529) | boundary mode: following obs 6 (not_movable)
+  step   58 | (3.7164, 0.6559) | boundary mode: following obs 6 (not_movable)
+  step   59 | (3.7065, 0.6172) | boundary mode: following obs 6 (not_movable)
+  step   60 | (3.6890, 0.6531) | corridor widening: pushed obs 10 by 0.12
+  step   61 | (3.6840, 0.6634) | corridor widening: pushed obs 10 by 0.12
+  step   62 | (3.6452, 0.6733) | boundary mode: following obs 6 (not_movable)
+  step   63 | (3.6065, 0.6832) | boundary mode: following obs 6 (not_movable)
+  step   64 | (3.5700, 0.6997) | boundary mode: following obs 6 (not_movable)
+  step   65 | (3.5336, 0.7162) | boundary mode: following obs 6 (not_movable)
+  step   66 | (3.4971, 0.7327) | boundary mode: following obs 6 (not_movable)
+  step   67 | (3.4806, 0.6962) | boundary mode: following obs 6 (not_movable)
+  step   68 | (3.4643, 0.7327) | corridor widening: pushed obs 10 by 0.12
+  step   69 | (3.4479, 0.7692) | corridor widening: pushed obs 10 by 0.12
+  step   70 | (3.4115, 0.7857) | boundary mode: following obs 6 (not_movable)
+  step   71 | (3.3882, 0.8182) | boundary mode: following obs 6 (not_movable)
+  step   72 | (3.3596, 0.8462) | boundary mode: following obs 6 (not_movable)
+  step   73 | (3.3363, 0.8787) | boundary mode: following obs 6 (not_movable)
+  step   74 | (3.3129, 0.9112) | boundary mode: following obs 6 (not_movable)
+  step   75 | (3.2896, 0.9437) | boundary mode: following obs 6 (not_movable)
+  step   76 | (3.2896, 0.9437) | sensed obstacle(s) [11]; frontiers=9
+  step   77 | (3.2896, 0.9437) | boundary mode: direct path clear — leaving obs 6
+  step   78 | (3.2738, 0.9804) | goal mode: moving directly toward goal
+  step   79 | (3.2580, 1.0172) | goal mode: moving directly toward goal
+  step   80 | (3.2422, 1.0539) | goal mode: moving directly toward goal
+  step   81 | (3.2264, 1.0907) | goal mode: moving directly toward goal
+  step   82 | (3.2105, 1.1274) | goal mode: moving directly toward goal
+  step   83 | (3.1947, 1.1641) | goal mode: moving directly toward goal
+  step   84 | (3.1789, 1.2009) | goal mode: moving directly toward goal
+  step   85 | (3.1631, 1.2376) | goal mode: moving directly toward goal
+  step   86 | (3.1473, 1.2744) | goal mode: moving directly toward goal
+  step   87 | (3.1315, 1.3111) | goal mode: moving directly toward goal
+  step   88 | (3.1156, 1.3478) | goal mode: moving directly toward goal
+  step   89 | (3.0998, 1.3846) | CIBP replan: boundary→avoid for obs 11
+  step   90 | (3.0840, 1.4213) | goal mode: moving directly toward goal
+  step   91 | (3.0682, 1.4581) | goal mode: moving directly toward goal
+  step   92 | (3.0524, 1.4948) | goal mode: moving directly toward goal
+  step   93 | (3.0366, 1.5315) | goal mode: moving directly toward goal
+  step   94 | (3.0208, 1.5683) | goal mode: moving directly toward goal
+  step   95 | (3.0049, 1.6050) | goal mode: moving directly toward goal
+  step   96 | (2.9891, 1.6418) | goal mode: moving directly toward goal
+  step   97 | (2.9733, 1.6785) | goal mode: moving directly toward goal
+  step   98 | (2.9575, 1.7152) | goal mode: moving directly toward goal
+  step   99 | (2.9417, 1.7520) | goal mode: moving directly toward goal
+  step  100 | (2.9259, 1.7887) | goal mode: moving directly toward goal
+  step  101 | (2.9100, 1.8255) | goal mode: moving directly toward goal
+  step  102 | (2.8942, 1.8622) | goal mode: moving directly toward goal
+  step  103 | (2.8942, 1.8622) | sensed obstacle(s) [0]; frontiers=36
+  step  104 | (2.8784, 1.8989) | goal mode: moving directly toward goal
+  step  105 | (2.8626, 1.9357) | goal mode: moving directly toward goal
+  step  106 | (2.8468, 1.9724) | goal mode: moving directly toward goal
+  step  107 | (2.8310, 2.0092) | goal mode: moving directly toward goal
+  step  108 | (2.8152, 2.0459) | goal mode: moving directly toward goal
+  step  109 | (2.7993, 2.0826) | goal mode: moving directly toward goal
+  step  110 | (2.7835, 2.1194) | goal mode: moving directly toward goal
+  step  111 | (2.7677, 2.1561) | goal mode: moving directly toward goal
+  step  112 | (2.7519, 2.1929) | goal mode: moving directly toward goal
+  step  113 | (2.7361, 2.2296) | goal mode: moving directly toward goal
+  step  114 | (2.7203, 2.2664) | goal mode: moving directly toward goal
+  step  115 | (2.7044, 2.3031) | goal mode: moving directly toward goal
+  step  116 | (2.6886, 2.3398) | goal mode: moving directly toward goal
+  step  117 | (2.6886, 2.3398) | sensed obstacle(s) [9]; frontiers=44
+  step  118 | (2.6728, 2.3766) | goal mode: moving directly toward goal
+  step  119 | (2.6570, 2.4133) | goal mode: moving directly toward goal
+  step  120 | (2.6570, 2.4133) | sensed obstacle(s) [1]; frontiers=36
+  step  121 | (2.6412, 2.4501) | goal mode: moving directly toward goal
+  step  122 | (2.6254, 2.4868) | goal mode: moving directly toward goal
+  step  123 | (2.6095, 2.5235) | goal mode: moving directly toward goal
+  step  124 | (2.5937, 2.5603) | goal mode: moving directly toward goal
+  step  125 | (2.5779, 2.5970) | goal mode: moving directly toward goal
+  step  126 | (2.5621, 2.6338) | CIBP replan: boundary→avoid for obs 9
+  step  127 | (2.5621, 2.6338) | boundary mode: entered near obs 9 (movable, P_safe=0.88)
+  step  128 | (2.5222, 2.6315) | boundary mode: following obs 9 (movable)
+  step  129 | (2.4983, 2.5994) | boundary mode: following obs 9 (movable)
+  step  130 | (2.4648, 2.5774) | boundary mode: following obs 9 (movable)
+  step  131 | (2.4357, 2.5500) | boundary mode: following obs 9 (movable)
+  step  132 | (2.3990, 2.5342) | boundary mode: following obs 9 (movable)
+  step  133 | (2.3622, 2.5184) | boundary mode: following obs 9 (movable)
+  step  134 | (2.3255, 2.5026) | boundary mode: following obs 9 (movable)
+  step  135 | (2.2866, 2.4934) | boundary mode: following obs 9 (movable)
+  step  136 | (2.2476, 2.4842) | boundary mode: following obs 9 (movable)
+  step  137 | (2.2077, 2.4819) | boundary mode: following obs 9 (movable)
+  step  138 | (2.1680, 2.4866) | boundary mode: following obs 9 (movable)
+  step  139 | (2.1280, 2.4843) | boundary mode: following obs 9 (movable)
+  step  140 | (2.0897, 2.4958) | boundary mode: following obs 9 (movable)
+  step  141 | (2.0514, 2.5073) | boundary mode: following obs 9 (movable)
+  step  142 | (2.0131, 2.5188) | boundary mode: following obs 9 (movable)
+  step  143 | (1.9810, 2.5427) | boundary mode: following obs 9 (movable)
+  step  144 | (1.9453, 2.5606) | boundary mode: following obs 9 (movable)
+  step  145 | (1.9132, 2.5846) | boundary mode: following obs 9 (movable)
+  step  146 | (1.8858, 2.6137) | boundary mode: following obs 9 (movable)
+  step  147 | (1.8584, 2.6428) | boundary mode: following obs 9 (movable)
+  step  148 | (1.8364, 2.6762) | boundary mode: following obs 9 (movable)
+  step  149 | (1.8145, 2.7097) | boundary mode: following obs 9 (movable)
+  step  150 | (1.7925, 2.7431) | boundary mode: following obs 9 (movable)
+  step  151 | (1.7833, 2.7820) | boundary mode: following obs 9 (movable)
+  step  152 | (1.7675, 2.8188) | boundary mode: following obs 9 (movable)
+  step  153 | (1.7675, 2.8188) | boundary mode: direct path clear — leaving obs 9
+  step  154 | (1.7609, 2.8582) | goal mode: moving directly toward goal
+  step  155 | (1.7543, 2.8977) | goal mode: moving directly toward goal
+  step  156 | (1.7477, 2.9371) | goal mode: moving directly toward goal
+  step  157 | (1.7411, 2.9766) | goal mode: moving directly toward goal
+  step  158 | (1.7345, 3.0160) | goal mode: moving directly toward goal
+  step  159 | (1.7279, 3.0555) | goal mode: moving directly toward goal
+  step  160 | (1.7213, 3.0949) | goal mode: moving directly toward goal
+  step  161 | (1.7147, 3.1344) | goal mode: moving directly toward goal
+  step  162 | (1.7081, 3.1738) | goal mode: moving directly toward goal
+  step  163 | (1.7015, 3.2133) | goal mode: moving directly toward goal
+  step  164 | (1.6949, 3.2527) | goal mode: moving directly toward goal
+  step  165 | (1.6883, 3.2922) | goal mode: moving directly toward goal
+  step  166 | (1.6817, 3.3316) | goal mode: moving directly toward goal
+  step  167 | (1.6751, 3.3711) | goal mode: moving directly toward goal
+  step  168 | (1.6751, 3.3711) | sensed obstacle(s) [14]; frontiers=36
+  step  169 | (1.6685, 3.4105) | goal mode: moving directly toward goal
+  step  170 | (1.6620, 3.4500) | goal mode: moving directly toward goal
+  step  171 | (1.6554, 3.4895) | goal mode: moving directly toward goal
+  step  172 | (1.6488, 3.5289) | goal mode: moving directly toward goal
+  step  173 | (1.6422, 3.5684) | goal mode: moving directly toward goal
+  step  174 | (1.6356, 3.6078) | goal mode: moving directly toward goal
+  step  175 | (1.6290, 3.6473) | goal mode: moving directly toward goal
+  step  176 | (1.6224, 3.6867) | goal mode: moving directly toward goal
+  step  177 | (1.6158, 3.7262) | goal mode: moving directly toward goal
+  step  178 | (1.6092, 3.7656) | goal mode: moving directly toward goal
+  step  179 | (1.6026, 3.8051) | goal mode: moving directly toward goal
+  step  180 | (1.5960, 3.8445) | goal mode: moving directly toward goal
+  step  181 | (1.5894, 3.8840) | goal mode: moving directly toward goal
+  step  182 | (1.5828, 3.9234) | goal mode: moving directly toward goal
+  step  183 | (1.5828, 3.9234) | sensed obstacle(s) [15]; frontiers=35
+  step  184 | (1.5762, 3.9629) | goal mode: moving directly toward goal
+  step  185 | (1.5696, 4.0023) | goal mode: moving directly toward goal
+  step  186 | (1.5630, 4.0418) | goal mode: moving directly toward goal
+  step  187 | (1.5564, 4.0812) | goal mode: moving directly toward goal
+  step  188 | (1.5498, 4.1207) | goal mode: moving directly toward goal
+  step  189 | (1.5432, 4.1601) | goal mode: moving directly toward goal
+  step  190 | (1.5366, 4.1996) | goal mode: moving directly toward goal
+  step  191 | (1.5300, 4.2390) | CIBP replan: boundary→avoid for obs 15
+  step  192 | (1.5300, 4.2390) | boundary mode: entered near obs 15 (movable, P_safe=0.88)
+  step  193 | (1.4956, 4.2594) | boundary mode: following obs 15 (movable)
+  step  194 | (1.4607, 4.2397) | boundary mode: following obs 15 (movable)
+  step  195 | (1.4230, 4.2263) | boundary mode: following obs 15 (movable)
+  step  196 | (1.3853, 4.2130) | boundary mode: following obs 15 (movable)
+  step  197 | (1.3459, 4.2064) | boundary mode: following obs 15 (movable)
+  step  198 | (1.3059, 4.2067) | boundary mode: following obs 15 (movable)
+  step  199 | (1.2659, 4.2071) | boundary mode: following obs 15 (movable)
+  step  200 | (1.2259, 4.2074) | boundary mode: following obs 15 (movable)
+  step  201 | (1.1884, 4.2214) | boundary mode: following obs 15 (movable)
+  step  202 | (1.1509, 4.2355) | boundary mode: following obs 15 (movable)
+  step  203 | (1.1135, 4.2495) | boundary mode: following obs 15 (movable)
+  step  204 | (1.0790, 4.2698) | boundary mode: following obs 15 (movable)
+  step  205 | (1.0446, 4.2901) | boundary mode: following obs 15 (movable)
+  step  206 | (1.0191, 4.3210) | boundary mode: following obs 15 (movable)
+  step  207 | (0.9887, 4.3469) | boundary mode: following obs 15 (movable)
+  step  208 | (0.9690, 4.3818) | boundary mode: following obs 15 (movable)
+  step  209 | (0.9436, 4.4126) | boundary mode: following obs 15 (movable)
+  step  210 | (0.9302, 4.4503) | boundary mode: following obs 15 (movable)
+  step  211 | (0.9169, 4.4880) | boundary mode: following obs 15 (movable)
+  step  212 | (0.9035, 4.5257) | boundary mode: following obs 15 (movable)
+  step  213 | (0.8969, 4.5652) | boundary mode: following obs 15 (movable)
+  step  214 | (0.8973, 4.6052) | boundary mode: following obs 15 (movable)
+  step  215 | (0.8976, 4.6452) | boundary mode: following obs 15 (movable)
+  step  216 | (0.9049, 4.6845) | boundary mode: following obs 15 (movable)
+  step  217 | (0.9122, 4.7238) | boundary mode: following obs 15 (movable)
+  step  218 | (0.9122, 4.7238) | boundary mode: direct path clear — leaving obs 15
+  step  219 | (0.9300, 4.7597) | goal mode: moving directly toward goal
+  step  220 | (0.9477, 4.7956) | goal mode: moving directly toward goal
+  step  221 | (0.9654, 4.8314) | goal mode: moving directly toward goal
+  step  222 | (0.9832, 4.8673) | goal mode: moving directly toward goal
+  step  223 | (1.0009, 4.9031) | goal mode: moving directly toward goal
+  step  224 | (1.0187, 4.9390) | goal mode: moving directly toward goal
+  step  225 | (1.0364, 4.9748) | goal mode: moving directly toward goal
+  step  226 | (1.0541, 5.0107) | goal mode: moving directly toward goal
+  step  227 | (1.0719, 5.0465) | goal mode: moving directly toward goal
+  step  228 | (1.0896, 5.0824) | goal mode: moving directly toward goal
+  step  229 | (1.1074, 5.1182) | goal mode: moving directly toward goal
+  step  230 | (1.1251, 5.1541) | goal mode: moving directly toward goal
+  step  231 | (1.1428, 5.1899) | goal mode: moving directly toward goal
+  step  232 | (1.1606, 5.2258) | goal mode: moving directly toward goal
+  step  233 | (1.1783, 5.2616) | goal mode: moving directly toward goal
+  step  234 | (1.1961, 5.2975) | goal mode: moving directly toward goal
+  step  235 | (1.2138, 5.3333) | goal mode: moving directly toward goal
+  step  236 | (1.2315, 5.3692) | goal mode: moving directly toward goal
+  step  237 | (1.2493, 5.4050) | goal mode: moving directly toward goal
+  step  238 | (1.2670, 5.4409) | goal mode: moving directly toward goal
+  step  239 | (1.2848, 5.4767) | goal mode: moving directly toward goal
+  step  240 | (1.3025, 5.5126) | goal mode: moving directly toward goal
+  step  241 | (1.3134, 5.5346) | goal reached
+
