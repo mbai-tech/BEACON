@@ -1,6 +1,8 @@
 import copy
+import heapq
 import math
 import random
+from collections import defaultdict, deque
 from dataclasses import dataclass
 
 import numpy as np
@@ -42,6 +44,17 @@ _AVOID_CLASS_COSTS: dict[str, float] = {
     "forbidden": 0.99,   # maximum avoidance pressure
 }
 _LAMBDA_BELIEF: float = 0.40   # reconciler weight on belief-weighted push risk
+_BACKTRACK_GRID_RESOLUTION: float = 0.12
+_BACKTRACK_LOOKAHEAD_CELLS: int = 4
+_GUIDANCE_GRID_RESOLUTION: float = 0.15
+_GUIDANCE_LOOKAHEAD_CELLS: int = 4
+_GUIDANCE_BLOCKAGE_RATIO: float = 1.35
+_GUIDANCE_BLOCKAGE_COS: float = 0.45
+_GOAL_GUIDANCE_LOCK_RADIUS: float = 0.30
+_BOUNDARY_EXIT_LOOKAHEAD_STEPS: float = 3.0
+_BOUNDARY_EXIT_CLEARANCE_MARGIN: float = 0.03
+_DSTAR_PUSH_CONTACT_MARGIN: float = 0.12
+_DSTAR_MIN_STEP_FRACTION: float = 0.35
 
 
 def _apply_cibp(
@@ -1261,6 +1274,447 @@ def choose_deep_backtrack_target(
     return choose_backtrack_target(path, lookback=lookbacks[0])
 
 
+class _DStarLiteQueue:
+    """Lazy-deletion priority queue for local D* Lite backtracking."""
+
+    def __init__(self) -> None:
+        self.heap: list[tuple[tuple[float, float], tuple[int, int]]] = []
+        self.active: dict[tuple[int, int], tuple[float, float]] = {}
+
+    def push(self, state: tuple[int, int], key: tuple[float, float]) -> None:
+        self.active[state] = key
+        heapq.heappush(self.heap, (key, state))
+
+    def discard(self, state: tuple[int, int]) -> None:
+        self.active.pop(state, None)
+
+    def top_key(self) -> tuple[float, float]:
+        while self.heap:
+            key, state = self.heap[0]
+            if self.active.get(state) == key:
+                return key
+            heapq.heappop(self.heap)
+        return (float("inf"), float("inf"))
+
+    def pop(self) -> tuple[tuple[float, float], tuple[int, int] | None]:
+        while self.heap:
+            key, state = heapq.heappop(self.heap)
+            if self.active.get(state) == key:
+                del self.active[state]
+                return key, state
+        return (float("inf"), float("inf")), None
+
+
+class _BacktrackGrid:
+    """Observed-map raster used for D* Lite retreat routing."""
+
+    def __init__(self, scene: dict, resolution: float = _BACKTRACK_GRID_RESOLUTION) -> None:
+        self.scene = scene
+        self.resolution = resolution
+        self.xmin, self.xmax, self.ymin, self.ymax = scene["workspace"]
+        self.width = max(1, int(np.ceil((self.xmax - self.xmin) / resolution)) + 1)
+        self.height = max(1, int(np.ceil((self.ymax - self.ymin) / resolution)) + 1)
+
+    def in_bounds(self, cell: tuple[int, int]) -> bool:
+        x, y = cell
+        return 0 <= x < self.width and 0 <= y < self.height
+
+    def world_to_grid(self, point: np.ndarray) -> tuple[int, int]:
+        clipped = clip_point_to_workspace(self.scene, point)
+        gx = int(round((float(clipped[0]) - self.xmin) / self.resolution))
+        gy = int(round((float(clipped[1]) - self.ymin) / self.resolution))
+        return (min(max(gx, 0), self.width - 1), min(max(gy, 0), self.height - 1))
+
+    def grid_to_world(self, cell: tuple[int, int]) -> tuple[float, float]:
+        return (
+            float(self.xmin + cell[0] * self.resolution),
+            float(self.ymin + cell[1] * self.resolution),
+        )
+
+    def neighbors(self, cell: tuple[int, int]) -> list[tuple[int, int]]:
+        x, y = cell
+        candidates = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+        return [nbr for nbr in candidates if self.in_bounds(nbr)]
+
+    def heuristic(self, a: tuple[int, int], b: tuple[int, int]) -> float:
+        return self.resolution * (abs(a[0] - b[0]) + abs(a[1] - b[1]))
+
+    def nearest_free(
+        self,
+        start: tuple[int, int],
+        blocked: set[tuple[int, int]],
+    ) -> tuple[int, int] | None:
+        if start not in blocked:
+            return start
+
+        queue: deque[tuple[int, int]] = deque([start])
+        seen = {start}
+        while queue:
+            cell = queue.popleft()
+            for nbr in self.neighbors(cell):
+                if nbr in seen:
+                    continue
+                if nbr not in blocked:
+                    return nbr
+                seen.add(nbr)
+                queue.append(nbr)
+        return None
+
+    def observed_blocked_cells(self, scene: dict) -> set[tuple[int, int]]:
+        blocked: set[tuple[int, int]] = set()
+        pad = self.resolution + ROBOT_RADIUS
+
+        for obstacle in scene["obstacles"]:
+            if not obstacle.get("observed", False):
+                continue
+            poly = obstacle_polygon(obstacle)
+            minx, miny, maxx, maxy = poly.bounds
+            gx0 = max(0, int(np.floor((minx - pad - self.xmin) / self.resolution)))
+            gx1 = min(self.width - 1, int(np.ceil((maxx + pad - self.xmin) / self.resolution)))
+            gy0 = max(0, int(np.floor((miny - pad - self.ymin) / self.resolution)))
+            gy1 = min(self.height - 1, int(np.ceil((maxy + pad - self.ymin) / self.resolution)))
+
+            for gy in range(gy0, gy1 + 1):
+                for gx in range(gx0, gx1 + 1):
+                    world = np.array(self.grid_to_world((gx, gy)), dtype=float)
+                    if robot_body(world).intersects(poly):
+                        blocked.add((gx, gy))
+
+        return blocked
+
+
+class _BacktrackDStarLite:
+    """Small D* Lite planner used only for retreat path generation."""
+
+    def __init__(
+        self,
+        grid: _BacktrackGrid,
+        start: tuple[int, int],
+        goal: tuple[int, int],
+        blocked: set[tuple[int, int]],
+    ) -> None:
+        self.grid = grid
+        self.start = start
+        self.goal = goal
+        self.blocked = blocked
+        self.last = start
+        self.km = 0.0
+        self.g = defaultdict(lambda: float("inf"))
+        self.rhs = defaultdict(lambda: float("inf"))
+        self.queue = _DStarLiteQueue()
+        self.rhs[self.goal] = 0.0
+        self.queue.push(self.goal, self.calculate_key(self.goal))
+
+    def calculate_key(self, state: tuple[int, int]) -> tuple[float, float]:
+        value = min(self.g[state], self.rhs[state])
+        return (value + self.grid.heuristic(self.start, state) + self.km, value)
+
+    def cost(self, _a: tuple[int, int], b: tuple[int, int]) -> float:
+        return float("inf") if b in self.blocked else self.grid.resolution
+
+    def update_vertex(self, state: tuple[int, int]) -> None:
+        if state != self.goal:
+            self.rhs[state] = min(
+                (self.cost(state, succ) + self.g[succ] for succ in self.grid.neighbors(state)),
+                default=float("inf"),
+            )
+        self.queue.discard(state)
+        if self.g[state] != self.rhs[state]:
+            self.queue.push(state, self.calculate_key(state))
+
+    def compute_shortest_path(self) -> None:
+        while (
+            self.queue.top_key() < self.calculate_key(self.start)
+            or self.rhs[self.start] != self.g[self.start]
+        ):
+            old_key, state = self.queue.pop()
+            if state is None:
+                break
+
+            new_key = self.calculate_key(state)
+            if old_key < new_key:
+                self.queue.push(state, new_key)
+            elif self.g[state] > self.rhs[state]:
+                self.g[state] = self.rhs[state]
+                for pred in self.grid.neighbors(state):
+                    self.update_vertex(pred)
+            else:
+                self.g[state] = float("inf")
+                self.update_vertex(state)
+                for pred in self.grid.neighbors(state):
+                    self.update_vertex(pred)
+
+    def best_successor(self, state: tuple[int, int]) -> tuple[int, int] | None:
+        best = None
+        best_score = float("inf")
+        for succ in self.grid.neighbors(state):
+            score = self.cost(state, succ) + self.g[succ]
+            if score < best_score:
+                best_score = score
+                best = succ
+        return best
+
+
+def dstar_backtrack_step(
+    scene: dict,
+    position: np.ndarray,
+    retreat_target: np.ndarray,
+    retreat_step_size: float,
+    grid_resolution: float = _BACKTRACK_GRID_RESOLUTION,
+    lookahead_cells: int = _BACKTRACK_LOOKAHEAD_CELLS,
+) -> np.ndarray | None:
+    """Take one retreat step along a D* Lite path to the chosen backtrack target."""
+    grid = _BacktrackGrid(scene, resolution=grid_resolution)
+    blocked = grid.observed_blocked_cells(scene)
+    start = grid.nearest_free(grid.world_to_grid(position), blocked)
+    goal = grid.nearest_free(grid.world_to_grid(retreat_target), blocked)
+    if start is None or goal is None:
+        return None
+
+    planner = _BacktrackDStarLite(grid, start, goal, blocked)
+    planner.compute_shortest_path()
+    if planner.g[planner.start] == float("inf"):
+        return None
+
+    current = planner.start
+    seen = {current}
+    for _ in range(max(1, lookahead_cells)):
+        nxt = planner.best_successor(current)
+        if nxt is None or nxt in seen:
+            break
+        current = nxt
+        seen.add(current)
+        if current == planner.goal:
+            break
+
+    waypoint = np.array(grid.grid_to_world(current), dtype=float)
+    retreat_direction = normalize(waypoint - position)
+    if np.linalg.norm(retreat_direction) <= 1e-9:
+        return None
+    return safe_step_position(
+        scene,
+        position,
+        retreat_direction,
+        retreat_step_size,
+        observed_only=True,
+    )
+
+
+def dstar_guidance_waypoint(
+    scene: dict,
+    position: np.ndarray,
+    goal: np.ndarray,
+    grid_resolution: float = _GUIDANCE_GRID_RESOLUTION,
+    lookahead_cells: int = _GUIDANCE_LOOKAHEAD_CELLS,
+) -> tuple[np.ndarray | None, bool]:
+    """Return a D* Lite lookahead waypoint on the observed map and whether a strong blockage is ahead."""
+    observed_obstacles = [obs for obs in scene["obstacles"] if obs.get("observed", False)]
+    if not observed_obstacles:
+        return None, False
+
+    grid = _BacktrackGrid(scene, resolution=grid_resolution)
+    blocked = grid.observed_blocked_cells(scene)
+    start = grid.nearest_free(grid.world_to_grid(position), blocked)
+    goal_cell = grid.nearest_free(grid.world_to_grid(goal), blocked)
+    if start is None or goal_cell is None:
+        return None, True
+
+    planner = _BacktrackDStarLite(grid, start, goal_cell, blocked)
+    planner.compute_shortest_path()
+    if planner.g[planner.start] == float("inf"):
+        return None, True
+
+    direct_distance = float(np.linalg.norm(goal - position))
+    blockage_ahead = False
+    if direct_distance > 1e-9 and float(planner.g[planner.start]) > direct_distance * _GUIDANCE_BLOCKAGE_RATIO:
+        blockage_ahead = True
+
+    current = planner.start
+    seen = {current}
+    for _ in range(max(1, lookahead_cells)):
+        nxt = planner.best_successor(current)
+        if nxt is None or nxt in seen:
+            break
+        if not blockage_ahead:
+            nxt_world = np.array(grid.grid_to_world(nxt), dtype=float)
+            step_direction = normalize(nxt_world - position)
+            goal_direction = normalize(goal - position)
+            if (
+                np.linalg.norm(step_direction) > 1e-9
+                and np.linalg.norm(goal_direction) > 1e-9
+                and float(np.dot(step_direction, goal_direction)) < _GUIDANCE_BLOCKAGE_COS
+            ):
+                blockage_ahead = True
+        current = nxt
+        seen.add(current)
+        if current == planner.goal:
+            break
+
+    return np.array(grid.grid_to_world(current), dtype=float), blockage_ahead
+
+
+def dstar_guided_motion(
+    scene: dict,
+    position: np.ndarray,
+    goal: np.ndarray,
+    step_size: float,
+    epsilon: float,
+    grid_resolution: float = _GUIDANCE_GRID_RESOLUTION,
+    lookahead_cells: int = _GUIDANCE_LOOKAHEAD_CELLS,
+) -> dict:
+    """Plan one forward motion using the observed-map D* Lite repair structure.
+
+    Unknown space is treated as traversable. Observed obstacles alone populate
+    the blocked grid, so newly sensed geometry triggers local replanning rather
+    than a restart from scratch.
+    """
+    fallback_direction = normalize(goal - position)
+    fallback_step = step_until_sense_or_contact(
+        scene,
+        position,
+        fallback_direction,
+        step_size,
+        epsilon,
+    )
+    result = {
+        "waypoint": None,
+        "step_target": fallback_step,
+        "path_found": False,
+        "blockage_ahead": False,
+        "push_obstacle_index": None,
+    }
+
+    observed_obstacles = [obs for obs in scene["obstacles"] if obs.get("observed", False)]
+    if not observed_obstacles:
+        return result
+
+    grid = _BacktrackGrid(scene, resolution=grid_resolution)
+    blocked = grid.observed_blocked_cells(scene)
+    start = grid.nearest_free(grid.world_to_grid(position), blocked)
+    goal_cell = grid.nearest_free(grid.world_to_grid(goal), blocked)
+    if start is None or goal_cell is None:
+        result["blockage_ahead"] = True
+        return result
+
+    planner = _BacktrackDStarLite(grid, start, goal_cell, blocked)
+    planner.compute_shortest_path()
+    if planner.g[planner.start] == float("inf"):
+        result["blockage_ahead"] = True
+        return result
+
+    direct_distance = float(np.linalg.norm(goal - position))
+    path_states = [planner.start]
+    current = planner.start
+    seen = {current}
+    for _ in range(max(1, lookahead_cells)):
+        nxt = planner.best_successor(current)
+        if nxt is None or nxt in seen:
+            break
+        path_states.append(nxt)
+        current = nxt
+        seen.add(current)
+        if current == planner.goal:
+            break
+
+    waypoint = np.array(grid.grid_to_world(path_states[-1]), dtype=float)
+    step_target = position.copy()
+    for state in path_states[1:]:
+        candidate_waypoint = np.array(grid.grid_to_world(state), dtype=float)
+        candidate_step = safe_step_position(
+            scene,
+            position,
+            normalize(candidate_waypoint - position),
+            step_size,
+            observed_only=True,
+        )
+        if np.linalg.norm(candidate_step - position) > np.linalg.norm(step_target - position):
+            step_target = candidate_step
+
+    if np.linalg.norm(step_target - position) <= 1e-9:
+        step_target = safe_step_position(
+            scene,
+            position,
+            normalize(waypoint - position),
+            step_size,
+            observed_only=True,
+        )
+
+    blockage_ahead = False
+    if direct_distance > 1e-9 and float(planner.g[planner.start]) > direct_distance * _GUIDANCE_BLOCKAGE_RATIO:
+        blockage_ahead = True
+
+    path_direction = normalize(waypoint - position)
+    goal_direction = normalize(goal - position)
+    if (
+        not blockage_ahead
+        and np.linalg.norm(path_direction) > 1e-9
+        and np.linalg.norm(goal_direction) > 1e-9
+        and float(np.dot(path_direction, goal_direction)) < _GUIDANCE_BLOCKAGE_COS
+    ):
+        blockage_ahead = True
+
+    if (
+        not blockage_ahead
+        and direct_distance > max(step_size * 1.5, 1e-6)
+        and np.linalg.norm(step_target - position) < step_size * _DSTAR_MIN_STEP_FRACTION
+    ):
+        blockage_ahead = True
+
+    push_obstacle_index = None
+    if blockage_ahead and np.linalg.norm(goal_direction) > 1e-9:
+        push_obstacle_index = choose_best_pushable_obstacle(
+            scene,
+            position,
+            goal_direction,
+            epsilon,
+            contact_margin=_DSTAR_PUSH_CONTACT_MARGIN,
+        )
+        if push_obstacle_index is None and np.linalg.norm(path_direction) > 1e-9:
+            push_obstacle_index = choose_best_pushable_obstacle(
+                scene,
+                position,
+                path_direction,
+                epsilon,
+                contact_margin=_DSTAR_PUSH_CONTACT_MARGIN,
+            )
+
+    result["waypoint"] = waypoint
+    result["step_target"] = step_target
+    result["path_found"] = True
+    result["blockage_ahead"] = blockage_ahead
+    result["push_obstacle_index"] = push_obstacle_index
+    return result
+
+
+def near_goal_guidance_should_lock(
+    path: list[tuple[float, float]],
+    goal: np.ndarray,
+    step_size: float,
+    lock_radius: float = _GOAL_GUIDANCE_LOCK_RADIUS,
+) -> bool:
+    """Disable D* Lite waypointing near the goal when the motion is already close or oscillating."""
+    if not path:
+        return False
+
+    current = np.array(path[-1], dtype=float)
+    goal_distance = float(np.linalg.norm(goal - current))
+    if goal_distance <= max(lock_radius, 4.0 * step_size):
+        return True
+
+    if len(path) < 4:
+        return False
+
+    a = np.array(path[-1], dtype=float)
+    b = np.array(path[-2], dtype=float)
+    c = np.array(path[-3], dtype=float)
+    d = np.array(path[-4], dtype=float)
+    oscillating = (
+        float(np.linalg.norm(a - c)) <= max(1e-6, 0.15 * step_size)
+        and float(np.linalg.norm(b - d)) <= max(1e-6, 0.15 * step_size)
+    )
+    return oscillating and goal_distance <= max(0.45, 8.0 * step_size)
+
+
 def point_collides(scene: dict, point: np.ndarray, observed_only: bool = False) -> bool:
     """Check whether the robot disk at ``point`` intersects any selected obstacle."""
     point_geom = robot_body(point)
@@ -1741,7 +2195,38 @@ def run_online_surp_push(
             )
             continue
 
-        goal_direction = normalize(goal - position)
+        planning_goal = goal.copy()
+        blockage_ahead = False
+        dstar_step_target = position.copy()
+        dstar_push_idx: int | None = None
+        goal_distance = float(np.linalg.norm(goal - position))
+        goal_lock_active = near_goal_guidance_should_lock(path, goal, step_size)
+        if not goal_lock_active:
+            dstar_motion = dstar_guided_motion(
+                working_scene,
+                position,
+                goal,
+                step_size,
+                epsilon,
+            )
+            guidance_waypoint = dstar_motion["waypoint"]
+            blockage_ahead = bool(dstar_motion["blockage_ahead"])
+            dstar_push_idx = dstar_motion["push_obstacle_index"]
+            dstar_step_target = np.array(dstar_motion["step_target"], dtype=float)
+            if guidance_waypoint is not None:
+                planning_goal = np.array(guidance_waypoint, dtype=float)
+        elif goal_distance > 1e-9:
+            dstar_step_target = step_until_sense_or_contact(
+                working_scene,
+                position,
+                normalize(goal - position),
+                min(step_size, goal_distance),
+                epsilon,
+            )
+
+        goal_direction = normalize(planning_goal - position)
+        if np.linalg.norm(goal_direction) <= 1e-9:
+            goal_direction = normalize(goal - position)
         if np.linalg.norm(goal_direction) <= 1e-9:
             break
 
@@ -1754,32 +2239,41 @@ def run_online_surp_push(
         nearest_idx, nearest_distance = nearest_sensed_obstacle(working_scene, position)
         stalled = goal_progress_is_stalled(goal_distance_history)
 
-        if nearest_idx is None or nearest_distance > epsilon:
+        should_try_push_now = (
+            blockage_ahead
+            and dstar_push_idx is not None
+            and nearest_idx is not None
+            and robot_clearance_to_obstacle(position, working_scene["obstacles"][dstar_push_idx])
+            <= epsilon + _DSTAR_PUSH_CONTACT_MARGIN
+        )
+        if np.linalg.norm(dstar_step_target - position) > 1e-6 and not should_try_push_now:
             last_boundary_stop_id = None
             bug_follow_boundary = False
             bug_recent_obs_ids.clear()
-            direct_candidate = step_until_sense_or_contact(
-                working_scene,
+            position = dstar_step_target
+            consecutive_free_steps += 1
+            if consecutive_free_steps >= 8:
+                stuck_events = max(0, stuck_events - 1)
+                consecutive_free_steps = 0
+            goal_distance_history.append(float(np.linalg.norm(goal - position)))
+            path.append(tuple(position))
+            frames.append(snapshot_frame(
                 position,
-                goal_direction,
-                step_size,
-                epsilon,
-            )
-            if np.linalg.norm(direct_candidate - position) > 1e-6:
-                position = direct_candidate
-                consecutive_free_steps += 1
-                if consecutive_free_steps >= 8:
-                    stuck_events = max(0, stuck_events - 1)
-                    consecutive_free_steps = 0
-                goal_distance_history.append(float(np.linalg.norm(goal - position)))
-                path.append(tuple(position))
-                frames.append(snapshot_frame(position, working_scene, "goal mode: moving directly toward goal"))
-                continue
+                working_scene,
+                "goal mode: repairing path with D* Lite"
+                if blockage_ahead else
+                "goal mode: moving directly toward goal",
+            ))
+            continue
 
         if nearest_idx is None:
             goal_distance_history.append(float(np.linalg.norm(goal - position)))
             path.append(tuple(position))
-            frames.append(snapshot_frame(position, working_scene, "no sensed obstacle but direct motion unavailable"))
+            frames.append(snapshot_frame(
+                position,
+                working_scene,
+                "no sensed obstacle but planned motion unavailable",
+            ))
             continue
 
         nearest_obstacle = working_scene["obstacles"][nearest_idx]
@@ -1796,13 +2290,13 @@ def run_online_surp_push(
                 sc_pos, sc_label, sc_push_idx = semantic_corridor_response(
                     working_scene,
                     position,
-                    goal,
+                    planning_goal,
                     osc_pair[0],
                     osc_pair[1],
                     step_size,
                     perception["frontiers"],
                 )
-                if sc_push_idx is not None:
+                if sc_push_idx is not None and blockage_ahead:
                     # Widen the corridor by pushing the pushable wall aside.
                     moved_distance, moved_chain = move_obstacle_in_direction(
                         working_scene,
@@ -1857,14 +2351,14 @@ def run_online_surp_push(
                 # Re-run the Layer-3 reconciler with fresh beliefs; execute the
                 # recommended action immediately rather than sitting still.
                 _bnd_avoid = compute_avoid_trajectory(
-                    working_scene, position, goal, step_size, epsilon,
+                    working_scene, position, planning_goal, step_size, epsilon,
                     bad_directions, nearest_obstacle=nearest_obstacle,
                 )
                 _bnd_push: TrajectoryCandidate | None = None
                 _bnd_risk = 0.0
-                if nearest_obstacle.get("map_class") == "movable":
+                if blockage_ahead and nearest_obstacle.get("map_class") == "movable":
                     _bnd_push = compute_push_trajectory(
-                        working_scene, position, goal, goal_direction,
+                        working_scene, position, planning_goal, goal_direction,
                         push_set, step_size, epsilon, push_distance,
                     )
                     _bnd_risk = _belief_dot(
@@ -1940,10 +2434,17 @@ def run_online_surp_push(
         p_safe, safety_score = obstacle_safety_probability(nearest_obstacle)
 
         # Determine whether pushing this obstacle is both viable and optimal.
-        is_pushable = (
+        primary_push_idx = dstar_push_idx
+        if primary_push_idx is None and (
             nearest_obstacle["true_class"] == "movable"
             and p_safe >= SAFE_PROB_THRESHOLD
-        )
+        ):
+            primary_push_idx = nearest_idx
+
+        if primary_push_idx is not None and primary_push_idx not in push_set:
+            push_set = [primary_push_idx] + push_set
+
+        is_pushable = primary_push_idx is not None and blockage_ahead
         push_candidate = None
         push_is_optimal = False
         avoid_step_target = position  # safe default — avoids NameError below
@@ -1956,7 +2457,7 @@ def run_online_surp_push(
             avoid_candidate = compute_avoid_trajectory(
                 working_scene,
                 position,
-                goal,
+                planning_goal,
                 step_size,
                 epsilon,
                 bad_directions,
@@ -1965,7 +2466,7 @@ def run_online_surp_push(
             push_candidate = compute_push_trajectory(
                 working_scene,
                 position,
-                goal,
+                planning_goal,
                 goal_direction,
                 push_set,
                 step_size,
@@ -1990,9 +2491,17 @@ def run_online_surp_push(
                 available_push_distance = push_candidate.push_distance
                 corridor_gain = push_candidate.corridor_gain
             push_is_optimal = (
-                selected_candidate.mode == "push"
+                push_candidate is not None
                 and available_push_distance > 1e-6
-                and push_candidate is not None
+                and push_candidate.obstacle_index == primary_push_idx
+                and (
+                    selected_candidate.mode == "push"
+                    or (
+                        blockage_ahead
+                        and push_candidate.corridor_gain > 0.02
+                        and J_push <= J_avoid + 0.25
+                    )
+                )
             )
 
         # ── Boundary mode ─────────────────────────────────────────────────────
@@ -2006,14 +2515,32 @@ def run_online_surp_push(
             obs_id = nearest_obstacle["id"]
             obs_class = nearest_obstacle["true_class"]
 
-            # Primary exit: check whether a direct step toward the goal is
-            # collision-free right now.  Do this before any sweep so the robot
-            # exits and moves in the same iteration — preventing immediate
-            # re-entry on the very next step (which caused the oscillation loop).
+            # Primary exit: require a short forward corridor to be clear before
+            # leaving boundary mode. A single free sample point is too weak and
+            # causes the robot to ping-pong on the same obstacle mouth.
             direct_goal_pos = clip_point_to_workspace(
                 working_scene, position + step_size * goal_direction
             )
-            if not point_collides(working_scene, direct_goal_pos, observed_only=True):
+            exit_probe = clip_point_to_workspace(
+                working_scene,
+                position + step_size * _BOUNDARY_EXIT_LOOKAHEAD_STEPS * goal_direction,
+            )
+            enough_clearance = (
+                robot_clearance_to_obstacle(position, nearest_obstacle)
+                > epsilon + _BOUNDARY_EXIT_CLEARANCE_MARGIN
+            )
+            short_corridor_clear = segment_is_collision_free(
+                working_scene,
+                position,
+                exit_probe,
+                observed_only=True,
+                subdivisions=max(12, int(8 * _BOUNDARY_EXIT_LOOKAHEAD_STEPS)),
+            )
+            if (
+                not point_collides(working_scene, direct_goal_pos, observed_only=True)
+                and enough_clearance
+                and short_corridor_clear
+            ):
                 if bug_follow_boundary:
                     bug_last_exited_obs_id = obs_id
                     bug_follow_boundary = False
@@ -2056,7 +2583,7 @@ def run_online_surp_push(
                 # After enough bounces or a confirmed pinball, the cost model
                 # is wrong: push the obstacle if possible, otherwise fall
                 # through to stall recovery.
-                if (bug_bounce_count >= 3 or pinball) and is_pushable:
+                if (bug_bounce_count >= 3 or pinball) and blockage_ahead and is_pushable:
                     # Rank all pushable obstacles from the recent-contact pool by
                     # P(movable) descending, entropy ascending as tie-breaker.
                     # The pool is the union of the current obstacle and the last
@@ -2198,12 +2725,15 @@ def run_online_surp_push(
             if len(bad_directions) > 24:
                 bad_directions = bad_directions[-24:]
 
-            push_idx = choose_best_pushable_obstacle(
-                working_scene,
-                position,
-                goal_direction,
-                epsilon,
-            )
+            push_idx = None
+            if blockage_ahead:
+                push_idx = choose_best_pushable_obstacle(
+                    working_scene,
+                    position,
+                    goal_direction,
+                    epsilon,
+                    contact_margin=_DSTAR_PUSH_CONTACT_MARGIN,
+                )
             if push_idx is not None and nearest_idx is not None and push_idx != nearest_idx:
                 nearest_obstacle = working_scene["obstacles"][nearest_idx]
                 nearest_distance = robot_clearance_to_obstacle(position, nearest_obstacle)
@@ -2255,7 +2785,7 @@ def run_online_surp_push(
             _, rrt_candidate = rrt_escape_step(
                 working_scene,
                 position,
-                goal,
+                planning_goal,
                 step_size,
                 bad_directions=bad_directions,
                 max_samples=120 + 40 * min(stuck_events, 4),
@@ -2276,18 +2806,25 @@ def run_online_surp_push(
             # RRT failed — fall back to backtrack along the executed path.
             backtrack_target = choose_deep_backtrack_target(path, position, stuck_events)
             if backtrack_target is not None:
-                retreat_direction = normalize(backtrack_target - position)
                 retreat_step_size = min(
                     max(step_size * (1.8 + 0.35 * min(stuck_events, 5)), step_size),
                     float(np.linalg.norm(backtrack_target - position)),
                 )
-                retreat_candidate = safe_step_position(
+                retreat_candidate = dstar_backtrack_step(
                     working_scene,
                     position,
-                    retreat_direction,
+                    backtrack_target,
                     retreat_step_size,
-                    observed_only=True,
                 )
+                if retreat_candidate is None:
+                    retreat_direction = normalize(backtrack_target - position)
+                    retreat_candidate = safe_step_position(
+                        working_scene,
+                        position,
+                        retreat_direction,
+                        retreat_step_size,
+                        observed_only=True,
+                    )
                 if np.linalg.norm(retreat_candidate - position) > 1e-6:
                     position = retreat_candidate
                     goal_distance_history.append(float(np.linalg.norm(goal - position)))
@@ -2296,7 +2833,7 @@ def run_online_surp_push(
                         snapshot_frame(
                             position,
                             working_scene,
-                            f"avoid mode (memory replan): deeper backtrack level {stuck_events}",
+                            f"avoid mode (D* Lite backtrack): deeper backtrack level {stuck_events}",
                         )
                     )
                     continue
@@ -2304,7 +2841,7 @@ def run_online_surp_push(
             _, escape_candidate = choose_escape_motion(
                 working_scene,
                 position,
-                goal,
+                planning_goal,
                 step_size,
                 epsilon,
                 bad_directions=bad_directions,
@@ -2354,7 +2891,7 @@ def run_online_surp_push(
                 _pushed_obs = working_scene["obstacles"][push_candidate.obstacle_index]
                 _updated_belief = _pushed_obs.get("belief", {})
                 _replan_avoid = compute_avoid_trajectory(
-                    working_scene, position, goal, step_size, epsilon,
+                    working_scene, position, planning_goal, step_size, epsilon,
                     bad_directions, nearest_obstacle=nearest_obstacle,
                 )
                 _replan_risk = _belief_dot(_updated_belief, _PUSH_CLASS_COSTS)

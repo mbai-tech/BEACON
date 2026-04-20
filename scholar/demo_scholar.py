@@ -21,6 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import argparse
 import threading
 import numpy as np
+import matplotlib
+
+_HEADLESS_SAVE_MODE = "--save" in sys.argv and (
+    "--scenes" in sys.argv or sys.argv.count("--scene") > 1
+)
+if _HEADLESS_SAVE_MODE:
+    matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Polygon as MplPolygon
@@ -31,6 +39,9 @@ from environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
 from environment.scene_generator import load_scene
 
 FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
+DATA_DIR = Path(__file__).resolve().parent / "environment" / "data"
+LOG_DIR = DATA_DIR / "logs"
+VIDEO_DIR = DATA_DIR / "videos"
 
 
 # ── Real-time frame interception ───────────────────────────────────────────────
@@ -49,6 +60,23 @@ def _patched_snapshot(position, scene, message):
     return frame
 
 _planner_module.snapshot_frame = _patched_snapshot
+
+
+def clear_saved_simulations() -> None:
+    """Delete previously saved SCHOLAR logs/videos without touching scene assets."""
+    removed = 0
+    patterns = ("simulation_scene*.txt", "simulation_scene*.mp4", "simulation_scene*.gif")
+
+    for directory in (LOG_DIR, VIDEO_DIR):
+        if not directory.exists():
+            continue
+        for pattern in patterns:
+            for path in directory.glob(pattern):
+                if path.is_file():
+                    path.unlink()
+                    removed += 1
+
+    print(f"Cleared {removed} saved simulation file(s) from {DATA_DIR}")
 
 
 # ── Per-family simulation thread ───────────────────────────────────────────────
@@ -384,17 +412,22 @@ if __name__ == "__main__":
     parser.add_argument("--scenes",  type=str,   default=None,
                         help="Range of scenes, e.g. '0-99'. Implies batch mode.")
     parser.add_argument("--family",  nargs="*",  default=None, choices=FAMILIES)
-    parser.add_argument("--steps",   type=int,   default=300)
+    parser.add_argument("--steps",   type=int,   default=500)
     parser.add_argument("--sense",   type=float, default=0.35,
                         help="Sensing radius in metres (default: 0.35)")
     parser.add_argument("--step",    type=float, default=0.04,
                         help="Robot step size in metres (default: 0.04)")
     parser.add_argument("--save",    action="store_true",
                         help="Save video after simulation ends")
+    parser.add_argument("--clear-past", action="store_true",
+                        help="Delete previously saved simulation logs/videos before running")
     parser.add_argument("--speedup", type=int,   default=3)
     parser.add_argument("--workers", type=int,   default=8,
                         help="Max parallel workers in batch mode (default: 8)")
     args = parser.parse_args()
+
+    if args.clear_past:
+        clear_saved_simulations()
 
     families = args.family or FAMILIES
 
