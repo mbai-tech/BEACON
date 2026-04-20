@@ -21,18 +21,12 @@ from matplotlib.patches import Polygon as MplPolygon
 import NewProject.planner as _planner_module
 from NewProject.planner import run_online_surp_push
 from environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
-from enviornment.scene_generator import generate_scene as _generate_environment_scene
+from enviornment.scene_complex import generate_scene as _generate_complex_scene
 
 FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 DATA_DIR = Path(__file__).resolve().parent / "environment" / "data"
 LOG_DIR = DATA_DIR / "logs"
 VIDEO_DIR = DATA_DIR / "videos"
-_ENVIRONMENT_FAMILY_MAP = {
-    "sparse": "sparse_clutter",
-    "cluttered": "dense_clutter",
-    "collision_required": "narrow_passage",
-    "collision_shortcut": "semantic_trap",
-}
 
 
 # ── Real-time frame interception ───────────────────────────────────────────────
@@ -71,12 +65,17 @@ def clear_saved_simulations() -> None:
 
 
 def load_scene(scene_idx: int, family: str, fragility: str = "mixed", seed: int | None = None) -> dict:
-    del fragility
+    """Generate one SCHOLAR scene via the top-level enviornment branch code.
+
+    The demo keeps its historical four-family interface, but the actual scene
+    geometry now comes from the newer top-level ``enviornment`` generator.
+    """
+    del fragility  # The new environment generator does not use this parameter.
+
     mapped_family = _ENVIRONMENT_FAMILY_MAP.get(family, family)
     effective_seed = scene_idx if seed is None else seed
-    scene = _generate_environment_scene(mapped_family, seed=effective_seed)
-    scene["family"] = family
-    scene["environment_family"] = mapped_family
+    scene = _generate_complex_scene(family=family, seed=effective_seed)
+    scene["seed"] = effective_seed
     scene["scene_idx"] = scene_idx
     return scene
 

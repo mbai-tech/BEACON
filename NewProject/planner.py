@@ -14,6 +14,9 @@ from NewProject.constants import CHAIN_ATTENUATION, DEFAULT_SENSING_RANGE, ROBOT
 from NewProject.models import OnlineSurpResult, SimulationFrame
 from NewProject.scene_setup import normalize_scene_for_online_use
 from NewProject.cibp import CIBP
+from NewProject.ml.push_policy import PushAvoidPolicy
+
+_push_policy = PushAvoidPolicy()
 
 # ── Semantic-cost weights for the belief-weighted contact term U ──────────────
 # w_c = cost of contacting an obstacle believed to be class c.
@@ -2149,6 +2152,7 @@ def run_online_surp_push(
     path = [tuple(position)]
     frames = [snapshot_frame(position, working_scene, "start")]
     contact_log: list[str] = []
+    decision_log: list[dict] = []
     sensed_ids: list[int] = []
     goal_distance_history = [float(np.linalg.norm(goal - position))]
     bad_directions: list[dict] = []
@@ -2364,11 +2368,22 @@ def run_online_surp_push(
                     _bnd_risk = _belief_dot(
                         nearest_obstacle.get("belief", {}), _PUSH_CLASS_COSTS
                     )
+                _bnd_smt = max(0.02, epsilon * 0.2)
                 _bnd_selected = reconcile_trajectory_decision(
                     _bnd_avoid,
                     _bnd_push,
-                    safety_margin_threshold=max(0.02, epsilon * 0.2),
+                    safety_margin_threshold=_bnd_smt,
                     push_belief_risk=_bnd_risk,
+                )
+                _bnd_selected = _push_policy.maybe_override(
+                    _bnd_selected, _bnd_avoid, _bnd_push,
+                    safety_margin_threshold=_bnd_smt,
+                    push_belief_risk=_bnd_risk,
+                    decision_log=decision_log,
+                    dist_to_goal=float(np.linalg.norm(goal - position)),
+                    stuck_events=stuck_events,
+                    step=len(path) - 1,
+                    site="boundary_replan",
                 )
                 contact_log.append(
                     f"CIBP replan (boundary): obs {nearest_obstacle['id']} "
@@ -2478,11 +2493,22 @@ def run_online_surp_push(
             if push_candidate is not None and push_candidate.obstacle_index is not None:
                 _pb = working_scene["obstacles"][push_candidate.obstacle_index].get("belief", {})
                 _push_belief_risk = _belief_dot(_pb, _PUSH_CLASS_COSTS)
+            _main_smt = max(0.02, epsilon * 0.2)
             selected_candidate = reconcile_trajectory_decision(
                 avoid_candidate,
                 push_candidate,
-                safety_margin_threshold=max(0.02, epsilon * 0.2),
+                safety_margin_threshold=_main_smt,
                 push_belief_risk=_push_belief_risk,
+            )
+            selected_candidate = _push_policy.maybe_override(
+                selected_candidate, avoid_candidate, push_candidate,
+                safety_margin_threshold=_main_smt,
+                push_belief_risk=_push_belief_risk,
+                decision_log=decision_log,
+                dist_to_goal=float(np.linalg.norm(goal - position)),
+                stuck_events=stuck_events,
+                step=len(path) - 1,
+                site="main",
             )
             J_avoid = avoid_candidate.total_cost
             avoid_step_target = avoid_candidate.step_target
@@ -2895,11 +2921,22 @@ def run_online_surp_push(
                     bad_directions, nearest_obstacle=nearest_obstacle,
                 )
                 _replan_risk = _belief_dot(_updated_belief, _PUSH_CLASS_COSTS)
+                _replan_smt = max(0.02, epsilon * 0.2)
                 _replan_selected = reconcile_trajectory_decision(
                     _replan_avoid,
                     push_candidate,
-                    safety_margin_threshold=max(0.02, epsilon * 0.2),
+                    safety_margin_threshold=_replan_smt,
                     push_belief_risk=_replan_risk,
+                )
+                _replan_selected = _push_policy.maybe_override(
+                    _replan_selected, _replan_avoid, push_candidate,
+                    safety_margin_threshold=_replan_smt,
+                    push_belief_risk=_replan_risk,
+                    decision_log=decision_log,
+                    dist_to_goal=float(np.linalg.norm(goal - position)),
+                    stuck_events=stuck_events,
+                    step=len(path) - 1,
+                    site="push_replan",
                 )
                 if _replan_selected.mode != "push":
                     _execute_push_step = False
@@ -2976,6 +3013,8 @@ def run_online_surp_push(
                 ),
             )
         )
+
+    _push_policy.save_run(decision_log, path, working_scene["goal"])
 
     return OnlineSurpResult(
         family=working_scene["family"],
