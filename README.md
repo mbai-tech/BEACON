@@ -320,6 +320,61 @@ Important:
 
 If you want metrics on the exact same scenes used by the SCHOLAR demo, use the dedicated script below.
 
+## Common commands
+
+Run SCHOLAR on all `scene_complex.py` scenes and save outputs:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scenes 0-99 --save --clear-past
+```
+
+Run metrics for SCHOLAR and SURP on all `scene_complex.py` scenes:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/run_scene_complex_metrics.py \
+  --scenes 0-99 \
+  --planners scholar surp \
+  --output scholar/environment/data/metrics/metrics_scene_complex.csv
+```
+
+Run metrics for Bug only:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/run_scene_complex_metrics.py \
+  --scenes 0-99 \
+  --planners bug \
+  --output scholar/environment/data/metrics/metrics_bug_scene_complex.csv
+```
+
+Run metrics for pure D* Lite only:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/run_scene_complex_metrics.py \
+  --scenes 0-99 \
+  --planners dstar_lite \
+  --output scholar/environment/data/metrics/metrics_dstar_lite_scene_complex.csv
+```
+
+Summarize one metrics CSV:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/summarize_scene_complex_metrics.py \
+  --input scholar/environment/data/metrics/metrics_bug_scene_complex.csv \
+  --output scholar/environment/data/metrics/metrics_bug_scene_complex_summary.txt
+```
+
+Compare all planner metrics already saved in the metrics folder:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/compare_scene_complex_metrics.py
+```
+
 ## Metrics on `scene_complex.py` scenes
 
 File:
@@ -328,7 +383,7 @@ File:
 
 This script:
 
-- uses `load_scene(...)` from `scholar.demo_scholar`
+- loads scenes directly from `enviornment/scene_complex.py`
 - evaluates one or more planners on the same `scene_complex.py` scenes
 - computes metrics with `scholar.utils.metrics.compute_metrics(...)`
 - writes the results to CSV
@@ -337,6 +392,8 @@ Available planner names:
 
 - `scholar`
 - `bug`
+- `bug2`
+- `dstar_lite`
 - `rrt`
 - `surp`
 
@@ -344,7 +401,7 @@ Example: run all planners on scenes `0-99`
 
 ```bash
 cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug rrt surp
+python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug dstar_lite rrt surp
 ```
 
 Example: one scene, one family, one planner
@@ -358,12 +415,19 @@ Example: custom CSV output
 
 ```bash
 cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug rrt surp --output /tmp/scene_metrics.csv
+python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug dstar_lite rrt surp --output /tmp/scene_metrics.csv
+```
+
+Example: run only the pure D* Lite planner
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners dstar_lite --output scholar/environment/data/metrics/metrics_dstar_lite_scene_complex.csv
 ```
 
 Default CSV output path:
 
-- `scholar/environment/data/metrics_scene_complex.csv`
+- `scholar/environment/data/metrics/metrics_scene_complex.csv`
 
 CSV columns:
 
@@ -376,6 +440,70 @@ CSV columns:
 - `path_length`
 - `n_contacts`
 - `n_sensed`
+
+## Summarize one metrics CSV
+
+File:
+
+- [scholar/experiments/summarize_scene_complex_metrics.py](/Users/ishita/Documents/GitHub/SURP/scholar/experiments/summarize_scene_complex_metrics.py:1)
+
+This script:
+
+- reads one metrics CSV
+- prints summary tables for success rate, path length, steps, contacts, and sensed obstacles
+- saves the same summary text to a separate file
+
+Example: summarize the default SCHOLAR vs SURP metrics file
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/summarize_scene_complex_metrics.py
+```
+
+Example: summarize the Bug metrics file
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/summarize_scene_complex_metrics.py \
+  --input scholar/environment/data/metrics/metrics_bug_scene_complex.csv \
+  --output scholar/environment/data/metrics/metrics_bug_scene_complex_summary.txt
+```
+
+Default summary output path:
+
+- `scholar/environment/data/metrics/metrics_scene_complex_summary.txt`
+
+## Compare all planner metrics
+
+File:
+
+- [scholar/experiments/compare_scene_complex_metrics.py](/Users/ishita/Documents/GitHub/SURP/scholar/experiments/compare_scene_complex_metrics.py:1)
+
+This script:
+
+- scans `scholar/environment/data/metrics/` for all `metrics*_scene_complex.csv` files
+- combines the available planner results
+- writes table-based comparison output to a separate text file
+- includes overall, by-family, and relative-to-`scholar` comparison tables
+
+Example: compare every metrics CSV currently in the metrics folder
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/compare_scene_complex_metrics.py
+```
+
+Example: choose a custom output file
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/compare_scene_complex_metrics.py \
+  --output scholar/environment/data/metrics/my_comparison_report.txt
+```
+
+Default comparison output path:
+
+- `scholar/environment/data/metrics/metrics_scene_complex_comparison.txt`
 
 ## New environment generator
 

@@ -16,7 +16,14 @@ from NewProject.scene_setup import normalize_scene_for_online_use
 from NewProject.cibp import CIBP
 from NewProject.ml.push_policy import PushAvoidPolicy
 
-_push_policy = PushAvoidPolicy()
+_push_policy: PushAvoidPolicy | None = None
+
+
+def _get_push_policy() -> PushAvoidPolicy:
+    global _push_policy
+    if _push_policy is None:
+        _push_policy = PushAvoidPolicy()
+    return _push_policy
 
 # ── Semantic-cost weights for the belief-weighted contact term U ──────────────
 # w_c = cost of contacting an obstacle believed to be class c.
@@ -2375,7 +2382,7 @@ def run_online_surp_push(
                     safety_margin_threshold=_bnd_smt,
                     push_belief_risk=_bnd_risk,
                 )
-                _bnd_selected = _push_policy.maybe_override(
+                _bnd_selected = _get_push_policy().maybe_override(
                     _bnd_selected, _bnd_avoid, _bnd_push,
                     safety_margin_threshold=_bnd_smt,
                     push_belief_risk=_bnd_risk,
@@ -2500,7 +2507,7 @@ def run_online_surp_push(
                 safety_margin_threshold=_main_smt,
                 push_belief_risk=_push_belief_risk,
             )
-            selected_candidate = _push_policy.maybe_override(
+            selected_candidate = _get_push_policy().maybe_override(
                 selected_candidate, avoid_candidate, push_candidate,
                 safety_margin_threshold=_main_smt,
                 push_belief_risk=_push_belief_risk,
@@ -2928,7 +2935,7 @@ def run_online_surp_push(
                     safety_margin_threshold=_replan_smt,
                     push_belief_risk=_replan_risk,
                 )
-                _replan_selected = _push_policy.maybe_override(
+                _replan_selected = _get_push_policy().maybe_override(
                     _replan_selected, _replan_avoid, push_candidate,
                     safety_margin_threshold=_replan_smt,
                     push_belief_risk=_replan_risk,
@@ -3014,7 +3021,8 @@ def run_online_surp_push(
             )
         )
 
-    _push_policy.save_run(decision_log, path, working_scene["goal"])
+    if decision_log:
+        _get_push_policy().save_run(decision_log, path, working_scene["goal"])
 
     return OnlineSurpResult(
         family=working_scene["family"],

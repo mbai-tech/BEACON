@@ -18,25 +18,41 @@ if str(REPO_ROOT) not in sys.path:
 SCHOLAR_ROOT = REPO_ROOT / "scholar"
 if str(SCHOLAR_ROOT) not in sys.path:
     sys.path.insert(0, str(SCHOLAR_ROOT))
+ENV_ROOT = REPO_ROOT / "enviornment"
+if str(ENV_ROOT) not in sys.path:
+    sys.path.insert(0, str(ENV_ROOT))
 
-from scholar.demo_scholar import FAMILIES, load_scene
-from scholar.planning.baselines import PLANNERS
-from scholar.planning.scholar import run_scholar
-from scholar.utils.metrics import compute_metrics
+from scene_complex import generate_scene as _generate_complex_scene
+
+try:
+    from scholar.planning.baselines import PLANNERS
+    from scholar.utils.metrics import compute_metrics
+except ModuleNotFoundError:
+    from planning.baselines import PLANNERS
+    from utils.metrics import compute_metrics
 
 
-ALL_PLANNERS = {
-    **PLANNERS,
-    "scholar": run_scholar,
-}
+FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
+
+
+ALL_PLANNERS = sorted([*PLANNERS.keys(), "scholar"])
 
 DEFAULT_OUTPUT = (
     REPO_ROOT
     / "scholar"
     / "environment"
     / "data"
+    / "metrics"
     / "metrics_scene_complex.csv"
 )
+
+
+def load_scene(scene_idx: int, family: str, seed: int | None = None) -> dict:
+    effective_seed = scene_idx if seed is None else seed
+    scene = _generate_complex_scene(family=family, seed=effective_seed)
+    scene["seed"] = effective_seed
+    scene["scene_idx"] = scene_idx
+    return scene
 
 
 def parse_scene_indices(scene_args: list[int], scene_range: str | None) -> list[int]:
@@ -74,7 +90,7 @@ def parse_args() -> argparse.Namespace:
         "--planners",
         nargs="+",
         default=["scholar", "bug", "rrt", "surp"],
-        choices=sorted(ALL_PLANNERS),
+        choices=ALL_PLANNERS,
         help="Planner names to evaluate.",
     )
     parser.add_argument(
@@ -105,12 +121,22 @@ def parse_args() -> argparse.Namespace:
 
 
 def run_planner(planner_name: str, scene: dict, max_steps: int, step_size: float, sensing_range: float):
-    planner_fn = ALL_PLANNERS[planner_name]
-
     if planner_name == "scholar":
-        return planner_fn(scene, max_steps=max_steps, step_size=step_size, sensing_range=sensing_range)
+        try:
+            from scholar.planning.scholar import run_scholar
+        except ModuleNotFoundError:
+            from planning.scholar import run_scholar
+        return run_scholar(scene, max_steps=max_steps, step_size=step_size, sensing_range=sensing_range)
+    planner_fn = PLANNERS[planner_name]
     if planner_name == "surp":
         return planner_fn(scene, max_steps=max_steps, step_size=step_size, sensing_range=sensing_range)
+    if planner_name == "dstar_lite":
+        return planner_fn(
+            scene,
+            max_steps=max_steps,
+            step_size=max(0.06, step_size),
+            sensing_range=max(0.45, sensing_range),
+        )
     if planner_name == "bug":
         return planner_fn(scene, max_steps=max_steps, step_size=max(0.07, step_size), sensing_range=max(0.55, sensing_range))
     if planner_name == "rrt":

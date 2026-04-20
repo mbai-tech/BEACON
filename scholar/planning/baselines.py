@@ -7,16 +7,25 @@ Exposes run_bug (Bug2), run_rrt (online greedy RRT), and run_surp_push
 
 from NewProject.bug_algorithm import run_bug
 from NewProject.bug2_algorithm import run_bug2
+from NewProject.dstar_lite_algorithm import run_dstar_lite
 from NewProject.rrt_greedy import run_rrt
 from NewProject.planner import run_online_surp_push
 from NewProject.models import OnlineSurpResult
 
-__all__ = ["run_bug", "run_bug2", "run_rrt", "run_online_surp_push", "PLANNERS"]
+__all__ = [
+    "run_bug",
+    "run_bug2",
+    "run_dstar_lite",
+    "run_rrt",
+    "run_online_surp_push",
+    "PLANNERS",
+]
 
 # Registry used by run_trials to look up planners by name
 PLANNERS = {
-    "bug":    run_bug,
-    "bug2":   run_bug2,
-    "rrt":    run_rrt,
-    "surp":   run_online_surp_push,
+    "bug": run_bug,
+    "bug2": run_bug2,
+    "dstar_lite": run_dstar_lite,
+    "rrt": run_rrt,
+    "surp": run_online_surp_push,
 }
