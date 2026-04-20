@@ -1,7 +1,10 @@
 import json
 import random
 from shapely.geometry import Point, box, LineString
-from validator import validate_scene
+try:
+    from .validator import validate_scene
+except ImportError:
+    from validator import validate_scene
 
 WORKSPACE = (0, 6, 0, 6)   # xmin, xmax, ymin, ymax
 CLASSES = ["safe", "movable", "fragile"]
