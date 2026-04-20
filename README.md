@@ -31,15 +31,17 @@ SURP/
     environment/              # Legacy SCHOLAR data/log/video/image directories
 
   enviornment/
-    scene_generator.py        # New scene generator used by demo_scholar.py
+    scene_complex.py          # Complex scene generator used by demo_scholar.py
+    scene_generator.py        # Alternate newer generator utilities
     run.py                    # Generate 100 scenes for each new environment family
+    run_complex.py            # Generate scenes with scene_complex.py
     run_family.py             # Generate one environment family
     README.md                 # Extra details for environment generation
 ```
 
 ## What the main demo uses
 
-The current `scholar/demo_scholar.py` now generates scenes through the top-level `enviornment/scene_generator.py`.
+The current `scholar/demo_scholar.py` now generates scenes through the top-level `enviornment/scene_complex.py`.
 
 The SCHOLAR demo keeps these four user-facing family names:
 
@@ -48,14 +50,16 @@ The SCHOLAR demo keeps these four user-facing family names:
 - `collision_required`
 - `collision_shortcut`
 
-Internally they map to the new environment generator families like this:
+Those names are already the native family names used by `scene_complex.py`, so there is no family remapping step anymore.
 
-- `sparse` -> `sparse_clutter`
-- `cluttered` -> `dense_clutter`
-- `collision_required` -> `narrow_passage`
-- `collision_shortcut` -> `semantic_trap`
+So when you run `scholar/demo_scholar.py`, the scene source is:
 
-So when you run `scholar/demo_scholar.py`, the scene source is the new `enviornment` generator, not the old `scholar/environment/data/scenes/...` JSON loader.
+- `enviornment/scene_complex.py`
+
+and not:
+
+- `scholar/environment/data/scenes/...`
+- `enviornment/scene_generator.py`
 
 ## Requirements
 
@@ -95,7 +99,7 @@ cd /Users/ishita/Documents/GitHub/SURP
 /opt/anaconda3/bin/python3 -m pip install numpy matplotlib shapely pybullet
 ```
 
-For the new environment generator specifically, there is also a local requirements file:
+For the environment generator folder specifically, there is also a local requirements file:
 
 ```bash
 cd /Users/ishita/Documents/GitHub/SURP
@@ -309,9 +313,73 @@ So valid names generally include:
 - `scholar`
 - baseline names registered in `scholar/planning/baselines.py`
 
+Important:
+
+- `run_trials.py` uses `NewProject.scene_setup.generate_one_random_environment()`
+- it does not use the `scene_complex.py` scenes from `scholar/demo_scholar.py`
+
+If you want metrics on the exact same scenes used by the SCHOLAR demo, use the dedicated script below.
+
+## Metrics on `scene_complex.py` scenes
+
+File:
+
+- [scholar/experiments/run_scene_complex_metrics.py](/Users/ishita/Documents/GitHub/SURP/scholar/experiments/run_scene_complex_metrics.py:1)
+
+This script:
+
+- uses `load_scene(...)` from `scholar.demo_scholar`
+- evaluates one or more planners on the same `scene_complex.py` scenes
+- computes metrics with `scholar.utils.metrics.compute_metrics(...)`
+- writes the results to CSV
+
+Available planner names:
+
+- `scholar`
+- `bug`
+- `rrt`
+- `surp`
+
+Example: run all planners on scenes `0-99`
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug rrt surp
+```
+
+Example: one scene, one family, one planner
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/run_scene_complex_metrics.py --scene 0 --family sparse --planners scholar
+```
+
+Example: custom CSV output
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP
+python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug rrt surp --output /tmp/scene_metrics.csv
+```
+
+Default CSV output path:
+
+- `scholar/environment/data/metrics_scene_complex.csv`
+
+CSV columns:
+
+- `planner`
+- `family`
+- `scene_idx`
+- `seed`
+- `success`
+- `steps`
+- `path_length`
+- `n_contacts`
+- `n_sensed`
+
 ## New environment generator
 
-The new environment generator lives in:
+The alternate top-level environment generator lives in:
 
 - [enviornment/scene_generator.py](/Users/ishita/Documents/GitHub/SURP/enviornment/scene_generator.py:1)
 
@@ -370,6 +438,40 @@ Behavior:
 
 - without a seed, output goes to `enviornment/data/...` and old files there are cleared
 - with a seed, output goes to `enviornment/saved_enviornments/...` and is preserved
+
+## Complex scene generator
+
+The SCHOLAR demo currently uses:
+
+- [enviornment/scene_complex.py](/Users/ishita/Documents/GitHub/SURP/enviornment/scene_complex.py:1)
+
+Its native family names are:
+
+- `sparse`
+- `cluttered`
+- `collision_required`
+- `collision_shortcut`
+
+To generate those scenes directly with the companion script:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP/enviornment
+python3 run_complex.py
+```
+
+or with a custom number of scenes per family:
+
+```bash
+cd /Users/ishita/Documents/GitHub/SURP/enviornment
+python3 run_complex.py 20
+```
+
+That script uses:
+
+- `scene_complex.generate_scene(...)`
+- `draw_complex.py`
+
+and writes outputs into the local `enviornment/` working directories used by that script.
 
 ## Current planner behavior summary
 
@@ -445,7 +547,7 @@ before running the demos.
 
 ## Troubleshooting
 
-### `ModuleNotFoundError: No module named 'enviornment.scene_generator'`
+### `ModuleNotFoundError` involving `enviornment`
 
 Run from the repo root:
 
