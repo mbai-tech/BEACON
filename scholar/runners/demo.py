@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Single-episode demo runner.  Use --planner bug|bug2|rrt|surp."""
+"""Single-episode demo runner.  Use --planner bug|bug1|bug2|dstar|rrt|surp."""
 import sys
 import argparse
 from pathlib import Path
@@ -13,10 +13,12 @@ from scholar.utils.scene_setup import generate_one_random_environment
 from scholar.utils.visualization import animate_result, plot_final_snapshot, save_scene_snapshot
 
 _PLANNERS = {
-    "bug":  ("scholar.algorithms.bug",  "run_bug"),
-    "bug2": ("scholar.algorithms.bug2", "run_bug2"),
-    "rrt":  ("scholar.algorithms.rrt",  "run_rrt"),
-    "surp": ("scholar.algorithms.surp", "run_online_surp_push"),
+    "bug":   ("scholar.algorithms.bug",       "run_bug"),
+    "bug1":  ("scholar.algorithms.baselines", "run_bug1"),
+    "bug2":  ("scholar.algorithms.bug2",      "run_bug2"),
+    "dstar": ("scholar.algorithms.baselines", "run_dstar"),
+    "rrt":   ("scholar.algorithms.rrt",       "run_rrt"),
+    "surp":  ("scholar.algorithms.surp",      "run_online_surp_push"),
 }
 
 
