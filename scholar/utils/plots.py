@@ -5,7 +5,7 @@ Usage
     python plots.py                                   # reads scholar_metrics.csv
     python plots.py --csv path/to/custom.csv
 
-Outputs (saved to NewProject/outputs/figures/)
+Outputs (saved to scholar/outputs/figures/)
 ----------------------------------------------
     fig1_success_battery_vs_density.png
     fig2_uniform_vs_mixed_medium.png
@@ -23,7 +23,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-from NewProject.constants import OUTPUT_DIR
+from scholar.core.constants import OUTPUT_DIR
 
 FIG_DIR = OUTPUT_DIR / "figures"
 CSV_DEFAULT = OUTPUT_DIR / "scholar_metrics.csv"
@@ -178,7 +178,7 @@ def plot_fig3(df: pd.DataFrame) -> Path:
       battery(t) = B0 - δ_move × cumulative_path(t) - δ_time × t
     approximated by drawing from the distribution of recorded metrics.
     """
-    from NewProject.constants import BATTERY_INITIAL, DELTA_MOVE, DELTA_TIME, DELTA_COL
+    from scholar.core.constants import BATTERY_INITIAL, DELTA_MOVE, DELTA_TIME, DELTA_COL
 
     scholar_dm = df[
         (df["algorithm"] == "SCHOLAR") &

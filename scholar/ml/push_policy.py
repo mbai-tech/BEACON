@@ -1,19 +1,3 @@
-"""ML push/avoid policy for the SCHOLAR planner.
-
-Phase 1: COLLECT=True logs every reconcile decision to decision_log.pkl.
-Phase 2: after running train_push_policy.py, loads the model and overrides
-         the handcrafted formula in reconcile_trajectory_decision.
-
-Feature vector (8-d):
-  0  j_avoid              avoid branch total cost
-  1  j_push               push branch total cost
-  2  cost_diff            j_avoid - j_push  (positive = push is cheaper)
-  3  push_belief_risk     E[risk | CIBP belief] for the target obstacle
-  4  corridor_gain        predicted clearance gain from the push
-  5  margin_excess        push safety_margin - safety_margin_threshold
-  6  dist_to_goal         ||goal - position||
-  7  is_stuck             1.0 if stuck_events > 0
-"""
 from __future__ import annotations
 
 import pickle
@@ -23,7 +7,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from NewProject.planner import TrajectoryCandidate
+    from scholar.algorithms.surp import TrajectoryCandidate
 
 _HERE = Path(__file__).parent
 MODEL_PATH = _HERE / "push_policy_model.pkl"

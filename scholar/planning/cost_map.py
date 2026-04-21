@@ -2,7 +2,7 @@ import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
-from NewProject.planner import obstacle_polygon
+from scholar.algorithms.surp import obstacle_polygon
 
 # ── Semantic base costs ────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ def build_voxel_grid(
 
     Parameters
     ----------
-    scene            : NewProject scene dict
+    scene            : scholar scene dict
     resolution       : metres per grid cell
     observed_only    : only rasterise observed obstacles (online mode)
     inflation_radius : buffer each obstacle polygon by this amount
@@ -156,7 +156,7 @@ def compute_anisotropic_map(
     Parameters
     ----------
     cost_map    : base grid from build_voxel_grid
-    scene       : NewProject scene dict (for workspace bounds)
+    scene       : scholar scene dict (for workspace bounds)
     m_samples   : number of push-direction samples per boundary cell
     alpha       : blend weight between base cost and anisotropic penalty
     c_thresh    : max base cost to consider as pushable
@@ -267,7 +267,7 @@ def update(
     Parameters
     ----------
     cost_map  : CostMap with an existing .aniso layer (or None)
-    scene     : NewProject scene dict
+    scene     : scholar scene dict
     robot_pos : (x, y) robot position in world coordinates
     r_map     : sliding-window radius in metres
 

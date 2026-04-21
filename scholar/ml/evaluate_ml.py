@@ -1,10 +1,3 @@
-"""Compare SCHOLAR with handcrafted reconciler vs trained ML model.
-
-Runs the same scenes under both conditions and prints a summary table.
-
-Usage:
-    python -m NewProject.ml.evaluate_ml --trials 20 --configs D-M D-U M-M M-U
-"""
 from __future__ import annotations
 
 import argparse
@@ -20,11 +13,11 @@ for p in (str(REPO_ROOT), str(SCHOLAR_DIR)):
 
 import numpy as np
 
-import NewProject.planner as _planner_mod
-from NewProject.planner import run_online_surp_push
-from NewProject.scene_configs import generate_config_environment
-from NewProject.constants import SCENE_CONFIGS
-from NewProject.ml.push_policy import PushAvoidPolicy, COLLECT
+import scholar.algorithms.surp as _planner_mod
+from scholar.algorithms.surp import run_online_surp_push
+from scholar.utils.scene_configs import generate_config_environment
+from scholar.core.constants import SCENE_CONFIGS
+from scholar.ml.push_policy import PushAvoidPolicy, COLLECT
 
 
 def _compute_metrics(result, elapsed: float) -> dict:
@@ -103,7 +96,7 @@ def main():
                         default=["D-M", "D-U", "M-M", "M-U"])
     args = parser.parse_args()
 
-    import NewProject.ml.push_policy as pp_mod
+    import scholar.ml.push_policy as pp_mod
     import importlib, builtins
     # disable logging during eval so we don't pollute the training log
     pp_mod.COLLECT = False

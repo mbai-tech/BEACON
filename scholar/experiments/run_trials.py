@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from NewProject.scene_setup import generate_one_random_environment
+from scholar.utils.scene_setup import generate_one_random_environment
 
 from planning.baselines import PLANNERS
 from planning.scholar import run_scholar

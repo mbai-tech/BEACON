@@ -6,9 +6,9 @@ from typing import Dict, List, Optional, Tuple
 from scipy.interpolate import make_interp_spline
 from shapely.geometry import LineString, Point
 
-from NewProject.constants import DEFAULT_SENSING_RANGE
-from NewProject.models import OnlineSurpResult, SceneSummary
-from NewProject.planner import (
+from scholar.core.constants import DEFAULT_SENSING_RANGE
+from scholar.core.models import OnlineSurpResult, SceneSummary
+from scholar.algorithms.surp import (
     clip_point_to_workspace,
     normalize,
     obstacle_polygon,
@@ -16,7 +16,7 @@ from NewProject.planner import (
     robot_body,
     snapshot_frame,
 )
-from NewProject.scene_setup import normalize_scene_for_online_use
+from scholar.utils.scene_setup import normalize_scene_for_online_use
 
 from planning.cost_map import (
     SEMANTIC_COSTS,

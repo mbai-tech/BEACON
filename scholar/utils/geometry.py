@@ -1,11 +1,11 @@
 """
-utils/geometry.py — Geometry helpers built on top of NewProject.planner primitives.
+utils/geometry.py — Geometry helpers built on top of scholar.algorithms.surp primitives.
 """
 
 import numpy as np
 from typing import Optional, Tuple
 
-from NewProject.planner import (
+from scholar.algorithms.surp import (
     normalize,
     obstacle_polygon,
     robot_body,

@@ -10,7 +10,7 @@ from typing import Optional
 
 import numpy as np
 
-from NewProject.models import SceneSummary
+from scholar.core.models import SceneSummary
 from planning.scholar import PlannerConfig
 
 _SYSTEM_PROMPT = (

@@ -10,11 +10,11 @@ from shapely.affinity import translate
 from shapely.geometry import LineString, Point, Polygon, box
 from shapely.ops import nearest_points
 
-from NewProject.constants import CHAIN_ATTENUATION, DEFAULT_SENSING_RANGE, ROBOT_RADIUS, SAFE_PROB_THRESHOLD
-from NewProject.models import OnlineSurpResult, SimulationFrame
-from NewProject.scene_setup import normalize_scene_for_online_use
-from NewProject.cibp import CIBP
-from NewProject.ml.push_policy import PushAvoidPolicy
+from scholar.core.constants import CHAIN_ATTENUATION, DEFAULT_SENSING_RANGE, ROBOT_RADIUS, SAFE_PROB_THRESHOLD
+from scholar.core.models import OnlineSurpResult, SimulationFrame
+from scholar.utils.scene_setup import normalize_scene_for_online_use
+from scholar.core.cibp import CIBP
+from scholar.ml.push_policy import PushAvoidPolicy
 
 _push_policy = PushAvoidPolicy()
 

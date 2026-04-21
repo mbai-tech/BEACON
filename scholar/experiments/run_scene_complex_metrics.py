@@ -20,9 +20,19 @@ if str(SCHOLAR_ROOT) not in sys.path:
     sys.path.insert(0, str(SCHOLAR_ROOT))
 
 from scholar.demo_scholar import FAMILIES, load_scene
-from scholar.planning.baselines import PLANNERS
+from scholar.algorithms.bug import run_bug
+from scholar.algorithms.bug2 import run_bug2
+from scholar.algorithms.rrt import run_rrt
+from scholar.algorithms.surp import run_online_surp_push
 from scholar.planning.scholar import run_scholar
 from scholar.utils.metrics import compute_metrics
+
+PLANNERS = {
+    "bug":  run_bug,
+    "bug2": run_bug2,
+    "rrt":  run_rrt,
+    "surp": run_online_surp_push,
+}
 
 
 ALL_PLANNERS = {

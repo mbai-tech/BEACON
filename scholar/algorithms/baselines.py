@@ -1,14 +1,14 @@
 """Bug1 and Greedy baseline planners for the SCHOLAR evaluation.
 
-Bug2 is provided by the existing ``NewProject.bug_algorithm.run_bug``.
+Bug2 is provided by the existing ``scholar.algorithms.bug.run_bug``.
 """
 
 import numpy as np
 from shapely.geometry import LineString, Point
 
-from NewProject.constants import DEFAULT_SENSING_RANGE, ROBOT_RADIUS
-from NewProject.models import OnlineSurpResult
-from NewProject.planner import (
+from scholar.core.constants import DEFAULT_SENSING_RANGE, ROBOT_RADIUS
+from scholar.core.models import OnlineSurpResult
+from scholar.algorithms.surp import (
     clip_point_to_workspace,
     normalize,
     obstacle_polygon,
@@ -16,7 +16,7 @@ from NewProject.planner import (
     robot_body,
     snapshot_frame,
 )
-from NewProject.scene_setup import normalize_scene_for_online_use
+from scholar.utils.scene_setup import normalize_scene_for_online_use
 
 
 # ── shared helpers ────────────────────────────────────────────────────────────

@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 
-from NewProject.models import SceneSummary
+from scholar.core.models import SceneSummary
 from planning.scholar import PlannerConfig
 
 

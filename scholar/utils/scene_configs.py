@@ -21,7 +21,7 @@ from environment.scene_basic import (
     polygon_to_list,
     valid_candidate,
 )
-from NewProject.constants import (
+from scholar.core.constants import (
     DENSITY_OBSTACLE_COUNTS,
     SCENE_CONFIGS,
 )

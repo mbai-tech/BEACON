@@ -25,10 +25,10 @@ for p in (str(REPO_ROOT), str(SCHOLAR_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from NewProject.baselines import run_bug1, run_greedy
-from NewProject.bug_algorithm import run_bug                 # Bug2
-from NewProject.constants import OUTPUT_DIR, SCENE_CONFIGS
-from NewProject.scene_configs import generate_config_environment
+from scholar.algorithms.baselines import run_bug1, run_greedy
+from scholar.algorithms.bug import run_bug                 # Bug2
+from scholar.core.constants import OUTPUT_DIR, SCENE_CONFIGS
+from scholar.utils.scene_configs import generate_config_environment
 from metrics import compute_metrics, RunMetrics
 from planning.scholar import run_scholar                     # full SCHOLAR
 
