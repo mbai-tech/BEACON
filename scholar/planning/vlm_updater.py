@@ -1,14 +1,16 @@
-"""VLMWeightUpdater — queries Qwen to propose PlannerConfig updates from SceneSummary diagnostics."""
+"""VLMWeightUpdater — loads a local Hugging Face model onto GPU and uses it
+to propose PlannerConfig updates from SceneSummary diagnostics."""
 from __future__ import annotations
 
 import json
 import math
-import os
 import re
 from dataclasses import asdict
 from typing import Optional
 
 import numpy as np
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from scholar.core.models import SceneSummary
 from planning.scholar import PlannerConfig
@@ -47,6 +49,7 @@ _SYSTEM_PROMPT = (
     "the same keys as input config."
 )
 
+
 class _Encoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.floating):
@@ -57,15 +60,20 @@ class _Encoder(json.JSONEncoder):
 
 
 def _config_to_dict(cfg: PlannerConfig) -> dict:
-    return {k: float(v) if isinstance(v, (float, np.floating)) else v
-            for k, v in asdict(cfg).items()}
+    return {
+        k: float(v) if isinstance(v, (float, np.floating)) else v
+        for k, v in asdict(cfg).items()
+    }
 
 
 def _summary_to_dict(s: SceneSummary) -> dict:
     d = asdict(s)
     return {
-        k: (float(v) if isinstance(v, (float, np.floating)) else
-            (int(v)   if isinstance(v, (int,   np.integer))  else v))
+        k: (
+            float(v) if isinstance(v, (float, np.floating))
+            else int(v) if isinstance(v, (int, np.integer))
+            else v
+        )
         for k, v in d.items()
     }
 
@@ -74,13 +82,11 @@ def _to_json(obj: dict) -> str:
     return json.dumps(obj, indent=2, cls=_Encoder)
 
 
-# ── JSON extraction ────────────────────────────────────────────────────────────
-
 def _extract_json(text: str) -> Optional[dict]:
     """Return the first JSON object found in text, stripping markdown fences."""
     text = re.sub(r"```(?:json)?\s*", "", text).strip().rstrip("`").strip()
     start = text.find("{")
-    end   = text.rfind("}")
+    end = text.rfind("}")
     if start == -1 or end == -1 or end <= start:
         return None
     try:
@@ -89,15 +95,13 @@ def _extract_json(text: str) -> Optional[dict]:
         return None
 
 
-# ── Post-processing: clip and validate ────────────────────────────────────────
+_BATTERY_KEYS = frozenset({"w_r_scale", "w_v_floor", "w_v_range"})
 
-_BATTERY_KEYS        = frozenset({"w_r_scale", "w_v_floor", "w_v_range"})
-
-_DELTA_E_MIN         = 0.3
-_MAX_CHANGE          = 0.20       # ±20 % per parameter — scene-level updates
-_MAX_CHANGE_FAMILY   = 0.40       # ±40 % per parameter — family-level resets
-_RISK_KEYS           = ("geo_weight", "sem_weight", "dir_weight")
-_RESOURCE_KEYS       = ("resource_d", "resource_T", "resource_contact")
+_DELTA_E_MIN = 0.3
+_MAX_CHANGE = 0.20
+_MAX_CHANGE_FAMILY = 0.40
+_RISK_KEYS = ("geo_weight", "sem_weight", "dir_weight")
+_RESOURCE_KEYS = ("resource_d", "resource_T", "resource_contact")
 
 _FAMILY_HINTS: dict = {
     "sparse": (
@@ -145,43 +149,50 @@ def _aggregate_summaries(summaries: list) -> dict:
         return float(np.mean(vals)) if vals else 0.0
 
     all_dominant = [s.dominant_j for s in summaries]
-    dominant_j   = max(set(all_dominant), key=all_dominant.count)
+    dominant_j = max(set(all_dominant), key=all_dominant.count)
 
-    bfs = [s.battery_at_first_stuck for s in summaries
-           if s.battery_at_first_stuck is not None]
+    bfs = [
+        s.battery_at_first_stuck
+        for s in summaries
+        if s.battery_at_first_stuck is not None
+    ]
 
     return {
-        "n_scenes":                        n,
-        "success_rate":                    sum(s.success for s in summaries) / n,
-        "mean_final_battery":              _mean([s.final_battery             for s in summaries]),
-        "mean_total_semantic_damage":      _mean([s.total_semantic_damage     for s in summaries]),
-        "mean_forbidden_contact_rate":     _mean([s.forbidden_contact_rate    for s in summaries]),
-        "mean_fragile_contact_rate":       _mean([s.fragile_contact_rate      for s in summaries]),
-        "mean_j_risk":                     _mean([s.mean_j_risk               for s in summaries]),
-        "mean_j_vel":                      _mean([s.mean_j_vel                for s in summaries]),
-        "mean_j_resource":                 _mean([s.mean_j_resource           for s in summaries]),
-        "mean_n_cibp_replans":             _mean([s.n_cibp_replans            for s in summaries]),
-        "mean_n_stuck_events":             _mean([s.n_stuck_events            for s in summaries]),
-        "mean_speed_at_contact":           _mean([s.mean_speed_at_contact     for s in summaries]),
-        "dominant_j":                      dominant_j,
-        "mean_low_battery_contact_fraction": _mean([s.low_battery_contact_fraction for s in summaries]),
-        "mean_battery_at_first_stuck":     _mean(bfs) if bfs else None,
+        "n_scenes": n,
+        "success_rate": sum(s.success for s in summaries) / n,
+        "mean_final_battery": _mean([s.final_battery for s in summaries]),
+        "mean_total_semantic_damage": _mean([s.total_semantic_damage for s in summaries]),
+        "mean_forbidden_contact_rate": _mean([s.forbidden_contact_rate for s in summaries]),
+        "mean_fragile_contact_rate": _mean([s.fragile_contact_rate for s in summaries]),
+        "mean_j_risk": _mean([s.mean_j_risk for s in summaries]),
+        "mean_j_vel": _mean([s.mean_j_vel for s in summaries]),
+        "mean_j_resource": _mean([s.mean_j_resource for s in summaries]),
+        "mean_n_cibp_replans": _mean([s.n_cibp_replans for s in summaries]),
+        "mean_n_stuck_events": _mean([s.n_stuck_events for s in summaries]),
+        "mean_speed_at_contact": _mean([s.mean_speed_at_contact for s in summaries]),
+        "dominant_j": dominant_j,
+        "mean_low_battery_contact_fraction": _mean(
+            [s.low_battery_contact_fraction for s in summaries]
+        ),
+        "mean_battery_at_first_stuck": _mean(bfs) if bfs else None,
     }
 
 
-def _clip_and_validate(proposed: dict, current: PlannerConfig,
-                       max_change: float = _MAX_CHANGE) -> PlannerConfig:
+def _clip_and_validate(
+    proposed: dict,
+    current: PlannerConfig,
+    max_change: float = _MAX_CHANGE,
+) -> PlannerConfig:
     """
     Enforce all constraints on a VLM-proposed config dict:
-      1. Max ±20 % change from current value per parameter.
+      1. Max ±change from current value per parameter.
       2. All values strictly positive.
       3. delta_E_coeff ≥ 0.3.
       4. f_alpha_threshold ∈ (0, π/2).
       5. Renormalise risk and resource sub-weight groups to sum to 1.
-    Missing or non-numeric keys fall back to the current value.
     """
-    cur  = _config_to_dict(current)
-    out  = {}
+    cur = _config_to_dict(current)
+    out = {}
 
     for key, cur_val in cur.items():
         if key not in proposed:
@@ -193,23 +204,18 @@ def _clip_and_validate(proposed: dict, current: PlannerConfig,
             out[key] = cur_val
             continue
 
-        # ① change clamp (scene: ±20 %, family: ±40 %)
-        val = max(cur_val * (1.0 - max_change),
-                  min(cur_val * (1.0 + max_change), val))
-        # ② Strictly positive
+        val = max(cur_val * (1.0 - max_change), min(cur_val * (1.0 + max_change), val))
         val = max(1e-6, val)
         out[key] = val
 
-    # ③ Hard lower bound on contact-energy coefficient
     out["delta_E_coeff"] = max(_DELTA_E_MIN, out["delta_E_coeff"])
 
-    # ④ f_alpha_threshold ∈ (0, π/2)
-    _eps = 1e-6
-    out["f_alpha_threshold"] = max(_eps,
-                                   min(math.pi / 2.0 - _eps,
-                                       out["f_alpha_threshold"]))
+    eps = 1e-6
+    out["f_alpha_threshold"] = max(
+        eps,
+        min(math.pi / 2.0 - eps, out["f_alpha_threshold"]),
+    )
 
-    # ⑤ Renormalise simplex groups
     for group in (_RISK_KEYS, _RESOURCE_KEYS):
         total = sum(out[k] for k in group)
         if total > 0:
@@ -219,45 +225,86 @@ def _clip_and_validate(proposed: dict, current: PlannerConfig,
     return PlannerConfig(**out)
 
 
-# ── VLMWeightUpdater ──────────────────────────────────────────────────────────
-
 class VLMWeightUpdater:
     """
-    Calls a Qwen model (via OpenAI-compatible API) to propose updated
-    PlannerConfig weights after each scene, then clips and validates the result.
+    Loads a local Hugging Face causal LM onto GPU and uses it to propose
+    PlannerConfig updates from SceneSummary diagnostics.
 
-    Environment variables (used as fallbacks):
-      QWEN_BASE_URL     — API base URL   (default: DashScope compatible endpoint)
-      DASHSCOPE_API_KEY — API key
+    Example model names:
+      - Qwen/Qwen2.5-7B-Instruct
+      - Qwen/Qwen2.5-3B-Instruct
     """
+
+    _shared_model = None
+    _shared_tokenizer = None
+    _shared_model_name = None
+    _shared_device = None
 
     def __init__(
         self,
-        model:       str           = "qwen-plus",
-        base_url:    Optional[str] = None,
-        api_key:     Optional[str] = None,
-        temperature: float         = 0.2,
-        max_tokens:  int           = 512,
+        model: str = "Qwen/Qwen2.5-7B-Instruct",
+        temperature: float = 0.2,
+        max_tokens: int = 512,
+        trust_remote_code: bool = True,
     ):
-        self.model       = model
-        self.base_url    = base_url or os.getenv(
-            "QWEN_BASE_URL",
-            "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        )
-        self.api_key     = api_key  or os.getenv("DASHSCOPE_API_KEY") or "local"
+        self.model = model
         self.temperature = temperature
-        self.max_tokens  = max_tokens
+        self.max_tokens = max_tokens
+        self.trust_remote_code = trust_remote_code
 
-    # ── Prompt construction ────────────────────────────────────────────────────
+        if (
+            VLMWeightUpdater._shared_model is None
+            or VLMWeightUpdater._shared_tokenizer is None
+            or VLMWeightUpdater._shared_model_name != model
+        ):
+            self._load_model()
+
+        self.tokenizer = VLMWeightUpdater._shared_tokenizer
+        self.llm = VLMWeightUpdater._shared_model
+        self.device = VLMWeightUpdater._shared_device
+
+    def _load_model(self) -> None:
+        tokenizer = AutoTokenizer.from_pretrained(
+            self.model,
+            trust_remote_code=self.trust_remote_code,
+        )
+
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+        if torch.cuda.is_available():
+            model = AutoModelForCausalLM.from_pretrained(
+                self.model,
+                torch_dtype=torch.float16,
+                device_map="auto",
+                trust_remote_code=self.trust_remote_code,
+            )
+            device = next(model.parameters()).device
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                self.model,
+                torch_dtype=torch.float32,
+                trust_remote_code=self.trust_remote_code,
+            )
+            device = torch.device("cpu")
+            model.to(device)
+
+        model.eval()
+
+        VLMWeightUpdater._shared_tokenizer = tokenizer
+        VLMWeightUpdater._shared_model = model
+        VLMWeightUpdater._shared_model_name = self.model
+        VLMWeightUpdater._shared_device = device
 
     def _build_user_message(
         self,
-        config:              PlannerConfig,
-        summary:             SceneSummary,
-        history:             list[tuple[PlannerConfig, SceneSummary]],
-        family:              str = "unknown",
+        config: PlannerConfig,
+        summary: SceneSummary,
+        history: list[tuple[PlannerConfig, SceneSummary]],
+        family: str = "unknown",
         scene_idx_in_family: int = 0,
-        scenes_remaining:    int = 0,
+        scenes_remaining: int = 0,
+        battery_only: bool = False,
     ) -> str:
         parts: list[str] = []
 
@@ -276,15 +323,27 @@ class VLMWeightUpdater:
         parts.append(_to_json(_summary_to_dict(summary)))
 
         parts.append("=== Optimization context ===")
-        parts.append(_to_json({
-            "current_family":            family,
-            "scene_index_within_family": scene_idx_in_family,
-            "scenes_remaining_in_family": scenes_remaining,
-        }))
+        parts.append(
+            _to_json(
+                {
+                    "current_family": family,
+                    "scene_index_within_family": scene_idx_in_family,
+                    "scenes_remaining_in_family": scenes_remaining,
+                    "battery_only_mode": battery_only,
+                }
+            )
+        )
+
+        if battery_only:
+            parts.append(
+                "IMPORTANT: This is battery-only mode. Only propose meaningful changes for "
+                "w_r_scale, w_v_floor, and w_v_range. Keep all other keys near current values."
+            )
+
         parts.append(
             f"You are optimizing exclusively for {family} scenes. Do not generalize. "
             "If scenes_remaining_in_family > 10, allow up to 25% change per parameter. "
-            "If \u2264 5, limit to 10% \u2014 you are converging, not exploring."
+            "If ≤ 5, limit to 10% — you are converging, not exploring."
         )
 
         parts.append(
@@ -294,14 +353,12 @@ class VLMWeightUpdater:
         )
         return "\n\n".join(parts)
 
-    # ── Family-level prompt construction ──────────────────────────────────────
-
     def _build_family_message(
         self,
-        config:     PlannerConfig,
+        config: PlannerConfig,
         aggregated: dict,
-        family:     str,
-        history:    list[tuple[PlannerConfig, "SceneSummary"]],
+        family: str,
+        history: list[tuple[PlannerConfig, SceneSummary]],
     ) -> str:
         parts: list[str] = []
 
@@ -332,35 +389,61 @@ class VLMWeightUpdater:
         )
         return "\n\n".join(parts)
 
-    # ── Main API call ──────────────────────────────────────────────────────────
+    def _generate_text(self, user_message: str) -> str:
+        messages = [
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": user_message},
+        ]
+
+        prompt_text = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+
+        inputs = self.tokenizer(
+            prompt_text,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+        )
+
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+        do_sample = self.temperature > 0
+
+        with torch.no_grad():
+            outputs = self.llm.generate(
+                **inputs,
+                max_new_tokens=self.max_tokens,
+                temperature=self.temperature if do_sample else None,
+                do_sample=do_sample,
+                pad_token_id=self.tokenizer.pad_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+            )
+
+        generated_ids = outputs[0][inputs["input_ids"].shape[1] :]
+        text = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+        return text.strip()
 
     def update(
         self,
-        config:              PlannerConfig,
-        summary:             SceneSummary,
-        history:             list[tuple[PlannerConfig, SceneSummary]],
-        family:              str  = "unknown",
-        scene_idx_in_family: int  = 0,
-        scenes_remaining:    int  = 0,
-        battery_only:        bool = False,
+        config: PlannerConfig,
+        summary: SceneSummary,
+        history: list[tuple[PlannerConfig, SceneSummary]],
+        family: str = "unknown",
+        scene_idx_in_family: int = 0,
+        scenes_remaining: int = 0,
+        battery_only: bool = False,
     ) -> PlannerConfig:
         """
-        Query Qwen with the current config, latest SceneSummary, and the last
-        five (config, summary) history pairs.  Parse the response, clip every
-        value to an adaptive bound (25% when scenes_remaining > 10, 10% when
-        ≤ 5, 20% otherwise), enforce physical hard bounds, and renormalise
-        simplex groups.  Returns current config unchanged if the model response
-        cannot be parsed.
+        Query the local GPU-backed model with the current config, latest SceneSummary,
+        and recent history. Parse the response, clip every value to an adaptive bound,
+        enforce hard bounds, and renormalise simplex groups.
 
-        If battery_only=True (condition C), only w_r_scale / w_v_floor /
-        w_v_range are applied from the VLM proposal; all other parameters revert
-        to their values in ``config``.
+        If battery_only=True (condition C), only w_r_scale / w_v_floor / w_v_range
+        are applied from the model proposal; all other parameters revert to current.
         """
-        try:
-            from openai import OpenAI
-        except ImportError as exc:
-            raise ImportError("pip install openai") from exc
-
         if scenes_remaining > 10:
             max_change = 0.25
         elif scenes_remaining <= 5:
@@ -368,26 +451,19 @@ class VLMWeightUpdater:
         else:
             max_change = _MAX_CHANGE
 
-        client = OpenAI(base_url=self.base_url, api_key=self.api_key)
-
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user",   "content": self._build_user_message(
-                    config, summary, history,
-                    family=family,
-                    scene_idx_in_family=scene_idx_in_family,
-                    scenes_remaining=scenes_remaining,
-                )},
-            ],
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
+        raw = self._generate_text(
+            self._build_user_message(
+                config,
+                summary,
+                history,
+                family=family,
+                scene_idx_in_family=scene_idx_in_family,
+                scenes_remaining=scenes_remaining,
+                battery_only=battery_only,
+            )
         )
 
-        raw      = response.choices[0].message.content.strip()
         proposed = _extract_json(raw)
-
         if proposed is None:
             return config
 
@@ -405,42 +481,24 @@ class VLMWeightUpdater:
 
     def update_family(
         self,
-        config:    PlannerConfig,
+        config: PlannerConfig,
         summaries: list,
-        family:    str,
-        history:   list[tuple[PlannerConfig, "SceneSummary"]],
+        family: str,
+        history: list[tuple[PlannerConfig, SceneSummary]],
     ) -> PlannerConfig:
         """
-        Query Qwen with family-aggregated stats from all scenes in a family.
-        Uses ±40 % change bounds instead of ±20 %.  Returns current config
-        unchanged if summaries is empty or the model response cannot be parsed.
+        Query the local GPU-backed model with family-aggregated stats.
+        Uses ±40 % change bounds instead of ±20 %.
         """
         aggregated = _aggregate_summaries(summaries)
         if not aggregated:
             return config
 
-        try:
-            from openai import OpenAI
-        except ImportError as exc:
-            raise ImportError("pip install openai") from exc
-
-        client = OpenAI(base_url=self.base_url, api_key=self.api_key)
-
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user",   "content": self._build_family_message(
-                    config, aggregated, family, history,
-                )},
-            ],
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
+        raw = self._generate_text(
+            self._build_family_message(config, aggregated, family, history)
         )
 
-        raw      = response.choices[0].message.content.strip()
         proposed = _extract_json(raw)
-
         if proposed is None:
             return config
 
