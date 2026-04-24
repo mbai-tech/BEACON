@@ -477,11 +477,17 @@ def _plot_comparison(
 def run_benchmark(
     n_scenes_per_family: int   = 375,
     families:            list  = None,
-    llm_model:           str   = "qwen-plus",
+    llm_model:           str   = "Qwen/Qwen2.5-3B-Instruct",
     max_steps:           int   = 500,
     step_size:           float = 0.04,
     sensing_range:       float = 0.35,
     n_workers_a:         int   = 8,
+    llm_max_tokens:      int   = 256,
+    llm_max_input_tokens:int   = 1536,
+    llm_history_window:  int   = 2,
+    llm_gpu_mem_util:    float = 0.85,
+    llm_max_model_len:   int | None = None,
+    llm_enforce_eager:   bool  = True,
     save_dir                   = None,
     show_plots:          bool  = True,
 ) -> dict:
@@ -492,7 +498,7 @@ def run_benchmark(
     ----------
     n_scenes_per_family : scenes per family; 375 × 4 families = 1 500 total
     families            : subset of _DEFAULT_FAMILIES, or None for all four
-    llm_model           : Qwen model name passed to LLMWeightUpdater
+    llm_model           : Hugging Face model id passed to the vLLM-backed updater
     n_workers_a         : thread-pool size for the parallelised condition-A run
     save_dir            : if given, save plots there
     show_plots          : call plt.show() (False in headless contexts)
@@ -528,8 +534,17 @@ def run_benchmark(
     }
 
     # Separate updater instances so conditions B and C accumulate independent histories
-    updater_b = LLMWeightUpdater(model=llm_model)
-    updater_c = LLMWeightUpdater(model=llm_model)
+    updater_kwargs = {
+        "model": llm_model,
+        "max_tokens": llm_max_tokens,
+        "max_input_tokens": llm_max_input_tokens,
+        "history_window": llm_history_window,
+        "gpu_memory_utilization": llm_gpu_mem_util,
+        "max_model_len": llm_max_model_len,
+        "enforce_eager": llm_enforce_eager,
+    }
+    updater_b = LLMWeightUpdater(**updater_kwargs)
+    updater_c = LLMWeightUpdater(**updater_kwargs)
 
     print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
     records_a = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
@@ -579,12 +594,24 @@ if __name__ == "__main__":
     parser.add_argument(
         "--families", nargs="*", default=None, choices=_DEFAULT_FAMILIES,
     )
-    parser.add_argument("--model",   type=str,   default="qwen-plus")
+    parser.add_argument("--model",   type=str,   default="Qwen/Qwen2.5-3B-Instruct")
     parser.add_argument("--steps",   type=int,   default=500)
     parser.add_argument("--step",    type=float, default=0.04)
     parser.add_argument("--sense",   type=float, default=0.35)
     parser.add_argument("--workers", type=int,   default=8,
                         help="Thread-pool size for condition A")
+    parser.add_argument("--llm-max-tokens", type=int, default=256,
+                        help="Max new tokens per LLM update")
+    parser.add_argument("--llm-max-input-tokens", type=int, default=1536,
+                        help="Max prompt tokens passed into the LLM")
+    parser.add_argument("--llm-history-window", type=int, default=2,
+                        help="Number of previous scene summaries to keep in prompt history")
+    parser.add_argument("--llm-gpu-mem-util", type=float, default=0.85,
+                        help="vLLM GPU memory utilization fraction")
+    parser.add_argument("--llm-max-model-len", type=int, default=None,
+                        help="Override vLLM max_model_len; defaults to prompt + output budget + headroom")
+    parser.add_argument("--llm-no-eager", action="store_true",
+                        help="Disable vLLM eager mode if your runtime is stable without it")
     parser.add_argument("--save",    type=str,   default=None,
                         metavar="DIR", help="Directory for saved plots")
     parser.add_argument("--no-show", action="store_true",
@@ -599,6 +626,12 @@ if __name__ == "__main__":
         step_size           = args.step,
         sensing_range       = args.sense,
         n_workers_a         = args.workers,
+        llm_max_tokens      = args.llm_max_tokens,
+        llm_max_input_tokens= args.llm_max_input_tokens,
+        llm_history_window  = args.llm_history_window,
+        llm_gpu_mem_util    = args.llm_gpu_mem_util,
+        llm_max_model_len   = args.llm_max_model_len,
+        llm_enforce_eager   = not args.llm_no_eager,
         save_dir            = args.save,
         show_plots          = not args.no_show,
     )

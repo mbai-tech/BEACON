@@ -1,16 +1,15 @@
-"""LLMWeightUpdater — loads a local Hugging Face text model onto GPU and uses it
+"""LLMWeightUpdater — loads a local text model through vLLM and uses it
 to propose PlannerConfig updates from SceneSummary diagnostics."""
 from __future__ import annotations
 
 import json
 import math
+import os
 import re
 from dataclasses import asdict
 from typing import Optional
 
 import numpy as np
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from scholar.core.models import SceneSummary
 from planning.scholar import PlannerConfig
@@ -227,26 +226,28 @@ def _clip_and_validate(
 
 class LLMWeightUpdater:
     """
-    Loads a local Hugging Face causal LM onto GPU and uses it to propose
+    Loads a local causal LM through vLLM and uses it to propose
     PlannerConfig updates from SceneSummary diagnostics.
 
     Example model names:
-      - Qwen/Qwen2.5-7B-Instruct
       - Qwen/Qwen2.5-3B-Instruct
+      - Qwen/Qwen2.5-7B-Instruct
     """
 
     _shared_model = None
     _shared_tokenizer = None
-    _shared_model_name = None
-    _shared_device = None
+    _shared_runtime_key = None
 
     def __init__(
         self,
-        model: str = "Qwen/Qwen2.5-7B-Instruct",
+        model: str = "Qwen/Qwen2.5-3B-Instruct",
         temperature: float = 0.2,
         max_tokens: int = 256,
         max_input_tokens: int = 1536,
         history_window: int = 2,
+        gpu_memory_utilization: float = 0.85,
+        max_model_len: int | None = None,
+        enforce_eager: bool = True,
         trust_remote_code: bool = True,
     ):
         self.model = model
@@ -254,51 +255,72 @@ class LLMWeightUpdater:
         self.max_tokens = max_tokens
         self.max_input_tokens = max_input_tokens
         self.history_window = history_window
+        self.gpu_memory_utilization = gpu_memory_utilization
+        self.max_model_len = max_model_len or (max_input_tokens + max_tokens + 256)
+        self.enforce_eager = enforce_eager
         self.trust_remote_code = trust_remote_code
+        self.hf_token = (
+            os.environ.get("HF_TOKEN")
+            or os.environ.get("HUGGINGFACE_HUB_TOKEN")
+            or os.environ.get("HF_HUB_TOKEN")
+        )
+
+        runtime_key = (
+            self.model,
+            self.trust_remote_code,
+            self.max_model_len,
+            self.gpu_memory_utilization,
+            self.enforce_eager,
+            bool(self.hf_token),
+        )
 
         if (
             LLMWeightUpdater._shared_model is None
             or LLMWeightUpdater._shared_tokenizer is None
-            or LLMWeightUpdater._shared_model_name != model
+            or LLMWeightUpdater._shared_runtime_key != runtime_key
         ):
             self._load_model()
 
         self.tokenizer = LLMWeightUpdater._shared_tokenizer
         self.llm = LLMWeightUpdater._shared_model
-        self.device = LLMWeightUpdater._shared_device
 
     def _load_model(self) -> None:
-        tokenizer = AutoTokenizer.from_pretrained(
-            self.model,
-            trust_remote_code=self.trust_remote_code,
-        )
+        try:
+            from vllm import LLM
+            from vllm.tokenizers import get_tokenizer
+        except ImportError as exc:
+            raise ImportError(
+                "vLLM is required for LLMWeightUpdater. Install it with "
+                "`pip install vllm` before running the benchmark."
+            ) from exc
 
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer_kwargs = {"trust_remote_code": self.trust_remote_code}
+        if self.hf_token:
+            tokenizer_kwargs["token"] = self.hf_token
+        tokenizer = get_tokenizer(self.model, **tokenizer_kwargs)
 
-        if torch.cuda.is_available():
-            model = AutoModelForCausalLM.from_pretrained(
-                self.model,
-                torch_dtype=torch.float16,
-                device_map="auto",
-                trust_remote_code=self.trust_remote_code,
-            )
-            device = next(model.parameters()).device
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                self.model,
-                torch_dtype=torch.float32,
-                trust_remote_code=self.trust_remote_code,
-            )
-            device = torch.device("cpu")
-            model.to(device)
-
-        model.eval()
+        llm_kwargs = {
+            "model": self.model,
+            "trust_remote_code": self.trust_remote_code,
+            "gpu_memory_utilization": self.gpu_memory_utilization,
+            "max_model_len": self.max_model_len,
+            "enforce_eager": self.enforce_eager,
+            "tensor_parallel_size": 1,
+        }
+        if self.hf_token:
+            llm_kwargs["hf_token"] = self.hf_token
+        model = LLM(**llm_kwargs)
 
         LLMWeightUpdater._shared_tokenizer = tokenizer
         LLMWeightUpdater._shared_model = model
-        LLMWeightUpdater._shared_model_name = self.model
-        LLMWeightUpdater._shared_device = device
+        LLMWeightUpdater._shared_runtime_key = (
+            self.model,
+            self.trust_remote_code,
+            self.max_model_len,
+            self.gpu_memory_utilization,
+            self.enforce_eager,
+            bool(self.hf_token),
+        )
 
     def _build_user_message(
         self,
@@ -394,42 +416,44 @@ class LLMWeightUpdater:
         return "\n\n".join(parts)
 
     def _generate_text(self, user_message: str) -> str:
+        try:
+            from vllm import SamplingParams
+        except ImportError as exc:
+            raise ImportError(
+                "vLLM is required for LLMWeightUpdater. Install it with "
+                "`pip install vllm` before running the benchmark."
+            ) from exc
+
         messages = [
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ]
 
-        prompt_text = self.tokenizer.apply_chat_template(
+        prompt_token_ids = self.tokenizer.apply_chat_template(
             messages,
-            tokenize=False,
+            tokenize=True,
             add_generation_prompt=True,
         )
+        if len(prompt_token_ids) > self.max_input_tokens:
+            prompt_token_ids = prompt_token_ids[-self.max_input_tokens :]
 
-        inputs = self.tokenizer(
-            prompt_text,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=self.max_input_tokens,
+        sampling_params = SamplingParams(
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+            skip_special_tokens=True,
         )
+        if self.temperature <= 0:
+            sampling_params.temperature = 0.0
 
-        inputs = {k: v.to(self.device) for k, v in inputs.items()}
-
-        do_sample = self.temperature > 0
-
-        with torch.no_grad():
-            outputs = self.llm.generate(
-                **inputs,
-                max_new_tokens=self.max_tokens,
-                temperature=self.temperature if do_sample else None,
-                do_sample=do_sample,
-                pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-            )
-
-        generated_ids = outputs[0][inputs["input_ids"].shape[1] :]
-        text = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
-        return text.strip()
+        outputs = self.llm.generate(
+            prompts=None,
+            sampling_params=sampling_params,
+            prompt_token_ids=[prompt_token_ids],
+            use_tqdm=False,
+        )
+        if not outputs or not outputs[0].outputs:
+            return ""
+        return outputs[0].outputs[0].text.strip()
 
     def update(
         self,
@@ -442,7 +466,7 @@ class LLMWeightUpdater:
         battery_only: bool = False,
     ) -> PlannerConfig:
         """
-        Query the local GPU-backed model with the current config, latest SceneSummary,
+        Query the local vLLM-backed model with the current config, latest SceneSummary,
         and recent history. Parse the response, clip every value to an adaptive bound,
         enforce hard bounds, and renormalise simplex groups.
 
@@ -492,7 +516,7 @@ class LLMWeightUpdater:
         history: list[tuple[PlannerConfig, SceneSummary]],
     ) -> PlannerConfig:
         """
-        Query the local GPU-backed model with family-aggregated stats.
+        Query the local vLLM-backed model with family-aggregated stats.
         Uses ±40 % change bounds instead of ±20 %.
         """
         aggregated = _aggregate_summaries(summaries)
