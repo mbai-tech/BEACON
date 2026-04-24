@@ -1,4 +1,4 @@
-"""VLMWeightUpdater — loads a local Hugging Face model onto GPU and uses it
+"""LLMWeightUpdater — loads a local Hugging Face text model onto GPU and uses it
 to propose PlannerConfig updates from SceneSummary diagnostics."""
 from __future__ import annotations
 
@@ -140,7 +140,7 @@ _FAMILY_HINTS: dict = {
 
 
 def _aggregate_summaries(summaries: list) -> dict:
-    """Aggregate a list of SceneSummary objects into a flat stats dict for the VLM."""
+    """Aggregate a list of SceneSummary objects into a flat stats dict for the LLM."""
     if not summaries:
         return {}
     n = len(summaries)
@@ -184,7 +184,7 @@ def _clip_and_validate(
     max_change: float = _MAX_CHANGE,
 ) -> PlannerConfig:
     """
-    Enforce all constraints on a VLM-proposed config dict:
+    Enforce all constraints on an LLM-proposed config dict:
       1. Max ±change from current value per parameter.
       2. All values strictly positive.
       3. delta_E_coeff ≥ 0.3.
@@ -225,7 +225,7 @@ def _clip_and_validate(
     return PlannerConfig(**out)
 
 
-class VLMWeightUpdater:
+class LLMWeightUpdater:
     """
     Loads a local Hugging Face causal LM onto GPU and uses it to propose
     PlannerConfig updates from SceneSummary diagnostics.
@@ -253,15 +253,15 @@ class VLMWeightUpdater:
         self.trust_remote_code = trust_remote_code
 
         if (
-            VLMWeightUpdater._shared_model is None
-            or VLMWeightUpdater._shared_tokenizer is None
-            or VLMWeightUpdater._shared_model_name != model
+            LLMWeightUpdater._shared_model is None
+            or LLMWeightUpdater._shared_tokenizer is None
+            or LLMWeightUpdater._shared_model_name != model
         ):
             self._load_model()
 
-        self.tokenizer = VLMWeightUpdater._shared_tokenizer
-        self.llm = VLMWeightUpdater._shared_model
-        self.device = VLMWeightUpdater._shared_device
+        self.tokenizer = LLMWeightUpdater._shared_tokenizer
+        self.llm = LLMWeightUpdater._shared_model
+        self.device = LLMWeightUpdater._shared_device
 
     def _load_model(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(
@@ -291,10 +291,10 @@ class VLMWeightUpdater:
 
         model.eval()
 
-        VLMWeightUpdater._shared_tokenizer = tokenizer
-        VLMWeightUpdater._shared_model = model
-        VLMWeightUpdater._shared_model_name = self.model
-        VLMWeightUpdater._shared_device = device
+        LLMWeightUpdater._shared_tokenizer = tokenizer
+        LLMWeightUpdater._shared_model = model
+        LLMWeightUpdater._shared_model_name = self.model
+        LLMWeightUpdater._shared_device = device
 
     def _build_user_message(
         self,
@@ -503,3 +503,7 @@ class VLMWeightUpdater:
             return config
 
         return _clip_and_validate(proposed, config, max_change=_MAX_CHANGE_FAMILY)
+
+
+# Backward-compatible alias for older imports.
+VLMWeightUpdater = LLMWeightUpdater

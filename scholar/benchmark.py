@@ -4,14 +4,14 @@ SCHOLAR three-condition benchmark.
 Conditions
 ----------
 A  Fixed default PlannerConfig for all episodes.
-B  VLM updates all 16 PlannerConfig weights after each scene.
-C  VLM updates only battery-coupled weights (w_r_scale, w_v_floor, w_v_range);
+B  LLM updates all 16 PlannerConfig weights after each scene.
+C  LLM updates only battery-coupled weights (w_r_scale, w_v_floor, w_v_range);
    all other weights stay at their per-family defaults.
 
 Hypothesis (rover planning + kinetic energy budget literature)
 --------------------------------------------------------------
 Condition C should reduce low_battery_contact_fraction relative to A even
-without full weight tuning, because the VLM learns to raise w_v_range in
+without full weight tuning, because the LLM learns to raise w_v_range in
 scenes where the robot reaches low battery states — making high-speed contacts
 at depleted battery increasingly costly, thereby slowing the robot before they
 occur.
@@ -42,7 +42,7 @@ import matplotlib.ticker as mticker
 
 from enviornment.scene_generator import generate_scene as _gen_scene
 from planning.scholar import PlannerConfig, run_scholar
-from planning.vlm_updater import VLMWeightUpdater
+from planning.vlm_updater import LLMWeightUpdater
 from utils.analysis import SceneRecord
 
 
@@ -59,8 +59,8 @@ _ENV_MAP = {
 
 _COND_LABELS = {
     "A": "A — fixed defaults",
-    "B": "B — VLM (all weights)",
-    "C": "C — VLM (battery terms)",
+    "B": "B — LLM (all weights)",
+    "C": "C — LLM (battery terms)",
 }
 _COND_COLORS = {"A": "#264653", "B": "#2a9d8f", "C": "#e76f51"}
 
@@ -201,18 +201,18 @@ def _run_fixed(
     return results
 
 
-def _run_vlm(
+def _run_llm(
     scenes_by_family: dict,
-    updater:          VLMWeightUpdater,
+    updater:          LLMWeightUpdater,
     run_kw:           dict,
     battery_only:     bool       = False,
     label:            str        = "B",
     save_dir                     = None,
 ) -> tuple[list, dict]:
     """
-    Conditions B/C — VLM-updated config, sequential within each family so
+    Conditions B/C — LLM-updated config, sequential within each family so
     history accumulates correctly.  Families are run one after another.
-    History resets at the start of each new family.  After the VLM returns
+    History resets at the start of each new family.  After the LLM returns
     its final update for each family the resulting config is frozen into
     family_configs and never modified again.  family_configs is serialized
     to <save_dir>/family_configs_<label>.json on completion.
@@ -303,7 +303,7 @@ def _check_family_differentiation(
     label:          str,
     tol:            float = 0.01,
 ) -> None:
-    """Warn if the VLM failed to differentiate configs across families."""
+    """Warn if the LLM failed to differentiate configs across families."""
     if len(family_configs) < 2:
         return
     for param in _DIFFERENTIATION_PARAMS:
@@ -313,7 +313,7 @@ def _check_family_differentiation(
             print(
                 f"  WARNING [{label}] '{param}' is identical across all families "
                 f"(max\u2212min = {spread:.4f} \u2264 {tol}) \u2014 "
-                "family-scoping may not be working; VLM is not differentiating."
+                "family-scoping may not be working; LLM is not differentiating."
             )
 
 
@@ -355,7 +355,7 @@ def _print_report(sa: dict, sb: dict, sc: dict, n_total: int) -> None:
     # Secondary: semantic damage  B < A
     t2, p2, _ = _ttest_less(sb["_sem_raw"], sa["_sem_raw"])
     v2 = "SUPPORTED" if (not math.isnan(p2) and p2 < 0.05) else "not supported"
-    print(f"\n  H₂  semantic_damage  B < A  (full VLM drives damage reduction)")
+    print(f"\n  H₂  semantic_damage  B < A  (full LLM drives damage reduction)")
     print(f"      {method}:  t = {t2:+.3f}   p = {p2:.4g}   [{v2} at α = 0.05]")
 
     # Effect size (Cohen's d) for H₁
@@ -477,7 +477,7 @@ def _plot_comparison(
 def run_benchmark(
     n_scenes_per_family: int   = 375,
     families:            list  = None,
-    vlm_model:           str   = "qwen-plus",
+    llm_model:           str   = "qwen-plus",
     max_steps:           int   = 500,
     step_size:           float = 0.04,
     sensing_range:       float = 0.35,
@@ -492,7 +492,7 @@ def run_benchmark(
     ----------
     n_scenes_per_family : scenes per family; 375 × 4 families = 1 500 total
     families            : subset of _DEFAULT_FAMILIES, or None for all four
-    vlm_model           : Qwen model name passed to VLMWeightUpdater
+    llm_model           : Qwen model name passed to LLMWeightUpdater
     n_workers_a         : thread-pool size for the parallelised condition-A run
     save_dir            : if given, save plots there
     show_plots          : call plt.show() (False in headless contexts)
@@ -528,21 +528,21 @@ def run_benchmark(
     }
 
     # Separate updater instances so conditions B and C accumulate independent histories
-    updater_b = VLMWeightUpdater(model=vlm_model)
-    updater_c = VLMWeightUpdater(model=vlm_model)
+    updater_b = LLMWeightUpdater(model=llm_model)
+    updater_c = LLMWeightUpdater(model=llm_model)
 
     print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
     records_a = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
 
-    print(f"\n── Condition B — VLM all weights ({n_total} episodes) ──")
-    records_b, family_configs_b = _run_vlm(scenes_by_family, updater_b, run_kw,
-                                            battery_only=False, label="B",
-                                            save_dir=save_dir)
+    print(f"\n── Condition B — LLM all weights ({n_total} episodes) ──")
+    records_b, family_configs_b = _run_llm(scenes_by_family, updater_b, run_kw,
+                                           battery_only=False, label="B",
+                                           save_dir=save_dir)
 
-    print(f"\n── Condition C — VLM battery terms only ({n_total} episodes) ──")
-    records_c, family_configs_c = _run_vlm(scenes_by_family, updater_c, run_kw,
-                                            battery_only=True,  label="C",
-                                            save_dir=save_dir)
+    print(f"\n── Condition C — LLM battery terms only ({n_total} episodes) ──")
+    records_c, family_configs_c = _run_llm(scenes_by_family, updater_c, run_kw,
+                                           battery_only=True,  label="C",
+                                           save_dir=save_dir)
 
     for _lbl, _fc in [("B", family_configs_b), ("C", family_configs_c)]:
         _print_family_configs_table(_fc, _lbl)
@@ -569,7 +569,7 @@ def run_benchmark(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="SCHOLAR three-condition benchmark (A=fixed, B=VLM-full, C=VLM-battery)",
+        description="SCHOLAR three-condition benchmark (A=fixed, B=LLM-full, C=LLM-battery)",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -594,7 +594,7 @@ if __name__ == "__main__":
     run_benchmark(
         n_scenes_per_family = args.scenes,
         families            = args.families,
-        vlm_model           = args.model,
+        llm_model           = args.model,
         max_steps           = args.steps,
         step_size           = args.step,
         sensing_range       = args.sense,
