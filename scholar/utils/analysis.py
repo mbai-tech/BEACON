@@ -1,4 +1,4 @@
-"""Post-run adaptation diagnostics for SCHOLAR VLM weight tuning.
+"""Post-run adaptation diagnostics for SCHOLAR LLM weight tuning.
 
 Usage
 -----
@@ -281,14 +281,14 @@ def plot_adaptation_diagnostics(
     dmg_vals = [r.summary.total_semantic_damage  for r in records]
     r_de, p_de = _pearsonr(de_vals, dmg_vals)
 
-    print("\n── VLM adaptation diagnostics ───────────────────────────────────────────")
+    print("\n── LLM adaptation diagnostics ───────────────────────────────────────────")
     print(f"  w_v_eff vs. contact speed   r = {r_wv:.3f}  p = {p_wv:.3g}"
           f"   ({'✓ negative — correct' if r_wv < 0 else '✗ not negative'})"
           if not math.isnan(r_wv) else "  w_v_eff vs. contact speed: insufficient contact data")
 
     if not math.isnan(r_de):
-        verdict = "✓ positive — VLM correctly raises contact cost" \
-                  if r_de > 0 else "✗ not positive — VLM not responding to damage"
+        verdict = "✓ positive — LLM correctly raises contact cost" \
+                  if r_de > 0 else "✗ not positive — LLM not responding to damage"
         print(f"  delta_E_coeff vs. damage    r = {r_de:.3f}  p = {p_de:.3g}   ({verdict})")
     else:
         print("  delta_E_coeff vs. damage: insufficient data")

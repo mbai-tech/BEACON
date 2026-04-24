@@ -1,26 +1,3 @@
-"""
-SCHOLAR three-condition benchmark.
-
-Conditions
-----------
-A  Fixed default PlannerConfig for all episodes.
-B  VLM updates all 16 PlannerConfig weights after each scene.
-C  VLM updates only battery-coupled weights (w_r_scale, w_v_floor, w_v_range);
-   all other weights stay at their per-family defaults.
-
-Hypothesis (rover planning + kinetic energy budget literature)
---------------------------------------------------------------
-Condition C should reduce low_battery_contact_fraction relative to A even
-without full weight tuning, because the VLM learns to raise w_v_range in
-scenes where the robot reaches low battery states — making high-speed contacts
-at depleted battery increasingly costly, thereby slowing the robot before they
-occur.
-
-Usage
------
-python benchmark.py --scenes 375 [--families sparse cluttered ...]
-                    [--save data/benchmark] [--no-show]
-"""
 from __future__ import annotations
 
 import argparse
@@ -42,11 +19,8 @@ import matplotlib.ticker as mticker
 
 from enviornment.scene_generator import generate_scene as _gen_scene
 from planning.scholar import PlannerConfig, run_scholar
-from planning.vlm_updater import VLMWeightUpdater
+from planning.llm_updater import LLMWeightUpdater
 from utils.analysis import SceneRecord
-
-
-# ── Constants ─────────────────────────────────────────────────────────────────
 
 _DEFAULT_FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 
@@ -59,13 +33,10 @@ _ENV_MAP = {
 
 _COND_LABELS = {
     "A": "A — fixed defaults",
-    "B": "B — VLM (all weights)",
-    "C": "C — VLM (battery terms)",
+    "B": "B — LLM (all weights)",
+    "C": "C — LLM (battery terms)",
 }
 _COND_COLORS = {"A": "#264653", "B": "#2a9d8f", "C": "#e76f51"}
-
-
-# ── Scene loading ─────────────────────────────────────────────────────────────
 
 def _load_scene(family: str, scene_idx: int) -> dict:
     mapped = _ENV_MAP.get(family, family)
@@ -73,9 +44,6 @@ def _load_scene(family: str, scene_idx: int) -> dict:
     scene["family"]    = family
     scene["scene_idx"] = scene_idx
     return scene
-
-
-# ── Per-record metric helpers ─────────────────────────────────────────────────
 
 def _mean_delta_e(record: SceneRecord) -> float:
     """Mean dissipated kinetic energy per contact event: δ·v² averaged over contacts."""
@@ -103,9 +71,6 @@ def _condition_stats(records: list) -> dict:
         "_lb_raw":         lb,
         "_sem_raw":        sem,
     }
-
-
-# ── Statistical helpers ───────────────────────────────────────────────────────
 
 def _ttest_less(x: list, y: list) -> tuple:
     """One-tailed Welch t-test: H₁  mean(x) < mean(y).  Returns (t, p, method)."""
@@ -137,8 +102,6 @@ def _ttest_less(x: list, y: list) -> tuple:
     return t, p, "Welch t (manual)"
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
 def _config_as_json_dict(cfg: PlannerConfig) -> dict:
     return {k: float(v) for k, v in dataclasses.asdict(cfg).items()}
 
@@ -161,9 +124,6 @@ def _init_config_for_family(prev_frozen: "PlannerConfig | None") -> PlannerConfi
         resource_T       = prev_frozen.resource_T,
         resource_contact = 1.0 - prev_frozen.resource_d - prev_frozen.resource_T,
     )
-
-
-# ── Condition runners ─────────────────────────────────────────────────────────
 
 def _run_fixed(
     scenes_by_family: dict,
@@ -201,18 +161,18 @@ def _run_fixed(
     return results
 
 
-def _run_vlm(
+def _run_llm(
     scenes_by_family: dict,
-    updater:          VLMWeightUpdater,
+    updater:          LLMWeightUpdater,
     run_kw:           dict,
     battery_only:     bool       = False,
     label:            str        = "B",
     save_dir                     = None,
 ) -> tuple[list, dict]:
     """
-    Conditions B/C — VLM-updated config, sequential within each family so
+    Conditions B/C — LLM-updated config, sequential within each family so
     history accumulates correctly.  Families are run one after another.
-    History resets at the start of each new family.  After the VLM returns
+    History resets at the start of each new family.  After the LLM returns
     its final update for each family the resulting config is frozen into
     family_configs and never modified again.  family_configs is serialized
     to <save_dir>/family_configs_<label>.json on completion.
@@ -303,7 +263,7 @@ def _check_family_differentiation(
     label:          str,
     tol:            float = 0.01,
 ) -> None:
-    """Warn if the VLM failed to differentiate configs across families."""
+    """Warn if the LLM failed to differentiate configs across families."""
     if len(family_configs) < 2:
         return
     for param in _DIFFERENTIATION_PARAMS:
@@ -313,14 +273,14 @@ def _check_family_differentiation(
             print(
                 f"  WARNING [{label}] '{param}' is identical across all families "
                 f"(max\u2212min = {spread:.4f} \u2264 {tol}) \u2014 "
-                "family-scoping may not be working; VLM is not differentiating."
+                "family-scoping may not be working; LLM is not differentiating."
             )
 
 
 # ── Report ────────────────────────────────────────────────────────────────────
 
 def _print_report(sa: dict, sb: dict, sc: dict, n_total: int) -> None:
-    title = f"── SCHOLAR Benchmark — {n_total} episodes"
+    title = f"── BEACON Benchmark — {n_total} episodes"
     div   = "─" * 80
 
     print(f"\n{title}\n{div}")
@@ -355,7 +315,7 @@ def _print_report(sa: dict, sb: dict, sc: dict, n_total: int) -> None:
     # Secondary: semantic damage  B < A
     t2, p2, _ = _ttest_less(sb["_sem_raw"], sa["_sem_raw"])
     v2 = "SUPPORTED" if (not math.isnan(p2) and p2 < 0.05) else "not supported"
-    print(f"\n  H₂  semantic_damage  B < A  (full VLM drives damage reduction)")
+    print(f"\n  H₂  semantic_damage  B < A  (full LLM drives damage reduction)")
     print(f"      {method}:  t = {t2:+.3f}   p = {p2:.4g}   [{v2} at α = 0.05]")
 
     # Effect size (Cohen's d) for H₁
@@ -392,7 +352,7 @@ def _plot_comparison(
     ]
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 7), constrained_layout=True)
-    fig.suptitle("SCHOLAR three-condition benchmark", fontsize=12)
+    fig.suptitle("BEACON three-condition benchmark", fontsize=12)
 
     for ax, (key, title, is_rate) in zip(axes.flatten(), metrics):
         if is_rate:
@@ -477,7 +437,7 @@ def _plot_comparison(
 def run_benchmark(
     n_scenes_per_family: int   = 375,
     families:            list  = None,
-    vlm_model:           str   = "qwen-plus",
+    llm_model:           str   = "qwen-turbo",
     max_steps:           int   = 500,
     step_size:           float = 0.04,
     sensing_range:       float = 0.35,
@@ -485,27 +445,6 @@ def run_benchmark(
     save_dir                   = None,
     show_plots:          bool  = True,
 ) -> dict:
-    """
-    Run the three-condition SCHOLAR benchmark.
-
-    Parameters
-    ----------
-    n_scenes_per_family : scenes per family; 375 × 4 families = 1 500 total
-    families            : subset of _DEFAULT_FAMILIES, or None for all four
-    vlm_model           : Qwen model name passed to VLMWeightUpdater
-    n_workers_a         : thread-pool size for the parallelised condition-A run
-    save_dir            : if given, save plots there
-    show_plots          : call plt.show() (False in headless contexts)
-
-    Returns
-    -------
-    {
-        "A":     list[SceneRecord],
-        "B":     list[SceneRecord],
-        "C":     list[SceneRecord],
-        "stats": {"A": dict, "B": dict, "C": dict},
-    }
-    """
     families = families or _DEFAULT_FAMILIES
     n_total  = n_scenes_per_family * len(families)
 
@@ -528,19 +467,19 @@ def run_benchmark(
     }
 
     # Separate updater instances so conditions B and C accumulate independent histories
-    updater_b = VLMWeightUpdater(model=vlm_model)
-    updater_c = VLMWeightUpdater(model=vlm_model)
+    updater_b = LLMWeightUpdater(model=llm_model)
+    updater_c = LLMWeightUpdater(model=llm_model)
 
     print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
     records_a = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
 
-    print(f"\n── Condition B — VLM all weights ({n_total} episodes) ──")
-    records_b, family_configs_b = _run_vlm(scenes_by_family, updater_b, run_kw,
+    print(f"\n── Condition B — LLM all weights ({n_total} episodes) ──")
+    records_b, family_configs_b = _run_llm(scenes_by_family, updater_b, run_kw,
                                             battery_only=False, label="B",
                                             save_dir=save_dir)
 
-    print(f"\n── Condition C — VLM battery terms only ({n_total} episodes) ──")
-    records_c, family_configs_c = _run_vlm(scenes_by_family, updater_c, run_kw,
+    print(f"\n── Condition C — LLM battery terms only ({n_total} episodes) ──")
+    records_c, family_configs_c = _run_llm(scenes_by_family, updater_c, run_kw,
                                             battery_only=True,  label="C",
                                             save_dir=save_dir)
 
@@ -569,7 +508,7 @@ def run_benchmark(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="SCHOLAR three-condition benchmark (A=fixed, B=VLM-full, C=VLM-battery)",
+        description="BEACON three-condition benchmark (A=fixed, B=LLM-full, C=LLM-battery)",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -579,7 +518,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--families", nargs="*", default=None, choices=_DEFAULT_FAMILIES,
     )
-    parser.add_argument("--model",   type=str,   default="qwen-plus")
+    parser.add_argument("--model",   type=str,   default="qwen-turbo")
     parser.add_argument("--steps",   type=int,   default=500)
     parser.add_argument("--step",    type=float, default=0.04)
     parser.add_argument("--sense",   type=float, default=0.35)
@@ -594,7 +533,7 @@ if __name__ == "__main__":
     run_benchmark(
         n_scenes_per_family = args.scenes,
         families            = args.families,
-        vlm_model           = args.model,
+        llm_model           = args.model,
         max_steps           = args.steps,
         step_size           = args.step,
         sensing_range       = args.sense,
