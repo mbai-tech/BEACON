@@ -244,12 +244,16 @@ class LLMWeightUpdater:
         self,
         model: str = "Qwen/Qwen2.5-7B-Instruct",
         temperature: float = 0.2,
-        max_tokens: int = 512,
+        max_tokens: int = 256,
+        max_input_tokens: int = 1536,
+        history_window: int = 2,
         trust_remote_code: bool = True,
     ):
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.max_input_tokens = max_input_tokens
+        self.history_window = history_window
         self.trust_remote_code = trust_remote_code
 
         if (
@@ -308,7 +312,7 @@ class LLMWeightUpdater:
     ) -> str:
         parts: list[str] = []
 
-        tail = history[-5:]
+        tail = history[-self.history_window :]
         if tail:
             parts.append("=== Recent history (oldest → newest) ===")
             for i, (hcfg, hsum) in enumerate(tail, 1):
@@ -367,7 +371,7 @@ class LLMWeightUpdater:
             parts.append(f"=== Family hint: {family} ===")
             parts.append(hint)
 
-        tail = history[-5:]
+        tail = history[-self.history_window :]
         if tail:
             parts.append("=== Recent per-scene history (oldest → newest) ===")
             for i, (hcfg, hsum) in enumerate(tail, 1):
@@ -406,6 +410,7 @@ class LLMWeightUpdater:
             return_tensors="pt",
             padding=True,
             truncation=True,
+            max_length=self.max_input_tokens,
         )
 
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
