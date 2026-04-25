@@ -1,5 +1,5 @@
-"""VLMWeightUpdater — loads a local Hugging Face model onto GPU and uses it
-to propose PlannerConfig updates from SceneSummary diagnostics."""
+"""VLMWeightUpdater — loads a local model via vllm and uses it to propose
+PlannerConfig updates from SceneSummary diagnostics."""
 from __future__ import annotations
 
 import json
@@ -9,8 +9,7 @@ from dataclasses import asdict
 from typing import Optional
 
 import numpy as np
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from vllm import LLM, SamplingParams
 
 from scholar.core.models import SceneSummary
 from planning.scholar import PlannerConfig
@@ -227,8 +226,8 @@ def _clip_and_validate(
 
 class VLMWeightUpdater:
     """
-    Loads a local Hugging Face causal LM onto GPU and uses it to propose
-    PlannerConfig updates from SceneSummary diagnostics.
+    Loads a local model via vllm and uses it to propose PlannerConfig updates
+    from SceneSummary diagnostics. Uses PagedAttention for fast inference.
 
     Example model names:
       - Qwen/Qwen2.5-7B-Instruct
@@ -236,9 +235,7 @@ class VLMWeightUpdater:
     """
 
     _shared_model = None
-    _shared_tokenizer = None
     _shared_model_name = None
-    _shared_device = None
 
     def __init__(
         self,
@@ -246,55 +243,31 @@ class VLMWeightUpdater:
         temperature: float = 0.2,
         max_tokens: int = 512,
         trust_remote_code: bool = True,
+        tensor_parallel_size: int = 1,
     ):
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.trust_remote_code = trust_remote_code
+        self.tensor_parallel_size = tensor_parallel_size
 
         if (
             VLMWeightUpdater._shared_model is None
-            or VLMWeightUpdater._shared_tokenizer is None
             or VLMWeightUpdater._shared_model_name != model
         ):
             self._load_model()
 
-        self.tokenizer = VLMWeightUpdater._shared_tokenizer
         self.llm = VLMWeightUpdater._shared_model
-        self.device = VLMWeightUpdater._shared_device
 
     def _load_model(self) -> None:
-        tokenizer = AutoTokenizer.from_pretrained(
-            self.model,
+        llm = LLM(
+            model=self.model,
+            dtype="float16",
             trust_remote_code=self.trust_remote_code,
+            tensor_parallel_size=self.tensor_parallel_size,
         )
-
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
-
-        if torch.cuda.is_available():
-            model = AutoModelForCausalLM.from_pretrained(
-                self.model,
-                torch_dtype=torch.float16,
-                device_map="auto",
-                trust_remote_code=self.trust_remote_code,
-            )
-            device = next(model.parameters()).device
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                self.model,
-                torch_dtype=torch.float32,
-                trust_remote_code=self.trust_remote_code,
-            )
-            device = torch.device("cpu")
-            model.to(device)
-
-        model.eval()
-
-        VLMWeightUpdater._shared_tokenizer = tokenizer
-        VLMWeightUpdater._shared_model = model
+        VLMWeightUpdater._shared_model = llm
         VLMWeightUpdater._shared_model_name = self.model
-        VLMWeightUpdater._shared_device = device
 
     def _build_user_message(
         self,
@@ -394,37 +367,12 @@ class VLMWeightUpdater:
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ]
-
-        prompt_text = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
+        sampling_params = SamplingParams(
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
         )
-
-        inputs = self.tokenizer(
-            prompt_text,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-        )
-
-        inputs = {k: v.to(self.device) for k, v in inputs.items()}
-
-        do_sample = self.temperature > 0
-
-        with torch.no_grad():
-            outputs = self.llm.generate(
-                **inputs,
-                max_new_tokens=self.max_tokens,
-                temperature=self.temperature if do_sample else None,
-                do_sample=do_sample,
-                pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-            )
-
-        generated_ids = outputs[0][inputs["input_ids"].shape[1] :]
-        text = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
-        return text.strip()
+        outputs = self.llm.chat(messages, sampling_params=sampling_params)
+        return outputs[0].outputs[0].text.strip()
 
     def update(
         self,
@@ -437,7 +385,7 @@ class VLMWeightUpdater:
         battery_only: bool = False,
     ) -> PlannerConfig:
         """
-        Query the local GPU-backed model with the current config, latest SceneSummary,
+        Query the local vllm-backed model with the current config, latest SceneSummary,
         and recent history. Parse the response, clip every value to an adaptive bound,
         enforce hard bounds, and renormalise simplex groups.
 
@@ -487,8 +435,8 @@ class VLMWeightUpdater:
         history: list[tuple[PlannerConfig, SceneSummary]],
     ) -> PlannerConfig:
         """
-        Query the local GPU-backed model with family-aggregated stats.
-        Uses ±40 % change bounds instead of ±20 %.
+        Query the local vllm-backed model with family-aggregated stats.
+        Uses ±40% change bounds instead of ±20%.
         """
         aggregated = _aggregate_summaries(summaries)
         if not aggregated:

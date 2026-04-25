@@ -19,7 +19,7 @@ import matplotlib.ticker as mticker
 
 from enviornment.scene_generator import generate_scene as _gen_scene
 from planning.scholar import PlannerConfig, run_scholar
-from planning.llm_updater import LLMWeightUpdater
+from planning.vlm_updater import VLMWeightUpdater
 from utils.analysis import SceneRecord
 
 _DEFAULT_FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
@@ -163,7 +163,7 @@ def _run_fixed(
 
 def _run_llm(
     scenes_by_family: dict,
-    updater:          LLMWeightUpdater,
+    updater:          VLMWeightUpdater,
     run_kw:           dict,
     battery_only:     bool       = False,
     label:            str        = "B",
@@ -437,7 +437,7 @@ def _plot_comparison(
 def run_benchmark(
     n_scenes_per_family: int   = 375,
     families:            list  = None,
-    llm_model:           str   = "qwen-turbo",
+    llm_model:           str   = "Qwen/Qwen2.5-7B-Instruct",
     max_steps:           int   = 500,
     step_size:           float = 0.04,
     sensing_range:       float = 0.35,
@@ -466,9 +466,10 @@ def run_benchmark(
         "sensing_range": sensing_range,
     }
 
-    # Separate updater instances so conditions B and C accumulate independent histories
-    updater_b = LLMWeightUpdater(model=llm_model)
-    updater_c = LLMWeightUpdater(model=llm_model)
+    # Separate updater instances so conditions B and C accumulate independent histories.
+    # Both share the same underlying vllm LLM process via VLMWeightUpdater._shared_model.
+    updater_b = VLMWeightUpdater(model=llm_model)
+    updater_c = VLMWeightUpdater(model=llm_model)
 
     print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
     records_a = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
@@ -518,7 +519,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--families", nargs="*", default=None, choices=_DEFAULT_FAMILIES,
     )
-    parser.add_argument("--model",   type=str,   default="qwen-turbo")
+    parser.add_argument("--model",   type=str,   default="Qwen/Qwen2.5-7B-Instruct",
+                        help="HuggingFace model ID for vllm")
     parser.add_argument("--steps",   type=int,   default=500)
     parser.add_argument("--step",    type=float, default=0.04)
     parser.add_argument("--sense",   type=float, default=0.35)
