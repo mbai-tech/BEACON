@@ -442,6 +442,7 @@ def run_benchmark(
     step_size:           float = 0.04,
     sensing_range:       float = 0.35,
     n_workers_a:         int   = 8,
+    llm_batch_size:      int   = 64,
     save_dir                   = None,
     show_plots:          bool  = True,
 ) -> dict:
@@ -468,8 +469,8 @@ def run_benchmark(
 
     # Separate updater instances so conditions B and C accumulate independent histories.
     # Both share the same underlying vllm LLM process via VLMWeightUpdater._shared_model.
-    updater_b = VLMWeightUpdater(model=llm_model)
-    updater_c = VLMWeightUpdater(model=llm_model)
+    updater_b = VLMWeightUpdater(model=llm_model, max_num_seqs=llm_batch_size)
+    updater_c = VLMWeightUpdater(model=llm_model, max_num_seqs=llm_batch_size)
 
     print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
     records_a = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
@@ -526,6 +527,8 @@ if __name__ == "__main__":
     parser.add_argument("--sense",   type=float, default=0.35)
     parser.add_argument("--workers", type=int,   default=8,
                         help="Thread-pool size for condition A")
+    parser.add_argument("--llm-batch-size", type=int, default=64,
+                        help="vLLM engine max_num_seqs batch capacity")
     parser.add_argument("--save",    type=str,   default=None,
                         metavar="DIR", help="Directory for saved plots")
     parser.add_argument("--no-show", action="store_true",
@@ -540,6 +543,7 @@ if __name__ == "__main__":
         step_size           = args.step,
         sensing_range       = args.sense,
         n_workers_a         = args.workers,
+        llm_batch_size      = args.llm_batch_size,
         save_dir            = args.save,
         show_plots          = not args.no_show,
     )

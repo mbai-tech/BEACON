@@ -235,7 +235,7 @@ class VLMWeightUpdater:
     """
 
     _shared_model = None
-    _shared_model_name = None
+    _shared_runtime_key = None
 
     def __init__(
         self,
@@ -244,16 +244,20 @@ class VLMWeightUpdater:
         max_tokens: int = 512,
         trust_remote_code: bool = True,
         tensor_parallel_size: int = 1,
+        max_num_seqs: int = 64,
     ):
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.trust_remote_code = trust_remote_code
         self.tensor_parallel_size = tensor_parallel_size
+        self.max_num_seqs = max_num_seqs
+
+        runtime_key = (self.model, self.tensor_parallel_size, self.max_num_seqs)
 
         if (
             VLMWeightUpdater._shared_model is None
-            or VLMWeightUpdater._shared_model_name != model
+            or VLMWeightUpdater._shared_runtime_key != runtime_key
         ):
             self._load_model()
 
@@ -265,9 +269,14 @@ class VLMWeightUpdater:
             dtype="float16",
             trust_remote_code=self.trust_remote_code,
             tensor_parallel_size=self.tensor_parallel_size,
+            max_num_seqs=self.max_num_seqs,
         )
         VLMWeightUpdater._shared_model = llm
-        VLMWeightUpdater._shared_model_name = self.model
+        VLMWeightUpdater._shared_runtime_key = (
+            self.model,
+            self.tensor_parallel_size,
+            self.max_num_seqs,
+        )
 
     def _build_user_message(
         self,
