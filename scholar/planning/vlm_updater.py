@@ -74,7 +74,46 @@ def _summary_to_dict(s: SceneSummary) -> dict:
             else v
         )
         for k, v in d.items()
+        if k != "battery_contact_log"
     }
+
+
+def _summary_to_prompt_dict(s: SceneSummary) -> dict:
+    base = _summary_to_dict(s)
+    battery_log = list(s.battery_contact_log or [])
+    contact_events = [e for e in battery_log if e.get("event") == "contact"]
+    stuck_events = [e for e in battery_log if e.get("event") == "stuck"]
+
+    def _mean_event(events: list[dict], key: str) -> float | None:
+        vals = [float(e[key]) for e in events if key in e]
+        return float(np.mean(vals)) if vals else None
+
+    def _tail_events(events: list[dict], n: int = 3) -> list[dict]:
+        trimmed = []
+        for event in events[-n:]:
+            trimmed.append({
+                "event": event.get("event"),
+                "b": float(event["b"]) if "b" in event else None,
+                "speed": float(event["speed"]) if "speed" in event else None,
+                "w_r": float(event["w_r"]) if "w_r" in event else None,
+                "w_v": float(event["w_v"]) if "w_v" in event else None,
+            })
+        return trimmed
+
+    base["battery_contact_log"] = {
+        "n_events": len(battery_log),
+        "n_contact_events": len(contact_events),
+        "n_stuck_events_logged": len(stuck_events),
+        "mean_contact_battery": _mean_event(contact_events, "b"),
+        "mean_contact_speed": _mean_event(contact_events, "speed"),
+        "mean_contact_w_r": _mean_event(contact_events, "w_r"),
+        "mean_contact_w_v": _mean_event(contact_events, "w_v"),
+        "mean_stuck_battery": _mean_event(stuck_events, "b"),
+        "recent_contact_events": _tail_events(contact_events),
+        "recent_stuck_events": _tail_events(stuck_events),
+        "note": "Compact summary of the full battery/contact trace to keep prompts within model context limits.",
+    }
+    return base
 
 
 def _to_json(obj: dict) -> str:
@@ -287,22 +326,23 @@ class VLMWeightUpdater:
         scene_idx_in_family: int = 0,
         scenes_remaining: int = 0,
         battery_only: bool = False,
+        history_limit: int = 5,
     ) -> str:
         parts: list[str] = []
 
-        tail = history[-5:]
+        tail = history[-history_limit:] if history_limit > 0 else []
         if tail:
             parts.append("=== Recent history (oldest → newest) ===")
             for i, (hcfg, hsum) in enumerate(tail, 1):
                 parts.append(f"--- Entry {i} ---")
                 parts.append(f"config:\n{_to_json(_config_to_dict(hcfg))}")
-                parts.append(f"summary:\n{_to_json(_summary_to_dict(hsum))}")
+                parts.append(f"summary:\n{_to_json(_summary_to_prompt_dict(hsum))}")
 
         parts.append("=== Current config ===")
         parts.append(_to_json(_config_to_dict(config)))
 
         parts.append("=== Latest scene summary ===")
-        parts.append(_to_json(_summary_to_dict(summary)))
+        parts.append(_to_json(_summary_to_prompt_dict(summary)))
 
         parts.append("=== Optimization context ===")
         parts.append(
@@ -341,6 +381,7 @@ class VLMWeightUpdater:
         aggregated: dict,
         family: str,
         history: list[tuple[PlannerConfig, SceneSummary]],
+        history_limit: int = 5,
     ) -> str:
         parts: list[str] = []
 
@@ -349,13 +390,13 @@ class VLMWeightUpdater:
             parts.append(f"=== Family hint: {family} ===")
             parts.append(hint)
 
-        tail = history[-5:]
+        tail = history[-history_limit:] if history_limit > 0 else []
         if tail:
             parts.append("=== Recent per-scene history (oldest → newest) ===")
             for i, (hcfg, hsum) in enumerate(tail, 1):
                 parts.append(f"--- Entry {i} ---")
                 parts.append(f"config:\n{_to_json(_config_to_dict(hcfg))}")
-                parts.append(f"summary:\n{_to_json(_summary_to_dict(hsum))}")
+                parts.append(f"summary:\n{_to_json(_summary_to_prompt_dict(hsum))}")
 
         parts.append("=== Current config ===")
         parts.append(_to_json(_config_to_dict(config)))
@@ -383,6 +424,29 @@ class VLMWeightUpdater:
         outputs = self.llm.chat(messages, sampling_params=sampling_params)
         return outputs[0].outputs[0].text.strip()
 
+    def _call_llm_with_retries(self, build_user_message) -> str:
+        last_exc: Exception | None = None
+
+        for history_limit in (5, 3, 1, 0):
+            try:
+                return self._generate_text(build_user_message(history_limit))
+            except Exception as exc:
+                last_exc = exc
+                msg = str(exc).lower()
+                if any(token in msg for token in (
+                    "maximum context length",
+                    "context length",
+                    "prompt contains at least",
+                    "input tokens",
+                    "too long",
+                )):
+                    continue
+                break
+
+        if last_exc is not None:
+            print(f"  Warning: VLM update skipped after prompt-size retries: {last_exc}")
+        raise last_exc if last_exc is not None else RuntimeError("Unknown VLM call failure")
+
     def update(
         self,
         config: PlannerConfig,
@@ -408,17 +472,21 @@ class VLMWeightUpdater:
         else:
             max_change = _MAX_CHANGE
 
-        raw = self._generate_text(
-            self._build_user_message(
-                config,
-                summary,
-                history,
-                family=family,
-                scene_idx_in_family=scene_idx_in_family,
-                scenes_remaining=scenes_remaining,
-                battery_only=battery_only,
+        try:
+            raw = self._call_llm_with_retries(
+                lambda history_limit: self._build_user_message(
+                    config,
+                    summary,
+                    history,
+                    family=family,
+                    scene_idx_in_family=scene_idx_in_family,
+                    scenes_remaining=scenes_remaining,
+                    battery_only=battery_only,
+                    history_limit=history_limit,
+                )
             )
-        )
+        except Exception:
+            return config
 
         proposed = _extract_json(raw)
         if proposed is None:
@@ -451,9 +519,18 @@ class VLMWeightUpdater:
         if not aggregated:
             return config
 
-        raw = self._generate_text(
-            self._build_family_message(config, aggregated, family, history)
-        )
+        try:
+            raw = self._call_llm_with_retries(
+                lambda history_limit: self._build_family_message(
+                    config,
+                    aggregated,
+                    family,
+                    history,
+                    history_limit=history_limit,
+                )
+            )
+        except Exception:
+            return config
 
         proposed = _extract_json(raw)
         if proposed is None:
