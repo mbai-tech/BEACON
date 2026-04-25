@@ -37,6 +37,7 @@ _COND_LABELS = {
     "C": "C — LLM (battery terms)",
 }
 _COND_COLORS = {"A": "#264653", "B": "#2a9d8f", "C": "#e76f51"}
+_ALL_CONDITIONS = ("A", "B", "C")
 
 def _load_scene(family: str, scene_idx: int) -> dict:
     mapped = _ENV_MAP.get(family, family)
@@ -104,6 +105,25 @@ def _ttest_less(x: list, y: list) -> tuple:
 
 def _config_as_json_dict(cfg: PlannerConfig) -> dict:
     return {k: float(v) for k, v in dataclasses.asdict(cfg).items()}
+
+
+def _stats_path(save_dir) -> Path | None:
+    return Path(save_dir) / "condition_stats.json" if save_dir else None
+
+
+def _load_saved_stats(save_dir) -> dict:
+    path = _stats_path(save_dir)
+    if path is None or not path.exists():
+        return {}
+    return json.loads(path.read_text())
+
+
+def _save_merged_stats(save_dir, stats_by_condition: dict) -> None:
+    path = _stats_path(save_dir)
+    if path is None:
+        return
+    path.write_text(json.dumps(stats_by_condition, indent=2))
+    print(f"Saved → {path}")
 
 
 def _batch_objective(records: list[SceneRecord], battery_only: bool = False) -> float:
@@ -554,10 +574,15 @@ def run_benchmark(
     update_batch_size:   int   = 8,
     accept_batch_size:   int   = 2,
     same_scene_tuning_passes: int = 0,
+    conditions:          list  = None,
     save_dir                   = None,
     show_plots:          bool  = True,
 ) -> dict:
     families = families or _DEFAULT_FAMILIES
+    conditions = list(dict.fromkeys(conditions or list(_ALL_CONDITIONS)))
+    invalid_conditions = [cond for cond in conditions if cond not in _ALL_CONDITIONS]
+    if invalid_conditions:
+        raise ValueError(f"Invalid conditions requested: {invalid_conditions}")
     n_total  = n_scenes_per_family * len(families)
 
     if save_dir:
@@ -577,49 +602,66 @@ def run_benchmark(
         "step_size":     step_size,
         "sensing_range": sensing_range,
     }
+    records_by_condition: dict[str, list] = {}
+    family_configs_by_condition: dict[str, dict] = {}
 
-    # Separate updater instances so conditions B and C accumulate independent histories.
-    # Both share the same underlying vllm LLM process via VLMWeightUpdater._shared_model.
-    updater_b = VLMWeightUpdater(model=llm_model, max_num_seqs=llm_batch_size)
-    updater_c = VLMWeightUpdater(model=llm_model, max_num_seqs=llm_batch_size)
+    if "A" in conditions:
+        print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
+        records_by_condition["A"] = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
 
-    print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
-    records_a = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
+    if any(cond in conditions for cond in ("B", "C")):
+        # Only initialize vLLM if we actually need LLM-backed conditions.
+        updater_b = None
+        updater_c = None
+        if "B" in conditions:
+            updater_b = VLMWeightUpdater(model=llm_model, max_num_seqs=llm_batch_size)
+        if "C" in conditions:
+            updater_c = VLMWeightUpdater(model=llm_model, max_num_seqs=llm_batch_size)
 
-    print(f"\n── Condition B — LLM all weights ({n_total} episodes) ──")
-    records_b, family_configs_b = _run_llm(scenes_by_family, updater_b, run_kw,
-                                            battery_only=False, label="B",
-                                            update_batch_size=update_batch_size,
-                                            accept_batch_size=accept_batch_size,
-                                            same_scene_tuning_passes=same_scene_tuning_passes,
-                                            save_dir=save_dir)
+        if "B" in conditions:
+            print(f"\n── Condition B — LLM all weights ({n_total} episodes) ──")
+            records_b, family_configs_b = _run_llm(scenes_by_family, updater_b, run_kw,
+                                                    battery_only=False, label="B",
+                                                    update_batch_size=update_batch_size,
+                                                    accept_batch_size=accept_batch_size,
+                                                    same_scene_tuning_passes=same_scene_tuning_passes,
+                                                    save_dir=save_dir)
+            records_by_condition["B"] = records_b
+            family_configs_by_condition["B"] = family_configs_b
 
-    print(f"\n── Condition C — LLM battery terms only ({n_total} episodes) ──")
-    records_c, family_configs_c = _run_llm(scenes_by_family, updater_c, run_kw,
-                                            battery_only=True,  label="C",
-                                            update_batch_size=update_batch_size,
-                                            accept_batch_size=accept_batch_size,
-                                            same_scene_tuning_passes=same_scene_tuning_passes,
-                                            save_dir=save_dir)
+        if "C" in conditions:
+            print(f"\n── Condition C — LLM battery terms only ({n_total} episodes) ──")
+            records_c, family_configs_c = _run_llm(scenes_by_family, updater_c, run_kw,
+                                                    battery_only=True,  label="C",
+                                                    update_batch_size=update_batch_size,
+                                                    accept_batch_size=accept_batch_size,
+                                                    same_scene_tuning_passes=same_scene_tuning_passes,
+                                                    save_dir=save_dir)
+            records_by_condition["C"] = records_c
+            family_configs_by_condition["C"] = family_configs_c
 
-    for _lbl, _fc in [("B", family_configs_b), ("C", family_configs_c)]:
+    for _lbl, _fc in family_configs_by_condition.items():
         _print_family_configs_table(_fc, _lbl)
         _check_family_differentiation(_fc, _lbl)
 
-    stats_a = _condition_stats(records_a)
-    stats_b = _condition_stats(records_b)
-    stats_c = _condition_stats(records_c)
+    current_stats = {cond: _condition_stats(records) for cond, records in records_by_condition.items()}
+    merged_stats = _load_saved_stats(save_dir)
+    merged_stats.update(current_stats)
+    _save_merged_stats(save_dir, merged_stats)
 
-    _print_report(stats_a, stats_b, stats_c, n_total)
-    _plot_comparison(stats_a, stats_b, stats_c,
-                     save_dir=save_dir, show=show_plots)
+    if all(cond in merged_stats for cond in _ALL_CONDITIONS):
+        _print_report(merged_stats["A"], merged_stats["B"], merged_stats["C"], n_total)
+        _plot_comparison(merged_stats["A"], merged_stats["B"], merged_stats["C"],
+                         save_dir=save_dir, show=show_plots)
+    else:
+        missing = [cond for cond in _ALL_CONDITIONS if cond not in merged_stats]
+        print(f"\nPartial run complete. Saved stats for {sorted(current_stats)}.")
+        print(f"Still missing conditions for full comparison: {missing}")
 
     return {
-        "A":              records_a,
-        "B":              records_b,
-        "C":              records_c,
-        "stats":          {"A": stats_a, "B": stats_b, "C": stats_c},
-        "family_configs": {"B": family_configs_b, "C": family_configs_c},
+        "records":        records_by_condition,
+        "stats":          merged_stats,
+        "family_configs": family_configs_by_condition,
     }
 
 
@@ -652,6 +694,9 @@ if __name__ == "__main__":
                         help="Number of future scenes used to accept/reject a proposed update")
     parser.add_argument("--same-scene-tuning-passes", type=int, default=0,
                         help="Optional number of same-scene local adaptation passes after each batch")
+    parser.add_argument("--conditions", nargs="+", default=list(_ALL_CONDITIONS),
+                        choices=_ALL_CONDITIONS,
+                        help="Subset of conditions to run. Use 'A' on cheap compute, then 'B C' on A100 with the same --save dir.")
     parser.add_argument("--save",    type=str,   default=None,
                         metavar="DIR", help="Directory for saved plots")
     parser.add_argument("--no-show", action="store_true",
@@ -670,6 +715,7 @@ if __name__ == "__main__":
         update_batch_size   = args.update_batch_scenes,
         accept_batch_size   = args.accept_batch_scenes,
         same_scene_tuning_passes = args.same_scene_tuning_passes,
+        conditions          = args.conditions,
         save_dir            = args.save,
         show_plots          = not args.no_show,
     )
