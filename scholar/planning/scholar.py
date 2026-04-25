@@ -31,6 +31,10 @@ V_MAX          = 0.15   # max robot speed (m/step)
 N_RAYS         = 36     # rays for visibility polygon
 N_FRONTIER_POS = 10     # frontier positions sampled per tick
 C_MAX          = 7.0    # max obstacle cost allowed for contact (Stage 3)
+POSITION_KEEP_K = 24    # keep a wider frontier set so learned weights can matter
+VELOCITY_KEEP_K = 18
+SEMANTIC_KEEP_K = 12
+UNSAFE_CONTACT_PENALTY = 2.0
 
 # Trajectory generation
 P_SAFE = 1.2    # safety margin on traversal duration
@@ -271,7 +275,11 @@ class Scholar:
                     dominated[k] = True
 
         surviving = [q for i, q in enumerate(candidates) if not dominated[i]]
-        return surviving if surviving else candidates
+        pool = surviving if surviving else candidates
+        if len(pool) <= POSITION_KEEP_K:
+            return pool
+        ranked = sorted(pool, key=lambda q: float(np.linalg.norm(q.position - goal)))
+        return ranked[:POSITION_KEEP_K]
 
     def _line_free(
         self, a: np.ndarray, b: np.ndarray, cost_map: CostMap, n_checks: int = 10
@@ -296,35 +304,36 @@ class Scholar:
         if not unobserved:
             return candidates  # nothing left to discover — keep all
 
-        surviving = []
+        ranked: list[tuple[float, CandidateState]] = []
         for q in candidates:
             speed = float(np.linalg.norm(q.velocity))
             if speed < 1e-9:
-                surviving.append(q)    # stationary candidate always survives
+                ranked.append((0.0, q))
                 continue
 
             vel_dir = q.velocity / speed
-            # Keep if velocity direction has positive component toward any
-            # unobserved obstacle (would lead to new information)
-            points_toward_unknown = any(
-                float(np.dot(vel_dir,
-                             normalize(np.array(o["vertices"]).mean(axis=0) - q.position)
-                             )) > 0.0
+            best_alignment = max(
+                float(np.dot(
+                    vel_dir,
+                    normalize(np.array(o["vertices"]).mean(axis=0) - q.position),
+                ))
                 for o in unobserved
             )
-            if points_toward_unknown:
-                surviving.append(q)
+            ranked.append((best_alignment, q))
 
-        return surviving if surviving else candidates
+        ranked.sort(key=lambda item: item[0], reverse=True)
+        informative = [q for align, q in ranked if align > 0.0]
+        if informative:
+            return informative[:VELOCITY_KEEP_K]
+        return [q for _, q in ranked[:VELOCITY_KEEP_K]] or candidates
 
     def _prune_semantic(
         self, candidates: List[CandidateState], c_max: float = C_MAX
     ) -> List[CandidateState]:
-        safe = [q for q in candidates if q.contact_cost <= c_max]
-        if safe:
-            return safe
-        self.replan_count += 1
-        return [min(candidates, key=lambda q: q.contact_cost)]
+        ranked = sorted(candidates, key=lambda q: (q.contact_cost > c_max, q.contact_cost))
+        if ranked and ranked[0].contact_cost > c_max:
+            self.replan_count += 1
+        return ranked[:SEMANTIC_KEEP_K] if len(ranked) > SEMANTIC_KEEP_K else ranked
 
     def _score(
         self,
@@ -340,8 +349,9 @@ class Scholar:
         j_risk     = self._j_risk_sem(q, goal, cost_map, observed)
         j_vel      = self._j_vel_sem(q, goal, observed)
         j_resource = self._j_resource(q, robot)
+        j_contact  = self._j_contact_penalty(q)
         cfg = self.config
-        return cfg.W_P * j_pos + w_r * j_risk + w_v * j_vel + cfg.W_B * j_resource
+        return cfg.W_P * j_pos + w_r * j_risk + w_v * j_vel + cfg.W_B * (j_resource + j_contact)
 
     def _j_pos(self, q: CandidateState, goal: np.ndarray) -> float:
         dist = float(np.linalg.norm(q.position - goal))
@@ -454,6 +464,11 @@ class Scholar:
         return (cfg.resource_d * dist
                 + cfg.resource_T * T_trav
                 + cfg.resource_contact * float(in_contact) * dE_col)
+
+    def _j_contact_penalty(self, q: CandidateState, c_max: float = C_MAX) -> float:
+        if q.contact_cost <= c_max:
+            return 0.0
+        return UNSAFE_CONTACT_PENALTY * (q.contact_cost - c_max) / max(c_max, 1e-6)
 
     # ── score_breakdown ───────────────────────────────────────────────────────
 

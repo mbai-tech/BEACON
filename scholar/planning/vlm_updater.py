@@ -134,6 +134,18 @@ def _extract_json(text: str) -> Optional[dict]:
 
 
 _BATTERY_KEYS = frozenset({"w_r_scale", "w_v_floor", "w_v_range"})
+_FULL_TUNABLE_KEYS = frozenset({
+    "w_r_scale",
+    "w_v_floor",
+    "w_v_range",
+    "geo_weight",
+    "sem_weight",
+    "dir_weight",
+    "resource_d",
+    "resource_T",
+    "resource_contact",
+    "delta_E_coeff",
+})
 
 _DELTA_E_MIN = 0.3
 _MAX_CHANGE = 0.20
@@ -263,6 +275,19 @@ def _clip_and_validate(
     return PlannerConfig(**out)
 
 
+def _apply_selected_keys(
+    current: PlannerConfig,
+    proposed: PlannerConfig,
+    selected_keys: frozenset[str],
+) -> PlannerConfig:
+    cur = _config_to_dict(current)
+    new = _config_to_dict(proposed)
+    for key in cur:
+        if key not in selected_keys:
+            new[key] = cur[key]
+    return PlannerConfig(**new)
+
+
 class VLMWeightUpdater:
     """
     Loads a local model via vllm and uses it to propose PlannerConfig updates
@@ -361,6 +386,13 @@ class VLMWeightUpdater:
                 "IMPORTANT: This is battery-only mode. Only propose meaningful changes for "
                 "w_r_scale, w_v_floor, and w_v_range. Keep all other keys near current values."
             )
+        else:
+            parts.append(
+                "IMPORTANT: Focus on the most behaviorally-causal parameters only: "
+                "w_r_scale, w_v_floor, w_v_range, geo_weight, sem_weight, dir_weight, "
+                "resource_d, resource_T, resource_contact, and delta_E_coeff. "
+                "Leave W_P, W_B, heading terms, and kl_threshold near their current values."
+            )
 
         parts.append(
             f"You are optimizing exclusively for {family} scenes. Do not generalize. "
@@ -381,6 +413,7 @@ class VLMWeightUpdater:
         aggregated: dict,
         family: str,
         history: list[tuple[PlannerConfig, SceneSummary]],
+        battery_only: bool = False,
         history_limit: int = 5,
     ) -> str:
         parts: list[str] = []
@@ -403,6 +436,19 @@ class VLMWeightUpdater:
 
         parts.append("=== Family-aggregated stats ===")
         parts.append(_to_json(aggregated))
+
+        if battery_only:
+            parts.append(
+                "IMPORTANT: This is battery-only mode. Only propose meaningful changes for "
+                "w_r_scale, w_v_floor, and w_v_range. Keep all other keys near current values."
+            )
+        else:
+            parts.append(
+                "IMPORTANT: Focus on the most behaviorally-causal parameters only: "
+                "w_r_scale, w_v_floor, w_v_range, geo_weight, sem_weight, dir_weight, "
+                "resource_d, resource_T, resource_contact, and delta_E_coeff. "
+                "Leave W_P, W_B, heading terms, and kl_threshold near their current values."
+            )
 
         parts.append(
             "Based on the family-level diagnostics above and the physics constraints "
@@ -493,16 +539,8 @@ class VLMWeightUpdater:
             return config
 
         new_config = _clip_and_validate(proposed, config, max_change=max_change)
-
-        if battery_only:
-            cur = _config_to_dict(config)
-            new = _config_to_dict(new_config)
-            for k in cur:
-                if k not in _BATTERY_KEYS:
-                    new[k] = cur[k]
-            new_config = PlannerConfig(**new)
-
-        return new_config
+        selected_keys = _BATTERY_KEYS if battery_only else _FULL_TUNABLE_KEYS
+        return _apply_selected_keys(config, new_config, selected_keys)
 
     def update_family(
         self,
@@ -510,6 +548,7 @@ class VLMWeightUpdater:
         summaries: list,
         family: str,
         history: list[tuple[PlannerConfig, SceneSummary]],
+        battery_only: bool = False,
     ) -> PlannerConfig:
         """
         Query the local vllm-backed model with family-aggregated stats.
@@ -526,6 +565,7 @@ class VLMWeightUpdater:
                     aggregated,
                     family,
                     history,
+                    battery_only=battery_only,
                     history_limit=history_limit,
                 )
             )
@@ -536,4 +576,6 @@ class VLMWeightUpdater:
         if proposed is None:
             return config
 
-        return _clip_and_validate(proposed, config, max_change=_MAX_CHANGE_FAMILY)
+        new_config = _clip_and_validate(proposed, config, max_change=_MAX_CHANGE_FAMILY)
+        selected_keys = _BATTERY_KEYS if battery_only else _FULL_TUNABLE_KEYS
+        return _apply_selected_keys(config, new_config, selected_keys)

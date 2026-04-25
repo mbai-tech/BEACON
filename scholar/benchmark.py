@@ -106,6 +106,50 @@ def _config_as_json_dict(cfg: PlannerConfig) -> dict:
     return {k: float(v) for k, v in dataclasses.asdict(cfg).items()}
 
 
+def _batch_objective(records: list[SceneRecord], battery_only: bool = False) -> float:
+    if not records:
+        return float("inf")
+    summaries = [r.summary for r in records]
+    success_penalty = 1.0 - float(np.mean([float(s.success) for s in summaries]))
+    mean_semantic = float(np.mean([s.total_semantic_damage for s in summaries]))
+    mean_lb_frac = float(np.mean([s.low_battery_contact_fraction for s in summaries]))
+    mean_stuck = float(np.mean([s.n_stuck_events for s in summaries]))
+    mean_forbidden = float(np.mean([s.forbidden_contact_rate for s in summaries]))
+    if battery_only:
+        return (
+            4.0 * mean_lb_frac
+            + 2.0 * success_penalty
+            + 0.35 * mean_semantic
+            + 0.25 * mean_stuck
+            + 0.5 * mean_forbidden
+        )
+    return (
+        1.5 * mean_semantic
+        + 2.0 * success_penalty
+        + 0.75 * mean_lb_frac
+        + 0.25 * mean_stuck
+        + 0.75 * mean_forbidden
+    )
+
+
+def _run_scene_batch(
+    scenes: list[dict],
+    family: str,
+    config: PlannerConfig,
+    run_kw: dict,
+) -> list[SceneRecord]:
+    batch_records: list[SceneRecord] = []
+    for scene in scenes:
+        result = run_scholar(scene, config=config, **run_kw)
+        batch_records.append(SceneRecord(
+            scene_idx=scene["scene_idx"],
+            family=family,
+            config=config,
+            summary=result.scene_summary,
+        ))
+    return batch_records
+
+
 def _init_config_for_family(prev_frozen: "PlannerConfig | None") -> PlannerConfig:
     # delta_E_coeff and w_v_floor are grounded in kinetic energy budget literature
     # and should be invariant to scene structure; resource_d and resource_T reflect
@@ -161,67 +205,131 @@ def _run_fixed(
     return results
 
 
+def _maybe_same_scene_tune(
+    scene: dict,
+    family: str,
+    config: PlannerConfig,
+    summary,
+    history: list[tuple[PlannerConfig, object]],
+    updater: VLMWeightUpdater,
+    run_kw: dict,
+    battery_only: bool,
+    scenes_remaining: int,
+    passes: int,
+) -> PlannerConfig:
+    tuned_config = config
+    tuned_summary = summary
+
+    for _ in range(passes):
+        proposed = updater.update(
+            tuned_config,
+            tuned_summary,
+            history,
+            family=family,
+            scene_idx_in_family=scene["scene_idx"],
+            scenes_remaining=scenes_remaining,
+            battery_only=battery_only,
+        )
+        if proposed == tuned_config:
+            break
+
+        baseline_records = _run_scene_batch([scene], family, tuned_config, run_kw)
+        candidate_records = _run_scene_batch([scene], family, proposed, run_kw)
+        if _batch_objective(candidate_records, battery_only) < _batch_objective(baseline_records, battery_only):
+            tuned_config = proposed
+            tuned_summary = candidate_records[0].summary
+        else:
+            break
+
+    return tuned_config
+
+
 def _run_llm(
     scenes_by_family: dict,
     updater:          VLMWeightUpdater,
     run_kw:           dict,
     battery_only:     bool       = False,
     label:            str        = "B",
+    update_batch_size: int       = 8,
+    accept_batch_size: int       = 2,
+    same_scene_tuning_passes: int = 0,
     save_dir                     = None,
 ) -> tuple[list, dict]:
     """
-    Conditions B/C — LLM-updated config, sequential within each family so
-    history accumulates correctly.  Families are run one after another.
-    History resets at the start of each new family.  After the LLM returns
-    its final update for each family the resulting config is frozen into
-    family_configs and never modified again.  family_configs is serialized
-    to <save_dir>/family_configs_<label>.json on completion.
+    Conditions B/C — batched LLM-updated config. Scenes are still evaluated on
+    a shared fixed set across A/B/C, but updates are proposed from aggregated
+    batches rather than single-scene noise. Each proposed update is accepted
+    only if it improves a short calibration rollout.
     """
     records:        list                           = []
     history:        list[tuple[PlannerConfig, object]] = []
-    config:         PlannerConfig                  = PlannerConfig()
-    current_family: str | None                     = None
-    fam_counts:     dict[str, int]                 = {f: 0 for f in scenes_by_family}
-    fam_totals:     dict[str, int]                 = {f: len(ss) for f, ss in scenes_by_family.items()}
     family_configs: dict[str, PlannerConfig]       = {}
+    update_batch_size = max(1, int(update_batch_size))
+    accept_batch_size = max(1, int(accept_batch_size))
 
-    def is_last_scene_in_family(fam_: str) -> bool:
-        return fam_counts[fam_] == fam_totals[fam_] - 1
+    prev_frozen: PlannerConfig | None = None
+    for fam, scenes in scenes_by_family.items():
+        history.clear()
+        config = _init_config_for_family(prev_frozen)
+        total = len(scenes)
+        idx = 0
 
-    flat = [(fam, scene) for fam, scenes in scenes_by_family.items() for scene in scenes]
+        while idx < total:
+            batch_scenes = scenes[idx: idx + update_batch_size]
+            batch_records = _run_scene_batch(batch_scenes, fam, config, run_kw)
+            records.extend(batch_records)
+            history.extend((config, rec.summary) for rec in batch_records)
+            idx += len(batch_records)
 
-    for fam, scene in flat:
-        if fam != current_family:
-            history.clear()
-            prev_frozen    = family_configs.get(current_family) if current_family is not None else None
-            config         = _init_config_for_family(prev_frozen)
-            current_family = fam
+            if same_scene_tuning_passes > 0 and batch_records:
+                config = _maybe_same_scene_tune(
+                    batch_scenes[-1],
+                    fam,
+                    config,
+                    batch_records[-1].summary,
+                    history,
+                    updater,
+                    run_kw,
+                    battery_only=battery_only,
+                    scenes_remaining=total - idx,
+                    passes=same_scene_tuning_passes,
+                )
 
-        result  = run_scholar(scene, config=config, **run_kw)
-        summary = result.scene_summary
-        records.append(SceneRecord(
-            scene_idx=scene["scene_idx"],
-            family=fam,
-            config=config,
-            summary=summary,
-        ))
-        new_config = updater.update(
-            config, summary, history,
-            family=fam,
-            scene_idx_in_family=fam_counts[fam],
-            scenes_remaining=fam_totals[fam] - fam_counts[fam] - 1,
-            battery_only=battery_only,
-        )
-        history.append((config, summary))
-        config = new_config
+            if idx < total:
+                proposed = updater.update_family(
+                    config,
+                    [rec.summary for rec in batch_records],
+                    fam,
+                    history,
+                    battery_only=battery_only,
+                )
 
-        if is_last_scene_in_family(fam):
-            family_configs[fam] = copy.deepcopy(config)
+                if proposed != config:
+                    calib_scenes = scenes[idx: idx + accept_batch_size]
+                    if calib_scenes:
+                        baseline_records = _run_scene_batch(calib_scenes, fam, config, run_kw)
+                        candidate_records = _run_scene_batch(calib_scenes, fam, proposed, run_kw)
+                        baseline_score = _batch_objective(baseline_records, battery_only)
+                        candidate_score = _batch_objective(candidate_records, battery_only)
+                        if candidate_score < baseline_score:
+                            config = proposed
+                            print(
+                                f"  {label} [{fam}] accepted update after scenes {max(0, idx - len(batch_records))}-{idx - 1}: "
+                                f"{baseline_score:.4f} → {candidate_score:.4f}"
+                            )
+                        else:
+                            print(
+                                f"  {label} [{fam}] rejected update after scenes {max(0, idx - len(batch_records))}-{idx - 1}: "
+                                f"{baseline_score:.4f} → {candidate_score:.4f}"
+                            )
+                    else:
+                        config = proposed
 
-        fam_counts[fam] += 1
-        n = fam_counts[fam]
-        if n % 50 == 0 or n == fam_totals[fam]:
-            print(f"  {label} [{fam}]: {n}/{fam_totals[fam]}")
+            if idx % 50 == 0 or idx == total:
+                print(f"  {label} [{fam}]: {idx}/{total}")
+
+        family_configs[fam] = copy.deepcopy(config)
+        prev_frozen = family_configs[fam]
 
     if save_dir:
         p = Path(save_dir) / f"family_configs_{label.lower()}.json"
@@ -443,6 +551,9 @@ def run_benchmark(
     sensing_range:       float = 0.35,
     n_workers_a:         int   = 8,
     llm_batch_size:      int   = 64,
+    update_batch_size:   int   = 8,
+    accept_batch_size:   int   = 2,
+    same_scene_tuning_passes: int = 0,
     save_dir                   = None,
     show_plots:          bool  = True,
 ) -> dict:
@@ -478,11 +589,17 @@ def run_benchmark(
     print(f"\n── Condition B — LLM all weights ({n_total} episodes) ──")
     records_b, family_configs_b = _run_llm(scenes_by_family, updater_b, run_kw,
                                             battery_only=False, label="B",
+                                            update_batch_size=update_batch_size,
+                                            accept_batch_size=accept_batch_size,
+                                            same_scene_tuning_passes=same_scene_tuning_passes,
                                             save_dir=save_dir)
 
     print(f"\n── Condition C — LLM battery terms only ({n_total} episodes) ──")
     records_c, family_configs_c = _run_llm(scenes_by_family, updater_c, run_kw,
                                             battery_only=True,  label="C",
+                                            update_batch_size=update_batch_size,
+                                            accept_batch_size=accept_batch_size,
+                                            same_scene_tuning_passes=same_scene_tuning_passes,
                                             save_dir=save_dir)
 
     for _lbl, _fc in [("B", family_configs_b), ("C", family_configs_c)]:
@@ -529,6 +646,12 @@ if __name__ == "__main__":
                         help="Thread-pool size for condition A")
     parser.add_argument("--llm-batch-size", type=int, default=64,
                         help="vLLM engine max_num_seqs batch capacity")
+    parser.add_argument("--update-batch-scenes", type=int, default=8,
+                        help="Number of official scenes to aggregate before each LLM update")
+    parser.add_argument("--accept-batch-scenes", type=int, default=2,
+                        help="Number of future scenes used to accept/reject a proposed update")
+    parser.add_argument("--same-scene-tuning-passes", type=int, default=0,
+                        help="Optional number of same-scene local adaptation passes after each batch")
     parser.add_argument("--save",    type=str,   default=None,
                         metavar="DIR", help="Directory for saved plots")
     parser.add_argument("--no-show", action="store_true",
@@ -544,6 +667,9 @@ if __name__ == "__main__":
         sensing_range       = args.sense,
         n_workers_a         = args.workers,
         llm_batch_size      = args.llm_batch_size,
+        update_batch_size   = args.update_batch_scenes,
+        accept_batch_size   = args.accept_batch_scenes,
+        same_scene_tuning_passes = args.same_scene_tuning_passes,
         save_dir            = args.save,
         show_plots          = not args.no_show,
     )
