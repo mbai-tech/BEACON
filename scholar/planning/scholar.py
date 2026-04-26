@@ -128,12 +128,14 @@ class Scholar:
         n_frontier_pos:  int           = N_FRONTIER_POS,
         sensing_range:   float         = DEFAULT_SENSING_RANGE,
         config:          PlannerConfig = None,
+        use_legacy_baseline: bool      = False,
     ):
         self.v_max          = v_max
         self.n_rays         = n_rays
         self.n_frontier_pos = n_frontier_pos
         self.sensing_range  = sensing_range
         self.config         = config if config is not None else PlannerConfig()
+        self.use_legacy_baseline = use_legacy_baseline
         self.config.validate()
         self.replan_count   = 0
 
@@ -276,6 +278,8 @@ class Scholar:
 
         surviving = [q for i, q in enumerate(candidates) if not dominated[i]]
         pool = surviving if surviving else candidates
+        if self.use_legacy_baseline:
+            return pool
         if len(pool) <= POSITION_KEEP_K:
             return pool
         ranked = sorted(pool, key=lambda q: float(np.linalg.norm(q.position - goal)))
@@ -304,6 +308,27 @@ class Scholar:
         if not unobserved:
             return candidates  # nothing left to discover — keep all
 
+        if self.use_legacy_baseline:
+            surviving = []
+            for q in candidates:
+                speed = float(np.linalg.norm(q.velocity))
+                if speed < 1e-9:
+                    surviving.append(q)
+                    continue
+
+                vel_dir = q.velocity / speed
+                points_toward_unknown = any(
+                    float(np.dot(
+                        vel_dir,
+                        normalize(np.array(o["vertices"]).mean(axis=0) - q.position),
+                    )) > 0.0
+                    for o in unobserved
+                )
+                if points_toward_unknown:
+                    surviving.append(q)
+
+            return surviving if surviving else candidates
+
         ranked: list[tuple[float, CandidateState]] = []
         for q in candidates:
             speed = float(np.linalg.norm(q.velocity))
@@ -330,6 +355,13 @@ class Scholar:
     def _prune_semantic(
         self, candidates: List[CandidateState], c_max: float = C_MAX
     ) -> List[CandidateState]:
+        if self.use_legacy_baseline:
+            safe = [q for q in candidates if q.contact_cost <= c_max]
+            if safe:
+                return safe
+            self.replan_count += 1
+            return [min(candidates, key=lambda q: q.contact_cost)]
+
         ranked = sorted(candidates, key=lambda q: (q.contact_cost > c_max, q.contact_cost))
         if ranked and ranked[0].contact_cost > c_max:
             self.replan_count += 1
@@ -349,7 +381,7 @@ class Scholar:
         j_risk     = self._j_risk_sem(q, goal, cost_map, observed)
         j_vel      = self._j_vel_sem(q, goal, observed)
         j_resource = self._j_resource(q, robot)
-        j_contact  = self._j_contact_penalty(q)
+        j_contact  = 0.0 if self.use_legacy_baseline else self._j_contact_penalty(q)
         cfg = self.config
         return cfg.W_P * j_pos + w_r * j_risk + w_v * j_vel + cfg.W_B * (j_resource + j_contact)
 
@@ -490,6 +522,8 @@ class Scholar:
         j_risk     = self._j_risk_sem(q, goal, cost_map, observed)
         j_vel      = self._j_vel_sem(q, goal, observed)
         j_resource = self._j_resource(q, robot)
+        if not self.use_legacy_baseline:
+            j_resource += self._j_contact_penalty(q)
 
         weighted = {
             "J_pos":      cfg.W_P * j_pos,
@@ -652,6 +686,7 @@ def run_scholar(
     cost_map_resolution: float         = 0.05,
     battery_budget:      float         = 1.0,
     config:              PlannerConfig = None,
+    use_legacy_baseline: bool          = False,
 ) -> OnlineSurpResult:
     working_scene = normalize_scene_for_online_use(scene)
     position = np.array(working_scene["start"][:2], dtype=float)
@@ -665,7 +700,7 @@ def run_scholar(
     )
 
     planner      = Scholar(v_max=step_size, sensing_range=sensing_range,
-                           config=config)
+                           config=config, use_legacy_baseline=use_legacy_baseline)
     path_taken   = [tuple(position)]
     frames       = [snapshot_frame(position, working_scene, "start")]
     sensed_ids:  List[int] = []

@@ -32,12 +32,13 @@ _ENV_MAP = {
 }
 
 _COND_LABELS = {
+    "A_legacy": "A0 — legacy SURP baseline",
     "A": "A — fixed defaults",
     "B": "B — LLM (all weights)",
     "C": "C — LLM (battery terms)",
 }
-_COND_COLORS = {"A": "#264653", "B": "#2a9d8f", "C": "#e76f51"}
-_ALL_CONDITIONS = ("A", "B", "C")
+_COND_COLORS = {"A_legacy": "#6c757d", "A": "#264653", "B": "#2a9d8f", "C": "#e76f51"}
+_ALL_CONDITIONS = ("A_legacy", "A", "B", "C")
 _UPDATE_ACCEPT_ABS_TOL = 1e-4
 _UPDATE_ACCEPT_REL_TOL = 1e-3
 
@@ -154,6 +155,10 @@ def _save_merged_stats(save_dir, stats_by_condition: dict) -> None:
     print(f"Saved → {path}")
 
 
+def _update_trace_path(save_dir, label: str) -> Path | None:
+    return Path(save_dir) / f"llm_update_trace_{label.lower()}.json" if save_dir else None
+
+
 def _batch_objective(records: list[SceneRecord], battery_only: bool = False) -> float:
     if not records:
         return float("inf")
@@ -177,6 +182,51 @@ def _batch_objective(records: list[SceneRecord], battery_only: bool = False) -> 
         + 0.75 * mean_lb_frac
         + 0.25 * mean_stuck
         + 0.75 * mean_forbidden
+    )
+
+
+def _batch_metrics(records: list[SceneRecord], battery_only: bool = False) -> dict:
+    if not records:
+        return {
+            "n": 0,
+            "objective": float("inf"),
+            "success_rate": 0.0,
+            "semantic_damage": 0.0,
+            "low_battery_contact_fraction": 0.0,
+            "n_stuck_events": 0.0,
+            "forbidden_contact_rate": 0.0,
+            "mean_speed_at_contact": 0.0,
+            "mean_final_battery": 0.0,
+            "dominant_j_counts": {},
+        }
+    summaries = [r.summary for r in records]
+    dominant_counts: dict[str, int] = {}
+    for s in summaries:
+        dominant_counts[s.dominant_j] = dominant_counts.get(s.dominant_j, 0) + 1
+    return {
+        "n": len(records),
+        "objective": _batch_objective(records, battery_only),
+        "success_rate": float(np.mean([float(s.success) for s in summaries])),
+        "semantic_damage": float(np.mean([s.total_semantic_damage for s in summaries])),
+        "low_battery_contact_fraction": float(np.mean([s.low_battery_contact_fraction for s in summaries])),
+        "n_stuck_events": float(np.mean([s.n_stuck_events for s in summaries])),
+        "forbidden_contact_rate": float(np.mean([s.forbidden_contact_rate for s in summaries])),
+        "mean_speed_at_contact": float(np.mean([s.mean_speed_at_contact for s in summaries])),
+        "mean_final_battery": float(np.mean([s.final_battery for s in summaries])),
+        "dominant_j_counts": dominant_counts,
+    }
+
+
+def _format_batch_metrics(metrics: dict) -> str:
+    return (
+        f"obj={metrics['objective']:.4f}, "
+        f"success={metrics['success_rate']:.1%}, "
+        f"sem={metrics['semantic_damage']:.3f}, "
+        f"lb_frac={metrics['low_battery_contact_fraction']:.3f}, "
+        f"stuck={metrics['n_stuck_events']:.2f}, "
+        f"forbidden={metrics['forbidden_contact_rate']:.3f}, "
+        f"speed@contact={metrics['mean_speed_at_contact']:.3f}, "
+        f"final_batt={metrics['mean_final_battery']:.3f}"
     )
 
 
@@ -221,8 +271,10 @@ def _run_fixed(
     scenes_by_family: dict,
     run_kw:           dict,
     n_workers:        int = 8,
+    label:            str = "A",
+    use_legacy_baseline: bool = False,
 ) -> list:
-    """Condition A — shared default PlannerConfig, all episodes in parallel."""
+    """Fixed-config condition, all episodes in parallel."""
     config     = PlannerConfig()
     flat       = [(fam, s) for fam, ss in scenes_by_family.items() for s in ss]
     total      = len(flat)
@@ -232,7 +284,7 @@ def _run_fixed(
 
     def _one(idx_pair):
         idx, (fam, scene) = idx_pair
-        result = run_scholar(scene, config=config, **run_kw)
+        result = run_scholar(scene, config=config, use_legacy_baseline=use_legacy_baseline, **run_kw)
         rec = SceneRecord(
             scene_idx=scene["scene_idx"],
             family=fam,
@@ -243,7 +295,7 @@ def _run_fixed(
             done_count[0] += 1
             n = done_count[0]
             if n % 100 == 0 or n == total:
-                print(f"  A: {n}/{total}")
+                print(f"  {label}: {n}/{total}")
         return idx, rec
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as ex:
@@ -314,6 +366,7 @@ def _run_llm(
     records:        list                           = []
     history:        list[tuple[PlannerConfig, object]] = []
     family_configs: dict[str, PlannerConfig]       = {}
+    update_trace:   list[dict]                     = []
     update_batch_size = max(1, int(update_batch_size))
     accept_batch_size = max(1, int(accept_batch_size))
 
@@ -325,11 +378,17 @@ def _run_llm(
         idx = 0
 
         while idx < total:
+            batch_start = idx
             batch_scenes = scenes[idx: idx + update_batch_size]
             batch_records = _run_scene_batch(batch_scenes, fam, config, run_kw)
+            batch_metrics = _batch_metrics(batch_records, battery_only)
             records.extend(batch_records)
             history.extend((config, rec.summary) for rec in batch_records)
             idx += len(batch_records)
+            print(
+                f"  {label} [{fam}] batch {batch_start}-{idx - 1} summary: "
+                f"{_format_batch_metrics(batch_metrics)}"
+            )
 
             if same_scene_tuning_passes > 0 and batch_records:
                 config = _maybe_same_scene_tune(
@@ -359,9 +418,24 @@ def _run_llm(
                     if calib_scenes:
                         baseline_records = _run_scene_batch(calib_scenes, fam, config, run_kw)
                         candidate_records = _run_scene_batch(calib_scenes, fam, proposed, run_kw)
-                        baseline_score = _batch_objective(baseline_records, battery_only)
-                        candidate_score = _batch_objective(candidate_records, battery_only)
+                        baseline_metrics = _batch_metrics(baseline_records, battery_only)
+                        candidate_metrics = _batch_metrics(candidate_records, battery_only)
+                        baseline_score = baseline_metrics["objective"]
+                        candidate_score = candidate_metrics["objective"]
                         delta_summary = _summarize_config_delta(config, proposed)
+                        accepted = _score_improved(candidate_score, baseline_score)
+                        update_trace.append({
+                            "family": fam,
+                            "condition": label,
+                            "battery_only": battery_only,
+                            "scene_range": [batch_start, idx - 1],
+                            "batch_metrics": batch_metrics,
+                            "accept_scenes": [scene["scene_idx"] for scene in calib_scenes],
+                            "baseline_metrics": baseline_metrics,
+                            "candidate_metrics": candidate_metrics,
+                            "accepted": accepted,
+                            "config_delta": delta_summary,
+                        })
                         if _score_improved(candidate_score, baseline_score):
                             config = proposed
                             print(
@@ -369,11 +443,23 @@ def _run_llm(
                                 f"{baseline_score:.4f} → {candidate_score:.4f} "
                                 f"({delta_summary})"
                             )
+                            print(
+                                f"    baseline accept metrics: {_format_batch_metrics(baseline_metrics)}"
+                            )
+                            print(
+                                f"    candidate accept metrics: {_format_batch_metrics(candidate_metrics)}"
+                            )
                         else:
                             print(
                                 f"  {label} [{fam}] rejected update after scenes {max(0, idx - len(batch_records))}-{idx - 1}: "
                                 f"{baseline_score:.4f} → {candidate_score:.4f} "
                                 f"({delta_summary})"
+                            )
+                            print(
+                                f"    baseline accept metrics: {_format_batch_metrics(baseline_metrics)}"
+                            )
+                            print(
+                                f"    candidate accept metrics: {_format_batch_metrics(candidate_metrics)}"
                             )
                     else:
                         config = proposed
@@ -389,6 +475,10 @@ def _run_llm(
         payload = {fam: _config_as_json_dict(cfg) for fam, cfg in family_configs.items()}
         p.write_text(json.dumps(payload, indent=2))
         print(f"  {label} family configs → {p}")
+        trace_path = _update_trace_path(save_dir, label)
+        if trace_path is not None:
+            trace_path.write_text(json.dumps(update_trace, indent=2))
+            print(f"  {label} update trace → {trace_path}")
 
     return records, family_configs
 
@@ -440,7 +530,7 @@ def _check_family_differentiation(
 
 # ── Report ────────────────────────────────────────────────────────────────────
 
-def _print_report(sa: dict, sb: dict, sc: dict, n_total: int) -> None:
+def _print_report(stats_by_condition: dict, n_total: int) -> None:
     title = f"── BEACON Benchmark — {n_total} episodes"
     div   = "─" * 80
 
@@ -462,31 +552,34 @@ def _print_report(sa: dict, sb: dict, sc: dict, n_total: int) -> None:
             f"{de_m:>6.4f} ± {de_s:<5.4f}"
         )
 
-    print(_row(_COND_LABELS["A"], sa))
-    print(_row(_COND_LABELS["B"], sb))
-    print(_row(_COND_LABELS["C"], sc))
+    for cond in [c for c in _ALL_CONDITIONS if c in stats_by_condition]:
+        print(_row(_COND_LABELS[cond], stats_by_condition[cond]))
     print(div)
 
-    # Primary hypothesis: low_battery_contact_fraction  C < A
-    t, p, method = _ttest_less(sc["_lb_raw"], sa["_lb_raw"])
-    verdict = "SUPPORTED" if (not math.isnan(p) and p < 0.05) else "not supported"
-    print(f"\n  H₁  low_battery_contact_fraction  C < A")
-    print(f"      {method}:  t = {t:+.3f}   p = {p:.4g}   [{verdict} at α = 0.05]")
+    if "A" in stats_by_condition and "C" in stats_by_condition:
+        t, p, method = _ttest_less(stats_by_condition["C"]["_lb_raw"], stats_by_condition["A"]["_lb_raw"])
+        verdict = "SUPPORTED" if (not math.isnan(p) and p < 0.05) else "not supported"
+        print(f"\n  H₁  low_battery_contact_fraction  C < A")
+        print(f"      {method}:  t = {t:+.3f}   p = {p:.4g}   [{verdict} at α = 0.05]")
 
-    # Secondary: semantic damage  B < A
-    t2, p2, _ = _ttest_less(sb["_sem_raw"], sa["_sem_raw"])
-    v2 = "SUPPORTED" if (not math.isnan(p2) and p2 < 0.05) else "not supported"
-    print(f"\n  H₂  semantic_damage  B < A  (full LLM drives damage reduction)")
-    print(f"      {method}:  t = {t2:+.3f}   p = {p2:.4g}   [{v2} at α = 0.05]")
+        lb_a = np.array(stats_by_condition["A"]["_lb_raw"], float)
+        lb_c = np.array(stats_by_condition["C"]["_lb_raw"], float)
+        pooled_sd = math.sqrt((lb_a.var(ddof=1) + lb_c.var(ddof=1)) / 2)
+        if pooled_sd > 1e-12:
+            d = (lb_a.mean() - lb_c.mean()) / pooled_sd
+            print(f"\n  Cohen's d (A − C on LB frac): {d:.3f}"
+                  f"  ({'large' if abs(d) >= 0.8 else 'medium' if abs(d) >= 0.5 else 'small'})")
 
-    # Effect size (Cohen's d) for H₁
-    lb_a = np.array(sa["_lb_raw"], float)
-    lb_c = np.array(sc["_lb_raw"], float)
-    pooled_sd = math.sqrt((lb_a.var(ddof=1) + lb_c.var(ddof=1)) / 2)
-    if pooled_sd > 1e-12:
-        d = (lb_a.mean() - lb_c.mean()) / pooled_sd
-        print(f"\n  Cohen's d (A − C on LB frac): {d:.3f}"
-              f"  ({'large' if abs(d) >= 0.8 else 'medium' if abs(d) >= 0.5 else 'small'})")
+    if "A" in stats_by_condition and "B" in stats_by_condition:
+        t2, p2, method2 = _ttest_less(stats_by_condition["B"]["_sem_raw"], stats_by_condition["A"]["_sem_raw"])
+        v2 = "SUPPORTED" if (not math.isnan(p2) and p2 < 0.05) else "not supported"
+        print(f"\n  H₂  semantic_damage  B < A  (full LLM drives damage reduction)")
+        print(f"      {method2}:  t = {t2:+.3f}   p = {p2:.4g}   [{v2} at α = 0.05]")
+
+    if "A_legacy" in stats_by_condition and "A" in stats_by_condition:
+        legacy_sr = stats_by_condition["A_legacy"]["success_rate"]
+        new_sr = stats_by_condition["A"]["success_rate"]
+        print(f"\n  Baseline shift  legacy A0 → new A: {legacy_sr:.1%} → {new_sr:.1%}")
 
     print(div + "\n")
 
@@ -494,16 +587,14 @@ def _print_report(sa: dict, sb: dict, sc: dict, n_total: int) -> None:
 # ── Plots ─────────────────────────────────────────────────────────────────────
 
 def _plot_comparison(
-    sa: dict,
-    sb: dict,
-    sc: dict,
+    stats_by_condition: dict,
     save_dir=None,
     show: bool = True,
 ) -> None:
-    cond_keys  = ["A", "B", "C"]
-    stats_list = [sa, sb, sc]
+    cond_keys  = [c for c in _ALL_CONDITIONS if c in stats_by_condition]
+    stats_list = [stats_by_condition[c] for c in cond_keys]
     colors     = [_COND_COLORS[k] for k in cond_keys]
-    xs         = np.arange(3)
+    xs         = np.arange(len(cond_keys))
 
     metrics = [
         ("success_rate",    "Success rate",                     True),
@@ -513,7 +604,7 @@ def _plot_comparison(
     ]
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 7), constrained_layout=True)
-    fig.suptitle("BEACON three-condition benchmark", fontsize=12)
+    fig.suptitle("BEACON benchmark comparison", fontsize=12)
 
     for ax, (key, title, is_rate) in zip(axes.flatten(), metrics):
         if is_rate:
@@ -528,7 +619,7 @@ def _plot_comparison(
                       error_kw={"linewidth": 1.2, "ecolor": "#333333"})
         ax.set_title(title, fontsize=9)
         ax.set_xticks(xs)
-        ax.set_xticklabels(["A", "B", "C"], fontsize=9)
+        ax.set_xticklabels(cond_keys, fontsize=9)
         ax.tick_params(axis="y", labelsize=8)
         ax.grid(axis="y", alpha=0.22)
         if is_rate:
@@ -557,7 +648,11 @@ def _plot_comparison(
     ax2.set_ylabel("Density", fontsize=9)
     ax2.grid(alpha=0.2)
 
-    for cond, raw in [("A", sa["_lb_raw"]), ("C", sc["_lb_raw"])]:
+    if not ("A" in stats_by_condition and "C" in stats_by_condition):
+        plt.close(fig2)
+        return
+
+    for cond, raw in [("A", stats_by_condition["A"]["_lb_raw"]), ("C", stats_by_condition["C"]["_lb_raw"])]:
         arr = np.array(raw, float)
         col = _COND_COLORS[cond]
         lbl = _COND_LABELS[cond]
@@ -574,7 +669,7 @@ def _plot_comparison(
                      color=col, label=lbl, edgecolor="white", linewidth=0.4)
 
     # Annotate means
-    for cond, raw in [("A", sa["_lb_raw"]), ("C", sc["_lb_raw"])]:
+    for cond, raw in [("A", stats_by_condition["A"]["_lb_raw"]), ("C", stats_by_condition["C"]["_lb_raw"])]:
         m = float(np.mean(raw))
         ax2.axvline(m, color=_COND_COLORS[cond],
                     linewidth=1.4, linestyle="--", alpha=0.8)
@@ -638,9 +733,17 @@ def run_benchmark(
     records_by_condition: dict[str, list] = {}
     family_configs_by_condition: dict[str, dict] = {}
 
+    if "A_legacy" in conditions:
+        print(f"── Condition A0 — legacy SURP baseline ({n_total} episodes, {n_workers_a} workers) ──")
+        records_by_condition["A_legacy"] = _run_fixed(
+            scenes_by_family, run_kw, n_workers=n_workers_a, label="A0", use_legacy_baseline=True
+        )
+
     if "A" in conditions:
         print(f"── Condition A — fixed defaults ({n_total} episodes, {n_workers_a} workers) ──")
-        records_by_condition["A"] = _run_fixed(scenes_by_family, run_kw, n_workers=n_workers_a)
+        records_by_condition["A"] = _run_fixed(
+            scenes_by_family, run_kw, n_workers=n_workers_a, label="A", use_legacy_baseline=False
+        )
 
     if any(cond in conditions for cond in ("B", "C")):
         # Only initialize vLLM if we actually need LLM-backed conditions.
@@ -682,12 +785,12 @@ def run_benchmark(
     merged_stats.update(current_stats)
     _save_merged_stats(save_dir, merged_stats)
 
-    if all(cond in merged_stats for cond in _ALL_CONDITIONS):
-        _print_report(merged_stats["A"], merged_stats["B"], merged_stats["C"], n_total)
-        _plot_comparison(merged_stats["A"], merged_stats["B"], merged_stats["C"],
-                         save_dir=save_dir, show=show_plots)
+    required_for_full = ("A", "B", "C")
+    if all(cond in merged_stats for cond in required_for_full):
+        _print_report(merged_stats, n_total)
+        _plot_comparison(merged_stats, save_dir=save_dir, show=show_plots)
     else:
-        missing = [cond for cond in _ALL_CONDITIONS if cond not in merged_stats]
+        missing = [cond for cond in required_for_full if cond not in merged_stats]
         print(f"\nPartial run complete. Saved stats for {sorted(current_stats)}.")
         print(f"Still missing conditions for full comparison: {missing}")
 
