@@ -38,6 +38,8 @@ _COND_LABELS = {
 }
 _COND_COLORS = {"A": "#264653", "B": "#2a9d8f", "C": "#e76f51"}
 _ALL_CONDITIONS = ("A", "B", "C")
+_UPDATE_ACCEPT_ABS_TOL = 1e-4
+_UPDATE_ACCEPT_REL_TOL = 1e-3
 
 def _load_scene(family: str, scene_idx: int) -> dict:
     mapped = _ENV_MAP.get(family, family)
@@ -105,6 +107,32 @@ def _ttest_less(x: list, y: list) -> tuple:
 
 def _config_as_json_dict(cfg: PlannerConfig) -> dict:
     return {k: float(v) for k, v in dataclasses.asdict(cfg).items()}
+
+
+def _score_improved(candidate_score: float, baseline_score: float) -> bool:
+    tol = max(_UPDATE_ACCEPT_ABS_TOL, _UPDATE_ACCEPT_REL_TOL * abs(baseline_score))
+    return candidate_score <= baseline_score + tol
+
+
+def _summarize_config_delta(
+    current: PlannerConfig,
+    proposed: PlannerConfig,
+    max_items: int = 6,
+) -> str:
+    cur = _config_as_json_dict(current)
+    new = _config_as_json_dict(proposed)
+    deltas: list[tuple[float, str]] = []
+    for key, cur_val in cur.items():
+        new_val = new[key]
+        delta = new_val - cur_val
+        if abs(delta) <= 1e-12:
+            continue
+        rel = abs(delta) / max(abs(cur_val), 1e-9)
+        deltas.append((rel, f"{key}: {cur_val:.4f}->{new_val:.4f}"))
+    deltas.sort(key=lambda item: item[0], reverse=True)
+    if not deltas:
+        return "no effective parameter change"
+    return ", ".join(text for _, text in deltas[:max_items])
 
 
 def _stats_path(save_dir) -> Path | None:
@@ -255,7 +283,9 @@ def _maybe_same_scene_tune(
 
         baseline_records = _run_scene_batch([scene], family, tuned_config, run_kw)
         candidate_records = _run_scene_batch([scene], family, proposed, run_kw)
-        if _batch_objective(candidate_records, battery_only) < _batch_objective(baseline_records, battery_only):
+        baseline_score = _batch_objective(baseline_records, battery_only)
+        candidate_score = _batch_objective(candidate_records, battery_only)
+        if _score_improved(candidate_score, baseline_score):
             tuned_config = proposed
             tuned_summary = candidate_records[0].summary
         else:
@@ -331,16 +361,19 @@ def _run_llm(
                         candidate_records = _run_scene_batch(calib_scenes, fam, proposed, run_kw)
                         baseline_score = _batch_objective(baseline_records, battery_only)
                         candidate_score = _batch_objective(candidate_records, battery_only)
-                        if candidate_score < baseline_score:
+                        delta_summary = _summarize_config_delta(config, proposed)
+                        if _score_improved(candidate_score, baseline_score):
                             config = proposed
                             print(
                                 f"  {label} [{fam}] accepted update after scenes {max(0, idx - len(batch_records))}-{idx - 1}: "
-                                f"{baseline_score:.4f} → {candidate_score:.4f}"
+                                f"{baseline_score:.4f} → {candidate_score:.4f} "
+                                f"({delta_summary})"
                             )
                         else:
                             print(
                                 f"  {label} [{fam}] rejected update after scenes {max(0, idx - len(batch_records))}-{idx - 1}: "
-                                f"{baseline_score:.4f} → {candidate_score:.4f}"
+                                f"{baseline_score:.4f} → {candidate_score:.4f} "
+                                f"({delta_summary})"
                             )
                     else:
                         config = proposed
