@@ -1,0 +1,1039 @@
+SCHOLAR Simulation Log
+Scene: 027   Date: 2026-04-19 22:59:33
+======================================================================
+
+Family: sparse
+Result: SUCCESS  (163 steps)
+--------------------------------------------------
+  step    0 | (0.8138, 5.1308) | start
+  step    1 | (0.8343, 5.0965) | goal mode: moving directly toward goal
+  step    2 | (0.8549, 5.0622) | goal mode: moving directly toward goal
+  step    3 | (0.8754, 5.0278) | goal mode: moving directly toward goal
+  step    4 | (0.8959, 4.9935) | goal mode: moving directly toward goal
+  step    5 | (0.9165, 4.9592) | goal mode: moving directly toward goal
+  step    6 | (0.9370, 4.9249) | goal mode: moving directly toward goal
+  step    7 | (0.9575, 4.8905) | goal mode: moving directly toward goal
+  step    8 | (0.9780, 4.8562) | goal mode: moving directly toward goal
+  step    9 | (0.9986, 4.8219) | goal mode: moving directly toward goal
+  step   10 | (1.0191, 4.7875) | goal mode: moving directly toward goal
+  step   11 | (1.0396, 4.7532) | goal mode: moving directly toward goal
+  step   12 | (1.0601, 4.7189) | goal mode: moving directly toward goal
+  step   13 | (1.0601, 4.7189) | sensed obstacle(s) [13]; frontiers=44
+  step   14 | (1.0960, 4.7012) | goal mode: moving directly toward goal
+  step   15 | (1.1319, 4.6835) | goal mode: moving directly toward goal
+  step   16 | (1.1718, 4.6809) | goal mode: moving directly toward goal
+  step   17 | (1.2117, 4.6784) | goal mode: moving directly toward goal
+  step   18 | (1.2517, 4.6758) | goal mode: moving directly toward goal
+  step   19 | (1.2914, 4.6716) | goal mode: moving directly toward goal
+  step   20 | (1.3312, 4.6675) | goal mode: moving directly toward goal
+  step   21 | (1.3710, 4.6634) | goal mode: moving directly toward goal
+  step   22 | (1.4108, 4.6593) | goal mode: moving directly toward goal
+  step   23 | (1.4108, 4.6593) | sensed obstacle(s) [5]; frontiers=30
+  step   24 | (1.4508, 4.6577) | goal mode: moving directly toward goal
+  step   25 | (1.4908, 4.6568) | goal mode: moving directly toward goal
+  step   26 | (1.5307, 4.6551) | goal mode: moving directly toward goal
+  step   27 | (1.5707, 4.6546) | goal mode: repairing path with D* Lite
+  step   28 | (1.6107, 4.6541) | goal mode: repairing path with D* Lite
+  step   29 | (1.6507, 4.6537) | goal mode: repairing path with D* Lite
+  step   30 | (1.6907, 4.6532) | goal mode: repairing path with D* Lite
+  step   31 | (1.7307, 4.6527) | goal mode: repairing path with D* Lite
+  step   32 | (1.7707, 4.6525) | goal mode: repairing path with D* Lite
+  step   33 | (1.8107, 4.6522) | goal mode: repairing path with D* Lite
+  step   34 | (1.8507, 4.6521) | goal mode: repairing path with D* Lite
+  step   35 | (1.8907, 4.6519) | goal mode: repairing path with D* Lite
+  step   36 | (1.9307, 4.6518) | goal mode: repairing path with D* Lite
+  step   37 | (1.9707, 4.6516) | goal mode: repairing path with D* Lite
+  step   38 | (2.0107, 4.6513) | goal mode: repairing path with D* Lite
+  step   39 | (2.0507, 4.6507) | goal mode: repairing path with D* Lite
+  step   40 | (2.0507, 4.6507) | sensed obstacle(s) [12]; frontiers=30
+  step   41 | (2.0907, 4.6507) | goal mode: repairing path with D* Lite
+  step   42 | (2.1307, 4.6507) | goal mode: repairing path with D* Lite
+  step   43 | (2.1707, 4.6506) | goal mode: repairing path with D* Lite
+  step   44 | (2.2107, 4.6505) | goal mode: repairing path with D* Lite
+  step   45 | (2.2507, 4.6504) | goal mode: repairing path with D* Lite
+  step   46 | (2.2907, 4.6504) | goal mode: repairing path with D* Lite
+  step   47 | (2.3307, 4.6503) | goal mode: repairing path with D* Lite
+  step   48 | (2.3707, 4.6503) | goal mode: repairing path with D* Lite
+  step   49 | (2.4107, 4.6502) | goal mode: repairing path with D* Lite
+  step   50 | (2.4507, 4.6501) | goal mode: repairing path with D* Lite
+  step   51 | (2.4907, 4.6501) | goal mode: repairing path with D* Lite
+  step   52 | (2.5307, 4.6501) | goal mode: repairing path with D* Lite
+  step   53 | (2.5707, 4.6501) | goal mode: repairing path with D* Lite
+  step   54 | (2.6107, 4.6500) | goal mode: repairing path with D* Lite
+  step   55 | (2.6507, 4.6500) | goal mode: repairing path with D* Lite
+  step   56 | (2.6907, 4.6500) | goal mode: moving directly toward goal
+  step   57 | (2.7307, 4.6500) | goal mode: moving directly toward goal
+  step   58 | (2.7707, 4.6500) | goal mode: moving directly toward goal
+  step   59 | (2.8107, 4.6500) | goal mode: moving directly toward goal
+  step   60 | (2.8133, 4.6101) | goal mode: moving directly toward goal
+  step   61 | (2.8169, 4.5703) | goal mode: moving directly toward goal
+  step   62 | (2.8204, 4.5304) | goal mode: moving directly toward goal
+  step   63 | (2.8240, 4.4906) | goal mode: moving directly toward goal
+  step   64 | (2.8276, 4.4507) | goal mode: moving directly toward goal
+  step   65 | (2.8292, 4.4108) | goal mode: moving directly toward goal
+  step   66 | (2.8308, 4.3708) | goal mode: moving directly toward goal
+  step   67 | (2.8308, 4.3708) | sensed obstacle(s) [8]; frontiers=44
+  step   68 | (2.8325, 4.3308) | goal mode: moving directly toward goal
+  step   69 | (2.8341, 4.2909) | goal mode: moving directly toward goal
+  step   70 | (2.8357, 4.2509) | goal mode: moving directly toward goal
+  step   71 | (2.8373, 4.2109) | goal mode: moving directly toward goal
+  step   72 | (2.8390, 4.1710) | goal mode: moving directly toward goal
+  step   73 | (2.8406, 4.1310) | goal mode: moving directly toward goal
+  step   74 | (2.8422, 4.0910) | goal mode: moving directly toward goal
+  step   75 | (2.8438, 4.0511) | goal mode: moving directly toward goal
+  step   76 | (2.8455, 4.0111) | goal mode: moving directly toward goal
+  step   77 | (2.8458, 3.9711) | goal mode: moving directly toward goal
+  step   78 | (2.8461, 3.9311) | goal mode: moving directly toward goal
+  step   79 | (2.8466, 3.8911) | goal mode: moving directly toward goal
+  step   80 | (2.8471, 3.8511) | goal mode: moving directly toward goal
+  step   81 | (2.8475, 3.8111) | goal mode: moving directly toward goal
+  step   82 | (2.8480, 3.7711) | goal mode: moving directly toward goal
+  step   83 | (2.8482, 3.7311) | goal mode: moving directly toward goal
+  step   84 | (2.8483, 3.6911) | goal mode: moving directly toward goal
+  step   85 | (2.8485, 3.6511) | goal mode: moving directly toward goal
+  step   86 | (2.8487, 3.6111) | goal mode: moving directly toward goal
+  step   87 | (2.8488, 3.5711) | goal mode: moving directly toward goal
+  step   88 | (2.8490, 3.5311) | goal mode: moving directly toward goal
+  step   89 | (2.8492, 3.4911) | goal mode: moving directly toward goal
+  step   90 | (2.8494, 3.4511) | goal mode: moving directly toward goal
+  step   91 | (2.8495, 3.4111) | goal mode: moving directly toward goal
+  step   92 | (2.8497, 3.3711) | goal mode: moving directly toward goal
+  step   93 | (2.8498, 3.3311) | goal mode: moving directly toward goal
+  step   94 | (2.8498, 3.2911) | goal mode: moving directly toward goal
+  step   95 | (2.8498, 3.2511) | goal mode: moving directly toward goal
+  step   96 | (2.8498, 3.2111) | goal mode: moving directly toward goal
+  step   97 | (2.8498, 3.1711) | goal mode: moving directly toward goal
+  step   98 | (2.8499, 3.1311) | goal mode: moving directly toward goal
+  step   99 | (2.8499, 3.0911) | goal mode: moving directly toward goal
+  step  100 | (2.8499, 3.0511) | goal mode: moving directly toward goal
+  step  101 | (2.8499, 3.0111) | goal mode: moving directly toward goal
+  step  102 | (2.8499, 2.9711) | goal mode: moving directly toward goal
+  step  103 | (2.8499, 2.9311) | goal mode: moving directly toward goal
+  step  104 | (2.8499, 2.8911) | goal mode: moving directly toward goal
+  step  105 | (2.8500, 2.8511) | goal mode: moving directly toward goal
+  step  106 | (2.8500, 2.8111) | goal mode: moving directly toward goal
+  step  107 | (2.8500, 2.7711) | goal mode: moving directly toward goal
+  step  108 | (2.8500, 2.7311) | goal mode: moving directly toward goal
+  step  109 | (2.8500, 2.6911) | goal mode: moving directly toward goal
+  step  110 | (2.8500, 2.6511) | goal mode: moving directly toward goal
+  step  111 | (2.8500, 2.6111) | goal mode: moving directly toward goal
+  step  112 | (2.8500, 2.5711) | goal mode: moving directly toward goal
+  step  113 | (2.8500, 2.5311) | goal mode: moving directly toward goal
+  step  114 | (2.8500, 2.4911) | goal mode: moving directly toward goal
+  step  115 | (2.8500, 2.4511) | goal mode: moving directly toward goal
+  step  116 | (2.8500, 2.4111) | goal mode: moving directly toward goal
+  step  117 | (2.8500, 2.3711) | goal mode: moving directly toward goal
+  step  118 | (2.8500, 2.3311) | goal mode: moving directly toward goal
+  step  119 | (2.8500, 2.2911) | goal mode: moving directly toward goal
+  step  120 | (2.8500, 2.2511) | goal mode: moving directly toward goal
+  step  121 | (2.8500, 2.2111) | goal mode: moving directly toward goal
+  step  122 | (2.8500, 2.1711) | goal mode: moving directly toward goal
+  step  123 | (2.8650, 2.1340) | goal mode: moving directly toward goal
+  step  124 | (2.8632, 2.0941) | goal mode: moving directly toward goal
+  step  125 | (2.8911, 2.0654) | goal mode: moving directly toward goal
+  step  126 | (2.9191, 2.0368) | goal mode: moving directly toward goal
+  step  127 | (2.9470, 2.0082) | goal mode: moving directly toward goal
+  step  128 | (2.9569, 1.9694) | goal mode: moving directly toward goal
+  step  129 | (2.9861, 1.9421) | goal mode: moving directly toward goal
+  step  130 | (3.0154, 1.9149) | goal mode: moving directly toward goal
+  step  131 | (3.0447, 1.8876) | goal mode: moving directly toward goal
+  step  132 | (3.0740, 1.8604) | goal mode: moving directly toward goal
+  step  133 | (3.0952, 1.8265) | goal mode: moving directly toward goal
+  step  134 | (3.1255, 1.8004) | goal mode: moving directly toward goal
+  step  135 | (3.1400, 1.7631) | goal mode: moving directly toward goal
+  step  136 | (3.1789, 1.7721) | goal mode: moving directly toward goal
+  step  137 | (3.2179, 1.7811) | goal mode: moving directly toward goal
+  step  138 | (3.2569, 1.7901) | goal mode: moving directly toward goal
+  step  139 | (3.2608, 1.7502) | goal mode: moving directly toward goal
+  step  140 | (3.2647, 1.7104) | goal mode: moving directly toward goal
+  step  141 | (3.2713, 1.6710) | goal mode: moving directly toward goal
+  step  142 | (3.2779, 1.6315) | goal mode: moving directly toward goal
+  step  143 | (3.2846, 1.5921) | goal mode: moving directly toward goal
+  step  144 | (3.2912, 1.5526) | goal mode: moving directly toward goal
+  step  145 | (3.2929, 1.5127) | goal mode: moving directly toward goal
+  step  146 | (3.2947, 1.4727) | goal mode: moving directly toward goal
+  step  147 | (3.2954, 1.4327) | goal mode: moving directly toward goal
+  step  148 | (3.2959, 1.3927) | goal mode: moving directly toward goal
+  step  149 | (3.2968, 1.3527) | goal mode: moving directly toward goal
+  step  150 | (3.2976, 1.3127) | goal mode: moving directly toward goal
+  step  151 | (3.2978, 1.2727) | goal mode: moving directly toward goal
+  step  152 | (3.2981, 1.2327) | goal mode: moving directly toward goal
+  step  153 | (3.2983, 1.1927) | goal mode: moving directly toward goal
+  step  154 | (3.2985, 1.1528) | goal mode: moving directly toward goal
+  step  155 | (3.2988, 1.1128) | goal mode: moving directly toward goal
+  step  156 | (3.3096, 1.0742) | goal mode: moving directly toward goal
+  step  157 | (3.3204, 1.0357) | goal mode: moving directly toward goal
+  step  158 | (3.3313, 0.9972) | goal mode: moving directly toward goal
+  step  159 | (3.3421, 0.9587) | goal mode: moving directly toward goal
+  step  160 | (3.3530, 0.9202) | goal mode: moving directly toward goal
+  step  161 | (3.3638, 0.8817) | goal mode: moving directly toward goal
+  step  162 | (3.3723, 0.8515) | goal reached
+
+Family: cluttered
+Result: SUCCESS  (175 steps)
+--------------------------------------------------
+  step    0 | (0.8138, 5.1308) | start
+  step    1 | (0.8138, 5.1308) | sensed obstacle(s) [18]; frontiers=42
+  step    2 | (0.8537, 5.1277) | goal mode: repairing path with D* Lite
+  step    3 | (0.8936, 5.1245) | goal mode: moving directly toward goal
+  step    4 | (0.9334, 5.1213) | goal mode: moving directly toward goal
+  step    5 | (0.9728, 5.1141) | goal mode: moving directly toward goal
+  step    6 | (1.0121, 5.1069) | goal mode: moving directly toward goal
+  step    7 | (1.0121, 5.1069) | sensed obstacle(s) [10]; frontiers=40
+  step    8 | (1.0330, 5.0728) | goal mode: moving directly toward goal
+  step    9 | (1.0539, 5.0387) | goal mode: moving directly toward goal
+  step   10 | (1.0748, 5.0046) | goal mode: moving directly toward goal
+  step   11 | (1.0957, 4.9705) | goal mode: moving directly toward goal
+  step   12 | (1.0957, 4.9705) | sensed obstacle(s) [7]; frontiers=33
+  step   13 | (1.1226, 5.0000) | goal mode: repairing path with D* Lite
+  step   14 | (1.1495, 5.0296) | goal mode: repairing path with D* Lite
+  step   15 | (1.1764, 5.0592) | goal mode: repairing path with D* Lite
+  step   16 | (1.2135, 5.0742) | CIBP replan: boundary→avoid for obs 10
+  step   17 | (1.2506, 5.0891) | goal mode: moving directly toward goal
+  step   18 | (1.2506, 5.0891) | boundary mode: entered near obs 10 (movable, P_safe=0.88)
+  step   19 | (1.2877, 5.1041) | boundary mode: following obs 10 (movable)
+  step   20 | (1.3027, 5.0670) | boundary mode: following obs 10 (movable)
+  step   21 | (1.2656, 5.0520) | boundary mode: following obs 10 (movable)
+  step   22 | (1.2656, 5.0520) | boundary mode: circuit complete for obs 10 — escalating
+  step   23 | (1.3651, 5.1033) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step   24 | (1.3651, 5.1033) | boundary mode: entered near obs 10 (movable, P_safe=0.87)
+  step   25 | (1.4030, 5.1161) | boundary mode: following obs 10 (movable)
+  step   26 | (1.4409, 5.1289) | boundary mode: following obs 10 (movable)
+  step   27 | (1.4722, 5.1538) | boundary mode: following obs 10 (movable)
+  step   28 | (1.5073, 5.1730) | boundary mode: following obs 10 (movable)
+  step   29 | (1.5424, 5.1922) | boundary mode: following obs 10 (movable)
+  step   30 | (1.5803, 5.2050) | boundary mode: following obs 10 (movable)
+  step   31 | (1.6198, 5.2110) | boundary mode: following obs 10 (movable)
+  step   32 | (1.6594, 5.2170) | boundary mode: following obs 10 (movable)
+  step   33 | (1.6994, 5.2161) | boundary mode: following obs 10 (movable)
+  step   34 | (1.7394, 5.2151) | boundary mode: following obs 10 (movable)
+  step   35 | (1.7786, 5.2072) | boundary mode: following obs 10 (movable)
+  step   36 | (1.8158, 5.1927) | boundary mode: following obs 10 (movable)
+  step   37 | (1.8531, 5.1781) | boundary mode: following obs 10 (movable)
+  step   38 | (1.8872, 5.1573) | boundary mode: following obs 10 (movable)
+  step   39 | (1.9173, 5.1309) | boundary mode: following obs 10 (movable)
+  step   40 | (1.9473, 5.1044) | boundary mode: following obs 10 (movable)
+  step   41 | (1.9723, 5.0732) | boundary mode: following obs 10 (movable)
+  step   42 | (1.9973, 5.0419) | boundary mode: following obs 10 (movable)
+  step   43 | (2.0164, 5.0068) | boundary mode: following obs 10 (movable)
+  step   44 | (2.0292, 4.9689) | boundary mode: following obs 10 (movable)
+  step   45 | (2.0420, 4.9310) | boundary mode: following obs 10 (movable)
+  step   46 | (2.0820, 4.9325) | goal mode: repairing path with D* Lite
+  step   47 | (2.1219, 4.9340) | goal mode: repairing path with D* Lite
+  step   48 | (2.1619, 4.9355) | goal mode: repairing path with D* Lite
+  step   49 | (2.2019, 4.9370) | goal mode: repairing path with D* Lite
+  step   50 | (2.2419, 4.9385) | goal mode: repairing path with D* Lite
+  step   51 | (2.2419, 4.9385) | sensed obstacle(s) [3]; frontiers=33
+  step   52 | (2.2818, 4.9400) | goal mode: moving directly toward goal
+  step   53 | (2.3218, 4.9415) | goal mode: moving directly toward goal
+  step   54 | (2.3465, 4.9100) | goal mode: moving directly toward goal
+  step   55 | (2.3711, 4.8785) | goal mode: moving directly toward goal
+  step   56 | (2.3958, 4.8470) | goal mode: moving directly toward goal
+  step   57 | (2.4204, 4.8155) | goal mode: moving directly toward goal
+  step   58 | (2.4451, 4.7840) | goal mode: moving directly toward goal
+  step   59 | (2.4805, 4.7654) | goal mode: moving directly toward goal
+  step   60 | (2.5159, 4.7468) | goal mode: repairing path with D* Lite
+  step   61 | (2.5543, 4.7356) | goal mode: repairing path with D* Lite
+  step   62 | (2.5927, 4.7245) | goal mode: repairing path with D* Lite
+  step   63 | (2.6324, 4.7192) | goal mode: repairing path with D* Lite
+  step   64 | (2.6692, 4.7036) | goal mode: moving directly toward goal
+  step   65 | (2.7061, 4.6880) | goal mode: moving directly toward goal
+  step   66 | (2.7429, 4.6724) | goal mode: moving directly toward goal
+  step   67 | (2.7820, 4.6642) | goal mode: moving directly toward goal
+  step   68 | (2.7905, 4.6251) | goal mode: moving directly toward goal
+  step   69 | (2.7990, 4.5860) | goal mode: moving directly toward goal
+  step   70 | (2.8074, 4.5469) | goal mode: moving directly toward goal
+  step   71 | (2.8074, 4.5469) | sensed obstacle(s) [12]; frontiers=32
+  step   72 | (2.8421, 4.5270) | goal mode: moving directly toward goal
+  step   73 | (2.8768, 4.5071) | goal mode: moving directly toward goal
+  step   74 | (2.9114, 4.4871) | goal mode: moving directly toward goal
+  step   75 | (2.9461, 4.4672) | goal mode: moving directly toward goal
+  step   76 | (2.9461, 4.4672) | sensed obstacle(s) [22]; frontiers=32
+  step   77 | (2.9808, 4.4473) | goal mode: moving directly toward goal
+  step   78 | (3.0155, 4.4273) | goal mode: moving directly toward goal
+  step   79 | (3.0507, 4.4463) | goal mode: moving directly toward goal
+  step   80 | (3.0656, 4.4092) | goal mode: moving directly toward goal
+  step   81 | (3.0722, 4.3698) | goal mode: moving directly toward goal
+  step   82 | (3.0787, 4.3303) | goal mode: moving directly toward goal
+  step   83 | (3.0787, 4.3303) | sensed obstacle(s) [13]; frontiers=28
+  step   84 | (3.0886, 4.2916) | goal mode: moving directly toward goal
+  step   85 | (3.0984, 4.2528) | goal mode: moving directly toward goal
+  step   86 | (3.1083, 4.2140) | goal mode: moving directly toward goal
+  step   87 | (3.1110, 4.1741) | goal mode: moving directly toward goal
+  step   88 | (3.1147, 4.1343) | goal mode: moving directly toward goal
+  step   89 | (3.1183, 4.0944) | goal mode: moving directly toward goal
+  step   90 | (3.1220, 4.0546) | goal mode: moving directly toward goal
+  step   91 | (3.1256, 4.0148) | goal mode: moving directly toward goal
+  step   92 | (3.1280, 3.9749) | goal mode: moving directly toward goal
+  step   93 | (3.1303, 3.9349) | goal mode: moving directly toward goal
+  step   94 | (3.1327, 3.8950) | goal mode: moving directly toward goal
+  step   95 | (3.1350, 3.8551) | goal mode: moving directly toward goal
+  step   96 | (3.1374, 3.8151) | goal mode: moving directly toward goal
+  step   97 | (3.1397, 3.7752) | goal mode: moving directly toward goal
+  step   98 | (3.1421, 3.7353) | goal mode: moving directly toward goal
+  step   99 | (3.1444, 3.6953) | goal mode: moving directly toward goal
+  step  100 | (3.1453, 3.6553) | goal mode: moving directly toward goal
+  step  101 | (3.1457, 3.6153) | goal mode: moving directly toward goal
+  step  102 | (3.1461, 3.5753) | goal mode: moving directly toward goal
+  step  103 | (3.1464, 3.5353) | goal mode: moving directly toward goal
+  step  104 | (3.1468, 3.4954) | goal mode: moving directly toward goal
+  step  105 | (3.1472, 3.4554) | goal mode: moving directly toward goal
+  step  106 | (3.1474, 3.4154) | goal mode: moving directly toward goal
+  step  107 | (3.1475, 3.3754) | goal mode: moving directly toward goal
+  step  108 | (3.1488, 3.3354) | goal mode: moving directly toward goal
+  step  109 | (3.1607, 3.2972) | goal mode: moving directly toward goal
+  step  110 | (3.1578, 3.2573) | goal mode: moving directly toward goal
+  step  111 | (3.1566, 3.2173) | goal mode: moving directly toward goal
+  step  112 | (3.1554, 3.1773) | goal mode: moving directly toward goal
+  step  113 | (3.1542, 3.1373) | goal mode: moving directly toward goal
+  step  114 | (3.1538, 3.0973) | goal mode: moving directly toward goal
+  step  115 | (3.1534, 3.0573) | goal mode: moving directly toward goal
+  step  116 | (3.1530, 3.0173) | goal mode: moving directly toward goal
+  step  117 | (3.1527, 2.9774) | goal mode: moving directly toward goal
+  step  118 | (3.1518, 2.9374) | goal mode: moving directly toward goal
+  step  119 | (3.1510, 2.8974) | goal mode: moving directly toward goal
+  step  120 | (3.1508, 2.8574) | goal mode: moving directly toward goal
+  step  121 | (3.1506, 2.8174) | goal mode: moving directly toward goal
+  step  122 | (3.1504, 2.7774) | goal mode: moving directly toward goal
+  step  123 | (3.1502, 2.7374) | goal mode: moving directly toward goal
+  step  124 | (3.1502, 2.6974) | goal mode: moving directly toward goal
+  step  125 | (3.1501, 2.6574) | goal mode: moving directly toward goal
+  step  126 | (3.1501, 2.6174) | goal mode: moving directly toward goal
+  step  127 | (3.1501, 2.5774) | goal mode: moving directly toward goal
+  step  128 | (3.1501, 2.5374) | goal mode: moving directly toward goal
+  step  129 | (3.1501, 2.4974) | goal mode: moving directly toward goal
+  step  130 | (3.1501, 2.4574) | goal mode: moving directly toward goal
+  step  131 | (3.1655, 2.4205) | goal mode: moving directly toward goal
+  step  132 | (3.1810, 2.3836) | goal mode: moving directly toward goal
+  step  133 | (3.1767, 2.3438) | goal mode: moving directly toward goal
+  step  134 | (3.1723, 2.3041) | goal mode: moving directly toward goal
+  step  135 | (3.1680, 2.2643) | goal mode: moving directly toward goal
+  step  136 | (3.1680, 2.2643) | sensed obstacle(s) [4]; frontiers=44
+  step  137 | (3.1636, 2.2245) | goal mode: moving directly toward goal
+  step  138 | (3.1593, 2.1848) | goal mode: moving directly toward goal
+  step  139 | (3.1549, 2.1450) | goal mode: moving directly toward goal
+  step  140 | (3.1704, 2.1082) | goal mode: moving directly toward goal
+  step  141 | (3.1859, 2.0713) | goal mode: moving directly toward goal
+  step  142 | (3.2014, 2.0344) | goal mode: moving directly toward goal
+  step  143 | (3.1806, 2.0002) | goal mode: moving directly toward goal
+  step  144 | (3.2011, 1.9659) | goal mode: moving directly toward goal
+  step  145 | (3.2406, 1.9595) | goal mode: moving directly toward goal
+  step  146 | (3.2481, 1.9203) | goal mode: moving directly toward goal
+  step  147 | (3.2557, 1.8810) | goal mode: moving directly toward goal
+  step  148 | (3.2749, 1.8459) | goal mode: moving directly toward goal
+  step  149 | (3.2769, 1.8059) | goal mode: moving directly toward goal
+  step  150 | (3.2789, 1.7660) | goal mode: moving directly toward goal
+  step  151 | (3.2810, 1.7260) | goal mode: moving directly toward goal
+  step  152 | (3.2830, 1.6861) | goal mode: moving directly toward goal
+  step  153 | (3.2866, 1.6463) | goal mode: moving directly toward goal
+  step  154 | (3.2903, 1.6064) | goal mode: moving directly toward goal
+  step  155 | (3.2939, 1.5666) | goal mode: moving directly toward goal
+  step  156 | (3.2944, 1.5266) | goal mode: moving directly toward goal
+  step  157 | (3.2951, 1.4866) | goal mode: moving directly toward goal
+  step  158 | (3.2958, 1.4466) | goal mode: moving directly toward goal
+  step  159 | (3.2964, 1.4066) | goal mode: moving directly toward goal
+  step  160 | (3.2971, 1.3666) | goal mode: moving directly toward goal
+  step  161 | (3.2978, 1.3266) | goal mode: moving directly toward goal
+  step  162 | (3.2985, 1.2866) | goal mode: moving directly toward goal
+  step  163 | (3.2992, 1.2466) | goal mode: moving directly toward goal
+  step  164 | (3.2993, 1.2066) | goal mode: moving directly toward goal
+  step  165 | (3.2995, 1.1666) | goal mode: moving directly toward goal
+  step  166 | (3.2997, 1.1266) | goal mode: moving directly toward goal
+  step  167 | (3.3099, 1.0880) | goal mode: moving directly toward goal
+  step  168 | (3.3201, 1.0493) | goal mode: moving directly toward goal
+  step  169 | (3.3303, 1.0106) | goal mode: moving directly toward goal
+  step  170 | (3.3405, 0.9719) | goal mode: moving directly toward goal
+  step  171 | (3.3507, 0.9333) | goal mode: moving directly toward goal
+  step  172 | (3.3609, 0.8946) | goal mode: moving directly toward goal
+  step  173 | (3.3711, 0.8559) | goal mode: moving directly toward goal
+  step  174 | (3.3723, 0.8515) | goal reached
+
+Family: collision_required
+Result: SUCCESS  (208 steps)
+--------------------------------------------------
+  step    0 | (0.8138, 5.1308) | start
+  step    1 | (0.8343, 5.0965) | goal mode: moving directly toward goal
+  step    2 | (0.8549, 5.0622) | goal mode: moving directly toward goal
+  step    3 | (0.8754, 5.0278) | goal mode: moving directly toward goal
+  step    4 | (0.8959, 4.9935) | goal mode: moving directly toward goal
+  step    5 | (0.9165, 4.9592) | goal mode: moving directly toward goal
+  step    6 | (0.9370, 4.9249) | goal mode: moving directly toward goal
+  step    7 | (0.9575, 4.8905) | goal mode: moving directly toward goal
+  step    8 | (0.9780, 4.8562) | goal mode: moving directly toward goal
+  step    9 | (0.9986, 4.8219) | goal mode: moving directly toward goal
+  step   10 | (1.0191, 4.7875) | goal mode: moving directly toward goal
+  step   11 | (1.0396, 4.7532) | goal mode: moving directly toward goal
+  step   12 | (1.0601, 4.7189) | goal mode: moving directly toward goal
+  step   13 | (1.0807, 4.6845) | goal mode: moving directly toward goal
+  step   14 | (1.1012, 4.6502) | goal mode: moving directly toward goal
+  step   15 | (1.1217, 4.6159) | goal mode: moving directly toward goal
+  step   16 | (1.1422, 4.5815) | goal mode: moving directly toward goal
+  step   17 | (1.1628, 4.5472) | goal mode: moving directly toward goal
+  step   18 | (1.1833, 4.5129) | goal mode: moving directly toward goal
+  step   19 | (1.2038, 4.4785) | goal mode: moving directly toward goal
+  step   20 | (1.2243, 4.4442) | goal mode: moving directly toward goal
+  step   21 | (1.2449, 4.4099) | goal mode: moving directly toward goal
+  step   22 | (1.2654, 4.3755) | goal mode: moving directly toward goal
+  step   23 | (1.2859, 4.3412) | goal mode: moving directly toward goal
+  step   24 | (1.3064, 4.3069) | goal mode: moving directly toward goal
+  step   25 | (1.3270, 4.2725) | goal mode: moving directly toward goal
+  step   26 | (1.3475, 4.2382) | goal mode: moving directly toward goal
+  step   27 | (1.3680, 4.2039) | goal mode: moving directly toward goal
+  step   28 | (1.3885, 4.1695) | goal mode: moving directly toward goal
+  step   29 | (1.4091, 4.1352) | goal mode: moving directly toward goal
+  step   30 | (1.4296, 4.1009) | goal mode: moving directly toward goal
+  step   31 | (1.4501, 4.0666) | goal mode: moving directly toward goal
+  step   32 | (1.4707, 4.0322) | goal mode: moving directly toward goal
+  step   33 | (1.4912, 3.9979) | goal mode: moving directly toward goal
+  step   34 | (1.5117, 3.9636) | goal mode: moving directly toward goal
+  step   35 | (1.5322, 3.9292) | goal mode: moving directly toward goal
+  step   36 | (1.5528, 3.8949) | goal mode: moving directly toward goal
+  step   37 | (1.5733, 3.8606) | goal mode: moving directly toward goal
+  step   38 | (1.5938, 3.8262) | goal mode: moving directly toward goal
+  step   39 | (1.6143, 3.7919) | goal mode: moving directly toward goal
+  step   40 | (1.6349, 3.7576) | goal mode: moving directly toward goal
+  step   41 | (1.6554, 3.7232) | goal mode: moving directly toward goal
+  step   42 | (1.6759, 3.6889) | goal mode: moving directly toward goal
+  step   43 | (1.6759, 3.6889) | sensed obstacle(s) [1]; frontiers=46
+  step   44 | (1.7155, 3.6946) | goal mode: repairing path with D* Lite
+  step   45 | (1.7551, 3.7003) | goal mode: repairing path with D* Lite
+  step   46 | (1.7949, 3.7043) | goal mode: repairing path with D* Lite
+  step   47 | (1.8347, 3.7083) | goal mode: repairing path with D* Lite
+  step   48 | (1.8745, 3.7123) | goal mode: repairing path with D* Lite
+  step   49 | (1.9143, 3.7163) | goal mode: repairing path with D* Lite
+  step   50 | (1.9542, 3.7184) | CIBP replan: boundary→avoid for obs 1
+  step   51 | (1.9942, 3.7205) | goal mode: moving directly toward goal
+  step   52 | (2.0341, 3.7226) | goal mode: moving directly toward goal
+  step   53 | (2.0741, 3.7243) | goal mode: moving directly toward goal
+  step   54 | (2.0741, 3.7243) | boundary mode: entered near obs 1 (movable, P_safe=0.88)
+  step   55 | (2.1141, 3.7259) | boundary mode: following obs 1 (movable)
+  step   56 | (2.1157, 3.6860) | boundary mode: following obs 1 (movable)
+  step   57 | (2.0757, 3.6843) | boundary mode: following obs 1 (movable)
+  step   58 | (2.0757, 3.6843) | boundary mode: circuit complete for obs 1 — escalating
+  step   59 | (2.1871, 3.6960) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step   60 | (2.2267, 3.7019) | goal mode: moving directly toward goal
+  step   61 | (2.2663, 3.7078) | goal mode: moving directly toward goal
+  step   62 | (2.3058, 3.7137) | goal mode: moving directly toward goal
+  step   63 | (2.3442, 3.7026) | goal mode: moving directly toward goal
+  step   64 | (2.3827, 3.6915) | goal mode: moving directly toward goal
+  step   65 | (2.4211, 3.6804) | goal mode: moving directly toward goal
+  step   66 | (2.4595, 3.6694) | goal mode: moving directly toward goal
+  step   67 | (2.4980, 3.6583) | goal mode: moving directly toward goal
+  step   68 | (2.4980, 3.6583) | sensed obstacle(s) [2]; frontiers=22
+  step   69 | (2.4605, 3.6721) | CIBP replan: boundary→avoid for obs 1
+  step   70 | (2.4605, 3.6721) | boundary mode: entered near obs 1 (movable, P_safe=0.89)
+  step   71 | (2.4207, 3.6768) | boundary mode: following obs 1 (movable)
+  step   72 | (2.4254, 3.7166) | boundary mode: following obs 1 (movable)
+  step   73 | (2.4651, 3.7119) | boundary mode: following obs 1 (movable)
+  step   74 | (2.4651, 3.7119) | boundary mode: circuit complete for obs 1 — escalating
+  step   75 | (2.3533, 3.7183) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step   76 | (2.3533, 3.7183) | boundary mode: entered near obs 1 (movable, P_safe=0.89)
+  step   77 | (2.3134, 3.7206) | boundary mode: following obs 1 (movable)
+  step   78 | (2.3157, 3.7605) | boundary mode: following obs 1 (movable)
+  step   79 | (2.3556, 3.7582) | boundary mode: following obs 1 (movable)
+  step   80 | (2.3556, 3.7582) | boundary mode: circuit complete for obs 1 — escalating
+  step   81 | (2.3194, 3.8471) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step   82 | (2.2801, 3.8398) | goal mode: moving directly toward goal
+  step   83 | (2.2408, 3.8324) | goal mode: moving directly toward goal
+  step   84 | (2.2015, 3.8251) | goal mode: moving directly toward goal
+  step   85 | (2.1622, 3.8177) | goal mode: moving directly toward goal
+  step   86 | (2.1341, 3.7892) | goal mode: moving directly toward goal
+  step   87 | (2.1060, 3.7607) | goal mode: moving directly toward goal
+  step   88 | (2.0780, 3.7322) | goal mode: moving directly toward goal
+  step   89 | (2.0780, 3.7322) | boundary mode: entered near obs 1 (movable, P_safe=0.87)
+  step   90 | (2.0499, 3.7037) | boundary mode: following obs 1 (movable)
+  step   91 | (2.0214, 3.7318) | boundary mode: following obs 1 (movable)
+  step   92 | (2.0214, 3.7318) | boundary mode: direct path clear — leaving obs 1
+  step   93 | (2.0031, 3.6962) | goal mode: moving directly toward goal
+  step   94 | (1.9849, 3.6606) | goal mode: moving directly toward goal
+  step   95 | (1.9849, 3.6606) | boundary mode: entered near obs 1 (movable, P_safe=0.87)
+  step   96 | (1.9713, 3.6230) | boundary mode: following obs 1 (movable)
+  step   97 | (1.9337, 3.6366) | boundary mode: following obs 1 (movable)
+  step   98 | (1.9473, 3.6742) | boundary mode: following obs 1 (movable)
+  step   99 | (1.9473, 3.6742) | boundary mode: direct path clear — leaving obs 1
+  step  100 | (1.9365, 3.6357) | goal mode: moving directly toward goal
+  step  101 | (1.9365, 3.6357) | boundary mode: entered near obs 1 (movable, P_safe=0.87)
+  step  102 | (1.9256, 3.5972) | boundary mode: following obs 1 (movable)
+  step  103 | (1.8871, 3.6080) | boundary mode: following obs 1 (movable)
+  step  104 | (1.8871, 3.6080) | boundary mode: direct path clear — leaving obs 1
+  step  105 | (1.8797, 3.5687) | goal mode: moving directly toward goal
+  step  106 | (1.8722, 3.5294) | boundary bounce override: pushed obs 1 by 0.12 (pinball)
+  step  107 | (1.8668, 3.4898) | goal mode: moving directly toward goal
+  step  108 | (1.8591, 3.4506) | goal mode: moving directly toward goal
+  step  109 | (1.8514, 3.4113) | goal mode: moving directly toward goal
+  step  110 | (1.8477, 3.3715) | CIBP replan: boundary→avoid for obs 1
+  step  111 | (1.8426, 3.3318) | goal mode: moving directly toward goal
+  step  112 | (1.8375, 3.2921) | goal mode: moving directly toward goal
+  step  113 | (1.8350, 3.2522) | CIBP replan: boundary→avoid for obs 1
+  step  114 | (1.8350, 3.2522) | boundary mode: entered near obs 1 (movable, P_safe=0.90)
+  step  115 | (1.8325, 3.2123) | boundary mode: following obs 1 (movable)
+  step  116 | (1.8264, 3.1727) | goal mode: moving directly toward goal
+  step  117 | (1.8264, 3.1727) | sensed obstacle(s) [0]; frontiers=29
+  step  118 | (1.8204, 3.1332) | goal mode: moving directly toward goal
+  step  119 | (1.8318, 3.0949) | CIBP replan: boundary→avoid for obs 1
+  step  120 | (1.8318, 3.0949) | boundary mode: entered near obs 1 (movable, P_safe=0.90)
+  step  121 | (1.8433, 3.0566) | boundary mode: following obs 1 (movable)
+  step  122 | (1.8385, 3.0169) | goal mode: moving directly toward goal
+  step  123 | (1.8478, 2.9779) | CIBP replan: boundary→avoid for obs 1
+  step  124 | (1.8478, 2.9779) | boundary mode: entered near obs 1 (movable, P_safe=0.90)
+  step  125 | (1.8571, 2.9390) | boundary mode: following obs 1 (movable)
+  step  126 | (1.8182, 2.9298) | boundary mode: following obs 1 (movable)
+  step  127 | (1.8381, 2.8951) | goal mode: repairing path with D* Lite
+  step  128 | (1.8304, 2.8558) | goal mode: repairing path with D* Lite
+  step  129 | (1.8548, 2.8241) | goal mode: repairing path with D* Lite
+  step  130 | (1.8635, 2.7850) | goal mode: repairing path with D* Lite
+  step  131 | (1.8396, 2.7530) | goal mode: repairing path with D* Lite
+  step  132 | (1.8515, 2.7148) | goal mode: repairing path with D* Lite
+  step  133 | (1.8635, 2.6766) | goal mode: repairing path with D* Lite
+  step  134 | (1.8754, 2.6385) | goal mode: repairing path with D* Lite
+  step  135 | (1.9012, 2.6079) | goal mode: repairing path with D* Lite
+  step  136 | (1.9066, 2.5683) | goal mode: moving directly toward goal
+  step  137 | (1.9120, 2.5286) | goal mode: moving directly toward goal
+  step  138 | (1.9174, 2.4890) | goal mode: moving directly toward goal
+  step  139 | (1.9228, 2.4494) | goal mode: repairing path with D* Lite
+  step  140 | (1.9282, 2.4097) | goal mode: moving directly toward goal
+  step  141 | (1.9336, 2.3701) | goal mode: moving directly toward goal
+  step  142 | (1.9390, 2.3305) | goal mode: repairing path with D* Lite
+  step  143 | (1.9444, 2.2908) | goal mode: repairing path with D* Lite
+  step  144 | (1.9448, 2.2508) | goal mode: moving directly toward goal
+  step  145 | (1.9452, 2.2108) | goal mode: repairing path with D* Lite
+  step  146 | (1.9457, 2.1708) | goal mode: repairing path with D* Lite
+  step  147 | (1.9462, 2.1308) | goal mode: moving directly toward goal
+  step  148 | (1.9466, 2.0908) | goal mode: moving directly toward goal
+  step  149 | (1.9471, 2.0508) | goal mode: moving directly toward goal
+  step  150 | (1.9614, 2.0135) | goal mode: repairing path with D* Lite
+  step  151 | (1.9592, 1.9735) | goal mode: moving directly toward goal
+  step  152 | (1.9571, 1.9336) | goal mode: moving directly toward goal
+  step  153 | (1.9550, 1.8936) | goal mode: moving directly toward goal
+  step  154 | (1.9529, 1.8537) | goal mode: repairing path with D* Lite
+  step  155 | (1.9523, 1.8137) | goal mode: moving directly toward goal
+  step  156 | (1.9521, 1.7737) | goal mode: moving directly toward goal
+  step  157 | (1.9520, 1.7337) | goal mode: moving directly toward goal
+  step  158 | (1.9520, 1.7337) | sensed obstacle(s) [5]; frontiers=47
+  step  159 | (1.9905, 1.7229) | goal mode: moving directly toward goal
+  step  160 | (2.0299, 1.7159) | goal mode: moving directly toward goal
+  step  161 | (2.0584, 1.6879) | goal mode: moving directly toward goal
+  step  162 | (2.0977, 1.6801) | goal mode: moving directly toward goal
+  step  163 | (2.1369, 1.6723) | goal mode: moving directly toward goal
+  step  164 | (2.1622, 1.6414) | goal mode: moving directly toward goal
+  step  165 | (2.2020, 1.6453) | goal mode: moving directly toward goal
+  step  166 | (2.2183, 1.6087) | goal mode: moving directly toward goal
+  step  167 | (2.2295, 1.5703) | goal mode: moving directly toward goal
+  step  168 | (2.2657, 1.5534) | goal mode: moving directly toward goal
+  step  169 | (2.2877, 1.5200) | goal mode: moving directly toward goal
+  step  170 | (2.3098, 1.4866) | goal mode: moving directly toward goal
+  step  171 | (2.3318, 1.4532) | goal mode: moving directly toward goal
+  step  172 | (2.3539, 1.4199) | goal mode: moving directly toward goal
+  step  173 | (2.3588, 1.3802) | goal mode: moving directly toward goal
+  step  174 | (2.3638, 1.3405) | goal mode: moving directly toward goal
+  step  175 | (2.3940, 1.3143) | goal mode: moving directly toward goal
+  step  176 | (2.3949, 1.2743) | goal mode: moving directly toward goal
+  step  177 | (2.4338, 1.2649) | goal mode: moving directly toward goal
+  step  178 | (2.4733, 1.2587) | goal mode: moving directly toward goal
+  step  179 | (2.5131, 1.2543) | goal mode: moving directly toward goal
+  step  180 | (2.5528, 1.2498) | goal mode: moving directly toward goal
+  step  181 | (2.5926, 1.2454) | goal mode: moving directly toward goal
+  step  182 | (2.6323, 1.2410) | goal mode: moving directly toward goal
+  step  183 | (2.6721, 1.2365) | goal mode: moving directly toward goal
+  step  184 | (2.7119, 1.2321) | goal mode: moving directly toward goal
+  step  185 | (2.7516, 1.2277) | goal mode: moving directly toward goal
+  step  186 | (2.7914, 1.2233) | goal mode: moving directly toward goal
+  step  187 | (2.8313, 1.2214) | goal mode: moving directly toward goal
+  step  188 | (2.8712, 1.2187) | goal mode: moving directly toward goal
+  step  189 | (2.9111, 1.2161) | goal mode: moving directly toward goal
+  step  190 | (2.9505, 1.2089) | goal mode: moving directly toward goal
+  step  191 | (2.9905, 1.2079) | goal mode: moving directly toward goal
+  step  192 | (3.0305, 1.2069) | goal mode: moving directly toward goal
+  step  193 | (3.0704, 1.2046) | goal mode: moving directly toward goal
+  step  194 | (3.1103, 1.2023) | goal mode: moving directly toward goal
+  step  195 | (3.1415, 1.1772) | goal mode: moving directly toward goal
+  step  196 | (3.1614, 1.1425) | goal mode: moving directly toward goal
+  step  197 | (3.1983, 1.1578) | goal mode: moving directly toward goal
+  step  198 | (3.2353, 1.1732) | goal mode: moving directly toward goal
+  step  199 | (3.2445, 1.1342) | goal mode: moving directly toward goal
+  step  200 | (3.2537, 1.0953) | goal mode: moving directly toward goal
+  step  201 | (3.2712, 1.0593) | goal mode: moving directly toward goal
+  step  202 | (3.2887, 1.0234) | goal mode: moving directly toward goal
+  step  203 | (3.3062, 0.9874) | goal mode: moving directly toward goal
+  step  204 | (3.3237, 0.9514) | goal mode: moving directly toward goal
+  step  205 | (3.3412, 0.9155) | goal mode: moving directly toward goal
+  step  206 | (3.3587, 0.8795) | goal mode: moving directly toward goal
+  step  207 | (3.3723, 0.8515) | goal reached
+
+Family: collision_shortcut
+Result: SUCCESS  (473 steps)
+--------------------------------------------------
+  step    0 | (0.8138, 5.1308) | start
+  step    1 | (0.8343, 5.0965) | goal mode: moving directly toward goal
+  step    2 | (0.8549, 5.0622) | goal mode: moving directly toward goal
+  step    3 | (0.8754, 5.0278) | goal mode: moving directly toward goal
+  step    4 | (0.8959, 4.9935) | goal mode: moving directly toward goal
+  step    5 | (0.9165, 4.9592) | goal mode: moving directly toward goal
+  step    6 | (0.9370, 4.9249) | goal mode: moving directly toward goal
+  step    7 | (0.9575, 4.8905) | goal mode: moving directly toward goal
+  step    8 | (0.9575, 4.8905) | sensed obstacle(s) [14]; frontiers=44
+  step    9 | (0.9911, 4.9122) | goal mode: repairing path with D* Lite
+  step   10 | (1.0310, 4.9151) | goal mode: moving directly toward goal
+  step   11 | (1.0702, 4.9232) | goal mode: repairing path with D* Lite
+  step   12 | (1.1094, 4.9313) | goal mode: moving directly toward goal
+  step   13 | (1.1486, 4.9394) | goal mode: repairing path with D* Lite
+  step   14 | (1.1885, 4.9402) | goal mode: moving directly toward goal
+  step   15 | (1.2285, 4.9411) | goal mode: moving directly toward goal
+  step   16 | (1.2685, 4.9417) | goal mode: moving directly toward goal
+  step   17 | (1.3085, 4.9423) | goal mode: repairing path with D* Lite
+  step   18 | (1.3485, 4.9429) | goal mode: repairing path with D* Lite
+  step   19 | (1.3485, 4.9429) | sensed obstacle(s) [22]; frontiers=44
+  step   20 | (1.3885, 4.9439) | goal mode: repairing path with D* Lite
+  step   21 | (1.4285, 4.9448) | goal mode: repairing path with D* Lite
+  step   22 | (1.4685, 4.9458) | goal mode: repairing path with D* Lite
+  step   23 | (1.5085, 4.9467) | goal mode: repairing path with D* Lite
+  step   24 | (1.5085, 4.9467) | sensed obstacle(s) [2]; frontiers=37
+  step   25 | (1.5485, 4.9476) | goal mode: repairing path with D* Lite
+  step   26 | (1.5885, 4.9486) | goal mode: repairing path with D* Lite
+  step   27 | (1.6285, 4.9487) | goal mode: repairing path with D* Lite
+  step   28 | (1.6685, 4.9488) | goal mode: repairing path with D* Lite
+  step   29 | (1.7085, 4.9489) | goal mode: repairing path with D* Lite
+  step   30 | (1.7485, 4.9490) | goal mode: repairing path with D* Lite
+  step   31 | (1.7885, 4.9492) | goal mode: repairing path with D* Lite
+  step   32 | (1.8285, 4.9494) | goal mode: repairing path with D* Lite
+  step   33 | (1.8685, 4.9495) | goal mode: repairing path with D* Lite
+  step   34 | (1.9085, 4.9496) | goal mode: repairing path with D* Lite
+  step   35 | (1.9485, 4.9497) | goal mode: repairing path with D* Lite
+  step   36 | (1.9885, 4.9498) | goal mode: repairing path with D* Lite
+  step   37 | (2.0285, 4.9498) | goal mode: repairing path with D* Lite
+  step   38 | (2.0685, 4.9498) | goal mode: repairing path with D* Lite
+  step   39 | (2.1085, 4.9498) | goal mode: repairing path with D* Lite
+  step   40 | (2.1485, 4.9498) | goal mode: repairing path with D* Lite
+  step   41 | (2.1885, 4.9498) | goal mode: repairing path with D* Lite
+  step   42 | (2.2285, 4.9499) | goal mode: repairing path with D* Lite
+  step   43 | (2.2685, 4.9499) | goal mode: repairing path with D* Lite
+  step   44 | (2.3085, 4.9499) | goal mode: repairing path with D* Lite
+  step   45 | (2.3485, 4.9499) | goal mode: repairing path with D* Lite
+  step   46 | (2.3885, 4.9499) | goal mode: repairing path with D* Lite
+  step   47 | (2.4285, 4.9499) | goal mode: repairing path with D* Lite
+  step   48 | (2.4685, 4.9499) | goal mode: repairing path with D* Lite
+  step   49 | (2.5085, 4.9499) | goal mode: repairing path with D* Lite
+  step   50 | (2.5485, 4.9500) | goal mode: repairing path with D* Lite
+  step   51 | (2.5885, 4.9500) | goal mode: repairing path with D* Lite
+  step   52 | (2.6285, 4.9500) | goal mode: repairing path with D* Lite
+  step   53 | (2.6685, 4.9500) | goal mode: repairing path with D* Lite
+  step   54 | (2.7085, 4.9500) | goal mode: repairing path with D* Lite
+  step   55 | (2.7485, 4.9500) | goal mode: repairing path with D* Lite
+  step   56 | (2.7485, 4.9500) | sensed obstacle(s) [3]; frontiers=44
+  step   57 | (2.7885, 4.9500) | goal mode: repairing path with D* Lite
+  step   58 | (2.8285, 4.9500) | goal mode: repairing path with D* Lite
+  step   59 | (2.8666, 4.9379) | goal mode: repairing path with D* Lite
+  step   60 | (2.9047, 4.9257) | goal mode: repairing path with D* Lite
+  step   61 | (2.9428, 4.9136) | goal mode: repairing path with D* Lite
+  step   62 | (2.9428, 4.9136) | sensed obstacle(s) [20]; frontiers=36
+  step   63 | (2.9295, 4.8759) | goal mode: moving directly toward goal
+  step   64 | (2.9162, 4.8382) | goal mode: moving directly toward goal
+  step   65 | (2.9030, 4.8004) | goal mode: moving directly toward goal
+  step   66 | (2.8897, 4.7627) | goal mode: moving directly toward goal
+  step   67 | (2.8764, 4.7250) | goal mode: moving directly toward goal
+  step   68 | (2.8748, 4.6850) | goal mode: moving directly toward goal
+  step   69 | (2.8733, 4.6450) | goal mode: moving directly toward goal
+  step   70 | (2.8717, 4.6051) | goal mode: moving directly toward goal
+  step   71 | (2.8717, 4.6051) | sensed obstacle(s) [19]; frontiers=29
+  step   72 | (2.9095, 4.6183) | goal mode: repairing path with D* Lite
+  step   73 | (2.9457, 4.6352) | CIBP replan: boundary→avoid for obs 20
+  step   74 | (2.9457, 4.6352) | boundary mode: entered near obs 20 (movable, P_safe=0.88)
+  step   75 | (2.9837, 4.6476) | boundary mode: following obs 20 (movable)
+  step   76 | (2.9962, 4.6096) | boundary mode: following obs 20 (movable)
+  step   77 | (2.9582, 4.5971) | boundary mode: following obs 20 (movable)
+  step   78 | (2.9582, 4.5971) | boundary mode: circuit complete for obs 20 — escalating
+  step   79 | (3.0617, 4.6398) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step   80 | (3.0617, 4.6398) | boundary mode: entered near obs 20 (movable, P_safe=0.88)
+  step   81 | (3.0987, 4.6551) | boundary mode: following obs 20 (movable)
+  step   82 | (3.1139, 4.6181) | boundary mode: following obs 20 (movable)
+  step   83 | (3.0769, 4.6029) | boundary mode: following obs 20 (movable)
+  step   84 | (3.0769, 4.6029) | boundary mode: circuit complete for obs 20 — escalating
+  step   85 | (3.1144, 4.6170) | contact mode (stuck override): pushed obstacle 20 by 0.12
+  step   86 | (3.1144, 4.6170) | boundary mode: entered near obs 20 (movable, P_safe=0.97)
+  step   87 | (3.1543, 4.6190) | boundary mode: following obs 20 (movable)
+  step   88 | (3.1543, 4.6190) | sensed obstacle(s) [5]; frontiers=31
+  step   89 | (3.1564, 4.5791) | boundary mode: following obs 20 (movable)
+  step   90 | (3.1164, 4.5770) | boundary mode: following obs 20 (movable)
+  step   91 | (3.1164, 4.5770) | boundary mode: circuit complete for obs 20 — escalating
+  step   92 | (3.0054, 4.5913) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step   93 | (2.9690, 4.6080) | goal mode: moving directly toward goal
+  step   94 | (2.9295, 4.6142) | goal mode: repairing path with D* Lite
+  step   95 | (2.8930, 4.6306) | goal mode: repairing path with D* Lite
+  step   96 | (2.8531, 4.6329) | goal mode: repairing path with D* Lite
+  step   97 | (2.8155, 4.6467) | goal mode: repairing path with D* Lite
+  step   98 | (2.7756, 4.6478) | goal mode: repairing path with D* Lite
+  step   99 | (2.7356, 4.6490) | goal mode: repairing path with D* Lite
+  step  100 | (2.6956, 4.6492) | goal mode: repairing path with D* Lite
+  step  101 | (2.6556, 4.6494) | goal mode: repairing path with D* Lite
+  step  102 | (2.6156, 4.6496) | goal mode: repairing path with D* Lite
+  step  103 | (2.5923, 4.6821) | goal mode: repairing path with D* Lite
+  step  104 | (2.5689, 4.7146) | goal mode: repairing path with D* Lite
+  step  105 | (2.5332, 4.7327) | goal mode: repairing path with D* Lite
+  step  106 | (2.4975, 4.7506) | goal mode: repairing path with D* Lite
+  step  107 | (2.4799, 4.7865) | goal mode: repairing path with D* Lite
+  step  108 | (2.4623, 4.8225) | goal mode: repairing path with D* Lite
+  step  109 | (2.4448, 4.8584) | goal mode: repairing path with D* Lite
+  step  110 | (2.4272, 4.8944) | goal mode: repairing path with D* Lite
+  step  111 | (2.3874, 4.8979) | goal mode: repairing path with D* Lite
+  step  112 | (2.3475, 4.9014) | goal mode: repairing path with D* Lite
+  step  113 | (2.3117, 4.9193) | goal mode: repairing path with D* Lite
+  step  114 | (2.2719, 4.9226) | goal mode: repairing path with D* Lite
+  step  115 | (2.2319, 4.9250) | goal mode: repairing path with D* Lite
+  step  116 | (2.1920, 4.9267) | goal mode: repairing path with D* Lite
+  step  117 | (2.1520, 4.9291) | goal mode: repairing path with D* Lite
+  step  118 | (2.1121, 4.9307) | goal mode: repairing path with D* Lite
+  step  119 | (2.0721, 4.9324) | goal mode: repairing path with D* Lite
+  step  120 | (2.0321, 4.9341) | goal mode: repairing path with D* Lite
+  step  121 | (1.9944, 4.9208) | goal mode: repairing path with D* Lite
+  step  122 | (1.9630, 4.8961) | goal mode: repairing path with D* Lite
+  step  123 | (1.9315, 4.8714) | goal mode: repairing path with D* Lite
+  step  124 | (1.8927, 4.8615) | goal mode: moving directly toward goal
+  step  125 | (1.8540, 4.8517) | goal mode: moving directly toward goal
+  step  126 | (1.8389, 4.8147) | goal mode: moving directly toward goal
+  step  127 | (1.8238, 4.7776) | goal mode: moving directly toward goal
+  step  128 | (1.7842, 4.7827) | goal mode: repairing path with D* Lite
+  step  129 | (1.7723, 4.7445) | goal mode: moving directly toward goal
+  step  130 | (1.7544, 4.7087) | goal mode: repairing path with D* Lite
+  step  131 | (1.7410, 4.6819) | goal mode: moving directly toward goal
+  step  132 | (1.7178, 4.6493) | CIBP replan: boundary→avoid for obs 2
+  step  133 | (1.7081, 4.6281) | goal mode: moving directly toward goal
+  step  134 | (1.7081, 4.6281) | stopped at epsilon boundary near obstacle 2
+  step  135 | (1.7081, 4.6281) | boundary mode: entered near obs 2 (not_movable, P_safe=0.08)
+  step  136 | (1.7255, 4.6641) | boundary mode: following obs 2 (not_movable)
+  step  137 | (1.7130, 4.6369) | goal mode: moving directly toward goal
+  step  138 | (1.6909, 4.6035) | CIBP replan: boundary→avoid for obs 2
+  step  139 | (1.6762, 4.5663) | goal mode: moving directly toward goal
+  step  140 | (1.6734, 4.5431) | goal mode: moving directly toward goal
+  step  141 | (1.6734, 4.5431) | stopped at epsilon boundary near obstacle 2
+  step  142 | (1.6734, 4.5431) | boundary mode: entered near obs 2 (not_movable, P_safe=0.06)
+  step  143 | (1.6842, 4.5817) | boundary mode: following obs 2 (not_movable)
+  step  144 | (1.6687, 4.5448) | goal mode: moving directly toward goal
+  step  145 | (1.6652, 4.5083) | goal mode: moving directly toward goal
+  step  146 | (1.6652, 4.5083) | stopped at epsilon boundary near obstacle 2
+  step  147 | (1.6652, 4.5083) | boundary mode: entered near obs 2 (not_movable, P_safe=0.06)
+  step  148 | (1.6746, 4.5471) | boundary mode: following obs 2 (not_movable)
+  step  149 | (1.6840, 4.5860) | boundary mode: following obs 2 (not_movable)
+  step  150 | (1.6693, 4.5488) | goal mode: moving directly toward goal
+  step  151 | (1.6658, 4.5123) | goal mode: moving directly toward goal
+  step  152 | (1.6581, 4.4731) | CIBP replan: boundary→avoid for obs 2
+  step  153 | (1.6581, 4.4731) | sensed obstacle(s) [0]; frontiers=24
+  step  154 | (1.6194, 4.4627) | goal mode: repairing path with D* Lite
+  step  155 | (1.5812, 4.4746) | goal mode: repairing path with D* Lite
+  step  156 | (1.5431, 4.4865) | goal mode: repairing path with D* Lite
+  step  157 | (1.5059, 4.4718) | goal mode: repairing path with D* Lite
+  step  158 | (1.4661, 4.4754) | goal mode: repairing path with D* Lite
+  step  159 | (1.4262, 4.4791) | goal mode: repairing path with D* Lite
+  step  160 | (1.4010, 4.4480) | goal mode: repairing path with D* Lite
+  step  161 | (1.3830, 4.4123) | goal mode: repairing path with D* Lite
+  step  162 | (1.3650, 4.3766) | goal mode: repairing path with D* Lite
+  step  163 | (1.3469, 4.3409) | goal mode: repairing path with D* Lite
+  step  164 | (1.3289, 4.3052) | goal mode: repairing path with D* Lite
+  step  165 | (1.3109, 4.2695) | goal mode: repairing path with D* Lite
+  step  166 | (1.2928, 4.2338) | goal mode: repairing path with D* Lite
+  step  167 | (1.2693, 4.2015) | CIBP replan: boundary→avoid for obs 0
+  step  168 | (1.2518, 4.1655) | goal mode: moving directly toward goal
+  step  169 | (1.2344, 4.1295) | goal mode: moving directly toward goal
+  step  170 | (1.2169, 4.0935) | goal mode: moving directly toward goal
+  step  171 | (1.2041, 4.0556) | goal mode: moving directly toward goal
+  step  172 | (1.2041, 4.0556) | sensed obstacle(s) [7]; frontiers=20
+  step  173 | (1.1910, 4.0934) | goal mode: moving directly toward goal
+  step  174 | (1.1779, 4.1312) | CIBP replan: boundary→avoid for obs 14
+  step  175 | (1.1683, 4.1701) | goal mode: moving directly toward goal
+  step  176 | (1.1548, 4.2077) | goal mode: repairing path with D* Lite
+  step  177 | (1.1413, 4.2454) | goal mode: repairing path with D* Lite
+  step  178 | (1.1278, 4.2830) | goal mode: repairing path with D* Lite
+  step  179 | (1.1143, 4.3207) | goal mode: repairing path with D* Lite
+  step  180 | (1.1008, 4.3583) | goal mode: repairing path with D* Lite
+  step  181 | (1.0873, 4.3960) | goal mode: repairing path with D* Lite
+  step  182 | (1.0815, 4.4356) | goal mode: repairing path with D* Lite
+  step  183 | (1.0757, 4.4751) | goal mode: repairing path with D* Lite
+  step  184 | (1.0699, 4.5147) | goal mode: repairing path with D* Lite
+  step  185 | (1.0641, 4.5543) | goal mode: repairing path with D* Lite
+  step  186 | (1.0582, 4.5939) | goal mode: repairing path with D* Lite
+  step  187 | (1.0184, 4.5975) | goal mode: repairing path with D* Lite
+  step  188 | (0.9787, 4.6025) | goal mode: repairing path with D* Lite
+  step  189 | (0.9445, 4.6232) | goal mode: repairing path with D* Lite
+  step  190 | (0.9046, 4.6263) | goal mode: repairing path with D* Lite
+  step  191 | (0.8647, 4.6294) | goal mode: repairing path with D* Lite
+  step  192 | (0.8253, 4.6365) | goal mode: repairing path with D* Lite
+  step  193 | (0.7860, 4.6435) | goal mode: repairing path with D* Lite
+  step  194 | (0.7460, 4.6449) | goal mode: repairing path with D* Lite
+  step  195 | (0.7060, 4.6463) | goal mode: repairing path with D* Lite
+  step  196 | (0.6660, 4.6477) | goal mode: repairing path with D* Lite
+  step  197 | (0.6276, 4.6367) | goal mode: repairing path with D* Lite
+  step  198 | (0.5876, 4.6378) | goal mode: repairing path with D* Lite
+  step  199 | (0.5476, 4.6389) | goal mode: repairing path with D* Lite
+  step  200 | (0.5076, 4.6400) | goal mode: repairing path with D* Lite
+  step  201 | (0.4677, 4.6420) | goal mode: repairing path with D* Lite
+  step  202 | (0.4312, 4.6256) | goal mode: repairing path with D* Lite
+  step  203 | (0.3946, 4.6093) | goal mode: repairing path with D* Lite
+  step  204 | (0.3552, 4.6159) | goal mode: repairing path with D* Lite
+  step  205 | (0.3307, 4.5842) | goal mode: repairing path with D* Lite
+  step  206 | (0.3063, 4.5525) | goal mode: repairing path with D* Lite
+  step  207 | (0.2819, 4.5209) | goal mode: repairing path with D* Lite
+  step  208 | (0.2736, 4.4818) | goal mode: repairing path with D* Lite
+  step  209 | (0.2462, 4.4526) | goal mode: repairing path with D* Lite
+  step  210 | (0.2188, 4.4234) | goal mode: repairing path with D* Lite
+  step  211 | (0.2071, 4.3852) | goal mode: repairing path with D* Lite
+  step  212 | (0.1953, 4.3469) | goal mode: repairing path with D* Lite
+  step  213 | (0.1835, 4.3087) | goal mode: repairing path with D* Lite
+  step  214 | (0.1717, 4.2705) | goal mode: repairing path with D* Lite
+  step  215 | (0.1694, 4.2306) | goal mode: repairing path with D* Lite
+  step  216 | (0.1678, 4.1906) | goal mode: repairing path with D* Lite
+  step  217 | (0.1662, 4.1506) | goal mode: repairing path with D* Lite
+  step  218 | (0.1645, 4.1107) | goal mode: repairing path with D* Lite
+  step  219 | (0.1634, 4.0707) | goal mode: repairing path with D* Lite
+  step  220 | (0.1623, 4.0307) | goal mode: repairing path with D* Lite
+  step  221 | (0.1585, 3.9909) | goal mode: repairing path with D* Lite
+  step  222 | (0.1577, 3.9509) | goal mode: repairing path with D* Lite
+  step  223 | (0.1561, 3.9109) | goal mode: repairing path with D* Lite
+  step  224 | (0.1557, 3.8709) | CIBP replan: boundary→avoid for obs 14
+  step  225 | (0.1557, 3.8709) | boundary mode: entered near obs 14 (not_movable, P_safe=0.28)
+  step  226 | (0.1553, 3.8309) | boundary mode: following obs 14 (not_movable)
+  step  227 | (0.1553, 3.8309) | boundary mode: direct path clear — leaving obs 14
+  step  228 | (0.1549, 3.7909) | goal mode: moving directly toward goal
+  step  229 | (0.1546, 3.7509) | CIBP replan: boundary→avoid for obs 7
+  step  230 | (0.1546, 3.7509) | boundary mode: entered near obs 7 (movable, P_safe=0.88)
+  step  231 | (0.1543, 3.7109) | boundary mode: following obs 7 (movable)
+  step  232 | (0.1143, 3.7112) | boundary mode: following obs 7 (movable)
+  step  233 | (0.1143, 3.7112) | boundary mode: direct path clear — leaving obs 7
+  step  234 | (0.1169, 3.6713) | goal mode: moving directly toward goal
+  step  235 | (0.1169, 3.6713) | boundary mode: entered near obs 7 (movable, P_safe=0.88)
+  step  236 | (0.1301, 3.6336) | boundary mode: following obs 7 (movable)
+  step  237 | (0.0924, 3.6203) | boundary mode: following obs 7 (movable)
+  step  238 | (0.0924, 3.6203) | boundary mode: direct path clear — leaving obs 7
+  step  239 | (0.1085, 3.5837) | goal mode: moving directly toward goal
+  step  240 | (0.1085, 3.5837) | boundary mode: entered near obs 7 (movable, P_safe=0.87)
+  step  241 | (0.1247, 3.5471) | boundary mode: following obs 7 (movable)
+  step  242 | (0.0881, 3.5310) | boundary mode: following obs 7 (movable)
+  step  243 | (0.0881, 3.5310) | boundary mode: direct path clear — leaving obs 7
+  step  244 | (0.1075, 3.4960) | goal mode: moving directly toward goal
+  step  245 | (0.1220, 3.4587) | boundary bounce override: pushed obs 7 by 0.12 (3 bounces)
+  step  246 | (0.1511, 3.4313) | goal mode: moving directly toward goal
+  step  247 | (0.1803, 3.4039) | goal mode: moving directly toward goal
+  step  248 | (0.1803, 3.4039) | sensed obstacle(s) [4]; frontiers=18
+  step  249 | (0.1640, 3.3674) | goal mode: moving directly toward goal
+  step  250 | (0.1270, 3.3522) | goal mode: repairing path with D* Lite
+  step  251 | (0.1172, 3.3134) | goal mode: repairing path with D* Lite
+  step  252 | (0.1073, 3.2746) | goal mode: repairing path with D* Lite
+  step  253 | (0.0975, 3.2358) | goal mode: repairing path with D* Lite
+  step  254 | (0.0877, 3.1970) | goal mode: repairing path with D* Lite
+  step  255 | (0.0779, 3.1583) | goal mode: repairing path with D* Lite
+  step  256 | (0.0681, 3.1195) | goal mode: repairing path with D* Lite
+  step  257 | (0.0583, 3.0807) | goal mode: repairing path with D* Lite
+  step  258 | (0.0485, 3.0419) | goal mode: repairing path with D* Lite
+  step  259 | (0.0387, 3.0031) | goal mode: repairing path with D* Lite
+  step  260 | (0.0353, 2.9633) | goal mode: repairing path with D* Lite
+  step  261 | (0.0319, 2.9234) | goal mode: repairing path with D* Lite
+  step  262 | (0.0285, 2.8836) | goal mode: moving directly toward goal
+  step  263 | (0.0251, 2.8437) | goal mode: moving directly toward goal
+  step  264 | (0.0217, 2.8039) | goal mode: moving directly toward goal
+  step  265 | (0.0183, 2.7640) | goal mode: repairing path with D* Lite
+  step  266 | (0.0149, 2.7242) | goal mode: moving directly toward goal
+  step  267 | (0.0115, 2.6843) | goal mode: moving directly toward goal
+  step  268 | (0.0081, 2.6444) | goal mode: moving directly toward goal
+  step  269 | (0.0047, 2.6046) | goal mode: moving directly toward goal
+  step  270 | (0.0198, 2.5676) | goal mode: moving directly toward goal
+  step  271 | (0.0173, 2.5277) | goal mode: moving directly toward goal
+  step  272 | (0.0120, 2.4880) | goal mode: moving directly toward goal
+  step  273 | (0.0066, 2.4484) | goal mode: moving directly toward goal
+  step  274 | (0.0323, 2.4178) | goal mode: moving directly toward goal
+  step  275 | (0.0581, 2.3872) | goal mode: moving directly toward goal
+  step  276 | (0.0703, 2.3491) | goal mode: moving directly toward goal
+  step  277 | (0.0825, 2.3110) | goal mode: moving directly toward goal
+  step  278 | (0.1112, 2.2832) | goal mode: moving directly toward goal
+  step  279 | (0.1399, 2.2553) | goal mode: moving directly toward goal
+  step  280 | (0.1425, 2.2154) | goal mode: moving directly toward goal
+  step  281 | (0.1451, 2.1755) | goal mode: moving directly toward goal
+  step  282 | (0.1477, 2.1356) | goal mode: moving directly toward goal
+  step  283 | (0.1731, 2.1046) | goal mode: moving directly toward goal
+  step  284 | (0.1984, 2.0737) | goal mode: moving directly toward goal
+  step  285 | (0.2238, 2.0428) | goal mode: moving directly toward goal
+  step  286 | (0.2492, 2.0119) | goal mode: moving directly toward goal
+  step  287 | (0.2874, 2.0001) | goal mode: moving directly toward goal
+  step  288 | (0.3257, 1.9883) | goal mode: moving directly toward goal
+  step  289 | (0.3639, 1.9765) | goal mode: moving directly toward goal
+  step  290 | (0.4036, 1.9721) | goal mode: moving directly toward goal
+  step  291 | (0.4075, 1.9323) | goal mode: repairing path with D* Lite
+  step  292 | (0.4075, 1.9323) | sensed obstacle(s) [21]; frontiers=32
+  step  293 | (0.4384, 1.9068) | goal mode: moving directly toward goal
+  step  294 | (0.4780, 1.9123) | goal mode: moving directly toward goal
+  step  295 | (0.5162, 1.9241) | goal mode: moving directly toward goal
+  step  296 | (0.5422, 1.8937) | goal mode: moving directly toward goal
+  step  297 | (0.5682, 1.8632) | goal mode: moving directly toward goal
+  step  298 | (0.6074, 1.8558) | goal mode: moving directly toward goal
+  step  299 | (0.6471, 1.8508) | goal mode: moving directly toward goal
+  step  300 | (0.6864, 1.8429) | goal mode: moving directly toward goal
+  step  301 | (0.7256, 1.8350) | goal mode: moving directly toward goal
+  step  302 | (0.7648, 1.8271) | goal mode: moving directly toward goal
+  step  303 | (0.8040, 1.8193) | goal mode: moving directly toward goal
+  step  304 | (0.8432, 1.8114) | goal mode: moving directly toward goal
+  step  305 | (0.8596, 1.7749) | goal mode: moving directly toward goal
+  step  306 | (0.8759, 1.7384) | goal mode: moving directly toward goal
+  step  307 | (0.8923, 1.7019) | goal mode: moving directly toward goal
+  step  308 | (0.9186, 1.6718) | goal mode: moving directly toward goal
+  step  309 | (0.9450, 1.6417) | goal mode: moving directly toward goal
+  step  310 | (0.9713, 1.6116) | goal mode: moving directly toward goal
+  step  311 | (0.9944, 1.5789) | goal mode: moving directly toward goal
+  step  312 | (1.0174, 1.5462) | goal mode: repairing path with D* Lite
+  step  313 | (1.0200, 1.5063) | goal mode: moving directly toward goal
+  step  314 | (1.0227, 1.4664) | goal mode: moving directly toward goal
+  step  315 | (1.0267, 1.4266) | goal mode: moving directly toward goal
+  step  316 | (1.0308, 1.3868) | goal mode: moving directly toward goal
+  step  317 | (1.0308, 1.3868) | sensed obstacle(s) [12]; frontiers=26
+  step  318 | (1.0653, 1.3666) | goal mode: moving directly toward goal
+  step  319 | (1.1050, 1.3617) | goal mode: moving directly toward goal
+  step  320 | (1.1447, 1.3568) | goal mode: moving directly toward goal
+  step  321 | (1.1847, 1.3555) | goal mode: moving directly toward goal
+  step  322 | (1.1847, 1.3555) | sensed obstacle(s) [9]; frontiers=26
+  step  323 | (1.2148, 1.3818) | goal mode: repairing path with D* Lite
+  step  324 | (1.2449, 1.4081) | goal mode: repairing path with D* Lite
+  step  325 | (1.2751, 1.4345) | goal mode: repairing path with D* Lite
+  step  326 | (1.3145, 1.4414) | goal mode: moving directly toward goal
+  step  327 | (1.3539, 1.4482) | goal mode: moving directly toward goal
+  step  328 | (1.3903, 1.4647) | CIBP replan: boundary→avoid for obs 9
+  step  329 | (1.4268, 1.4812) | goal mode: moving directly toward goal
+  step  330 | (1.4587, 1.5053) | goal mode: moving directly toward goal
+  step  331 | (1.4906, 1.5295) | goal mode: moving directly toward goal
+  step  332 | (1.5299, 1.5222) | goal mode: moving directly toward goal
+  step  333 | (1.5682, 1.5338) | CIBP replan: boundary→avoid for obs 9
+  step  334 | (1.5682, 1.5338) | boundary mode: entered near obs 9 (movable, P_safe=0.90)
+  step  335 | (1.6064, 1.5455) | boundary mode: following obs 9 (movable)
+  step  336 | (1.6218, 1.5824) | goal mode: moving directly toward goal
+  step  337 | (1.6592, 1.5966) | goal mode: moving directly toward goal
+  step  338 | (1.6966, 1.6108) | goal mode: moving directly toward goal
+  step  339 | (1.7364, 1.6146) | goal mode: moving directly toward goal
+  step  340 | (1.7762, 1.6185) | goal mode: moving directly toward goal
+  step  341 | (1.8161, 1.6224) | goal mode: moving directly toward goal
+  step  342 | (1.8559, 1.6263) | goal mode: moving directly toward goal
+  step  343 | (1.8957, 1.6301) | goal mode: moving directly toward goal
+  step  344 | (1.9355, 1.6340) | goal mode: moving directly toward goal
+  step  345 | (1.9355, 1.6340) | sensed obstacle(s) [18]; frontiers=33
+  step  346 | (1.9390, 1.6739) | goal mode: repairing path with D* Lite
+  step  347 | (1.9425, 1.7137) | goal mode: repairing path with D* Lite
+  step  348 | (1.9459, 1.7535) | goal mode: repairing path with D* Lite
+  step  349 | (1.9468, 1.7935) | goal mode: repairing path with D* Lite
+  step  350 | (1.9468, 1.7935) | sensed obstacle(s) [1]; frontiers=34
+  step  351 | (1.9476, 1.8335) | goal mode: repairing path with D* Lite
+  step  352 | (1.9478, 1.8735) | goal mode: repairing path with D* Lite
+  step  353 | (1.9480, 1.9135) | goal mode: repairing path with D* Lite
+  step  354 | (1.9482, 1.9535) | goal mode: repairing path with D* Lite
+  step  355 | (1.9483, 1.9935) | goal mode: repairing path with D* Lite
+  step  356 | (1.9486, 2.0335) | goal mode: repairing path with D* Lite
+  step  357 | (1.9487, 2.0735) | goal mode: repairing path with D* Lite
+  step  358 | (1.9488, 2.1135) | goal mode: repairing path with D* Lite
+  step  359 | (1.9488, 2.1535) | goal mode: repairing path with D* Lite
+  step  360 | (1.9489, 2.1935) | goal mode: repairing path with D* Lite
+  step  361 | (1.9491, 2.2335) | goal mode: repairing path with D* Lite
+  step  362 | (1.9492, 2.2735) | goal mode: repairing path with D* Lite
+  step  363 | (1.9493, 2.3135) | CIBP replan: boundary→avoid for obs 1
+  step  364 | (1.9493, 2.3135) | boundary mode: entered near obs 1 (movable, P_safe=0.88)
+  step  365 | (1.9494, 2.3535) | boundary mode: following obs 1 (movable)
+  step  366 | (1.9894, 2.3535) | boundary mode: following obs 1 (movable)
+  step  367 | (1.9893, 2.3135) | boundary mode: following obs 1 (movable)
+  step  368 | (1.9893, 2.3135) | boundary mode: circuit complete for obs 1 — escalating
+  step  369 | (1.9811, 2.4252) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step  370 | (1.9811, 2.4252) | boundary mode: entered near obs 1 (movable, P_safe=0.88)
+  step  371 | (1.9919, 2.4637) | boundary mode: following obs 1 (movable)
+  step  372 | (2.0304, 2.4529) | boundary mode: following obs 1 (movable)
+  step  373 | (2.0196, 2.4144) | boundary mode: following obs 1 (movable)
+  step  374 | (2.0196, 2.4144) | boundary mode: circuit complete for obs 1 — escalating
+  step  375 | (1.9258, 2.3943) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step  376 | (1.9258, 2.3943) | boundary mode: entered near obs 1 (movable, P_safe=0.87)
+  step  377 | (1.9400, 2.4317) | boundary mode: following obs 1 (movable)
+  step  378 | (1.9774, 2.4174) | boundary mode: following obs 1 (movable)
+  step  379 | (1.9631, 2.3801) | boundary mode: following obs 1 (movable)
+  step  380 | (1.9631, 2.3801) | boundary mode: circuit complete for obs 1 — escalating
+  step  381 | (1.9735, 2.2846) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step  382 | (1.9735, 2.2846) | boundary mode: entered near obs 1 (movable, P_safe=0.87)
+  step  383 | (1.9719, 2.3246) | boundary mode: following obs 1 (movable)
+  step  384 | (2.0118, 2.3263) | boundary mode: following obs 1 (movable)
+  step  385 | (2.0135, 2.2863) | boundary mode: following obs 1 (movable)
+  step  386 | (2.0135, 2.2863) | boundary mode: circuit complete for obs 1 — escalating
+  step  387 | (2.0524, 2.1985) | avoid mode (RRT escape): retreating and replanning through sensed free space
+  step  388 | (2.0524, 2.1985) | boundary mode: entered near obs 1 (movable, P_safe=0.87)
+  step  389 | (2.0462, 2.2381) | boundary mode: following obs 1 (movable)
+  step  390 | (2.0539, 2.2773) | boundary mode: following obs 1 (movable)
+  step  391 | (2.0477, 2.3168) | boundary mode: following obs 1 (movable)
+  step  392 | (2.0484, 2.3568) | boundary mode: following obs 1 (movable)
+  step  393 | (2.0492, 2.3968) | boundary mode: following obs 1 (movable)
+  step  394 | (2.0568, 2.4361) | boundary mode: following obs 1 (movable)
+  step  395 | (2.0645, 2.4753) | boundary mode: following obs 1 (movable)
+  step  396 | (2.0789, 2.5126) | boundary mode: following obs 1 (movable)
+  step  397 | (2.0933, 2.5500) | boundary mode: following obs 1 (movable)
+  step  398 | (2.1139, 2.5842) | boundary mode: following obs 1 (movable)
+  step  399 | (2.1402, 2.6144) | boundary mode: following obs 1 (movable)
+  step  400 | (2.1665, 2.6446) | boundary mode: following obs 1 (movable)
+  step  401 | (2.1927, 2.6747) | boundary mode: following obs 1 (movable)
+  step  402 | (2.2239, 2.6999) | boundary mode: following obs 1 (movable)
+  step  403 | (2.2589, 2.7192) | boundary mode: following obs 1 (movable)
+  step  404 | (2.2939, 2.7386) | boundary mode: following obs 1 (movable)
+  step  405 | (2.3289, 2.7579) | boundary mode: following obs 1 (movable)
+  step  406 | (2.3684, 2.7641) | boundary mode: following obs 1 (movable)
+  step  407 | (2.4062, 2.7771) | boundary mode: following obs 1 (movable)
+  step  408 | (2.4462, 2.7764) | boundary mode: following obs 1 (movable)
+  step  409 | (2.4857, 2.7826) | boundary mode: following obs 1 (movable)
+  step  410 | (2.5251, 2.7899) | goal mode: moving directly toward goal
+  step  411 | (2.5644, 2.7971) | goal mode: moving directly toward goal
+  step  412 | (2.5644, 2.7971) | sensed obstacle(s) [6]; frontiers=27
+  step  413 | (2.6037, 2.8044) | goal mode: moving directly toward goal
+  step  414 | (2.6431, 2.8117) | goal mode: moving directly toward goal
+  step  415 | (2.6824, 2.8190) | goal mode: moving directly toward goal
+  step  416 | (2.7199, 2.8049) | goal mode: moving directly toward goal
+  step  417 | (2.7494, 2.7780) | goal mode: moving directly toward goal
+  step  418 | (2.7790, 2.7511) | goal mode: moving directly toward goal
+  step  419 | (2.8086, 2.7242) | goal mode: moving directly toward goal
+  step  420 | (2.8483, 2.7192) | goal mode: moving directly toward goal
+  step  421 | (2.8880, 2.7142) | goal mode: moving directly toward goal
+  step  422 | (2.9014, 2.6765) | goal mode: moving directly toward goal
+  step  423 | (2.9148, 2.6388) | goal mode: moving directly toward goal
+  step  424 | (2.9283, 2.6011) | goal mode: moving directly toward goal
+  step  425 | (2.9496, 2.5673) | goal mode: moving directly toward goal
+  step  426 | (2.9612, 2.5290) | goal mode: moving directly toward goal
+  step  427 | (2.9920, 2.5036) | goal mode: moving directly toward goal
+  step  428 | (3.0229, 2.4781) | goal mode: moving directly toward goal
+  step  429 | (3.0538, 2.4527) | goal mode: moving directly toward goal
+  step  430 | (3.0478, 2.4132) | goal mode: moving directly toward goal
+  step  431 | (3.0417, 2.3736) | goal mode: moving directly toward goal
+  step  432 | (3.0357, 2.3341) | goal mode: moving directly toward goal
+  step  433 | (3.0297, 2.2946) | goal mode: moving directly toward goal
+  step  434 | (3.0621, 2.2712) | goal mode: moving directly toward goal
+  step  435 | (3.0859, 2.2390) | goal mode: moving directly toward goal
+  step  436 | (3.1098, 2.2069) | goal mode: moving directly toward goal
+  step  437 | (3.1336, 2.1748) | goal mode: moving directly toward goal
+  step  438 | (3.1574, 2.1426) | goal mode: moving directly toward goal
+  step  439 | (3.1685, 2.1042) | goal mode: moving directly toward goal
+  step  440 | (3.1796, 2.0658) | goal mode: moving directly toward goal
+  step  441 | (3.1907, 2.0273) | goal mode: moving directly toward goal
+  step  442 | (3.2234, 2.0042) | goal mode: moving directly toward goal
+  step  443 | (3.2280, 1.9645) | goal mode: moving directly toward goal
+  step  444 | (3.2327, 1.9248) | goal mode: moving directly toward goal
+  step  445 | (3.2422, 1.8859) | goal mode: moving directly toward goal
+  step  446 | (3.2517, 1.8471) | goal mode: moving directly toward goal
+  step  447 | (3.2612, 1.8082) | goal mode: moving directly toward goal
+  step  448 | (3.2662, 1.7685) | goal mode: moving directly toward goal
+  step  449 | (3.2712, 1.7288) | goal mode: moving directly toward goal
+  step  450 | (3.2762, 1.6892) | goal mode: moving directly toward goal
+  step  451 | (3.2812, 1.6495) | goal mode: moving directly toward goal
+  step  452 | (3.2862, 1.6098) | goal mode: moving directly toward goal
+  step  453 | (3.2912, 1.5701) | goal mode: moving directly toward goal
+  step  454 | (3.2919, 1.5301) | goal mode: moving directly toward goal
+  step  455 | (3.2937, 1.4901) | goal mode: moving directly toward goal
+  step  456 | (3.2955, 1.4502) | goal mode: moving directly toward goal
+  step  457 | (3.2973, 1.4102) | goal mode: moving directly toward goal
+  step  458 | (3.2976, 1.3702) | goal mode: moving directly toward goal
+  step  459 | (3.2978, 1.3302) | goal mode: moving directly toward goal
+  step  460 | (3.2980, 1.2902) | goal mode: moving directly toward goal
+  step  461 | (3.2982, 1.2502) | goal mode: moving directly toward goal
+  step  462 | (3.2984, 1.2102) | goal mode: moving directly toward goal
+  step  463 | (3.2988, 1.1702) | goal mode: moving directly toward goal
+  step  464 | (3.2992, 1.1302) | goal mode: moving directly toward goal
+  step  465 | (3.3093, 1.0915) | goal mode: moving directly toward goal
+  step  466 | (3.3195, 1.0528) | goal mode: moving directly toward goal
+  step  467 | (3.3296, 1.0142) | goal mode: moving directly toward goal
+  step  468 | (3.3398, 0.9755) | goal mode: moving directly toward goal
+  step  469 | (3.3499, 0.9368) | goal mode: moving directly toward goal
+  step  470 | (3.3601, 0.8981) | goal mode: moving directly toward goal
+  step  471 | (3.3702, 0.8594) | goal mode: moving directly toward goal
+  step  472 | (3.3723, 0.8515) | goal reached
+

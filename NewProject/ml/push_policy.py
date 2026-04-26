@@ -72,9 +72,16 @@ class PushAvoidPolicy:
     def __init__(self) -> None:
         self._model = None
         if MODEL_PATH.exists():
-            with open(MODEL_PATH, "rb") as f:
-                self._model = pickle.load(f)
-            print(f"[PushAvoidPolicy] model loaded from {MODEL_PATH.name}")
+            try:
+                with open(MODEL_PATH, "rb") as f:
+                    self._model = pickle.load(f)
+                print(f"[PushAvoidPolicy] model loaded from {MODEL_PATH.name}")
+            except Exception as exc:
+                self._model = None
+                print(
+                    "[PushAvoidPolicy] failed to load model "
+                    f"({exc.__class__.__name__}: {exc}); using handcrafted policy"
+                )
         else:
             print("[PushAvoidPolicy] no model yet — collecting decisions for future training")
 
