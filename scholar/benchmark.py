@@ -41,6 +41,7 @@ _COND_COLORS = {"A_legacy": "#6c757d", "A": "#264653", "B": "#2a9d8f", "C": "#e7
 _ALL_CONDITIONS = ("A_legacy", "A", "B", "C")
 _UPDATE_ACCEPT_ABS_TOL = 1e-4
 _UPDATE_ACCEPT_REL_TOL = 1e-3
+_LLM_EXPERIMENT_MODES = ("same_scene", "cross_scene_batch")
 
 def _load_scene(family: str, scene_idx: int) -> dict:
     mapped = _ENV_MAP.get(family, family)
@@ -159,6 +160,17 @@ def _update_trace_path(save_dir, label: str) -> Path | None:
     return Path(save_dir) / f"llm_update_trace_{label.lower()}.json" if save_dir else None
 
 
+def _mean_config(configs: list[PlannerConfig]) -> PlannerConfig:
+    if not configs:
+        return PlannerConfig()
+    keys = dataclasses.asdict(configs[0]).keys()
+    averaged = {
+        key: float(np.mean([getattr(cfg, key) for cfg in configs]))
+        for key in keys
+    }
+    return PlannerConfig(**averaged)
+
+
 def _batch_objective(records: list[SceneRecord], battery_only: bool = False) -> float:
     if not records:
         return float("inf")
@@ -246,6 +258,21 @@ def _run_scene_batch(
             summary=result.scene_summary,
         ))
     return batch_records
+
+
+def _run_single_scene(
+    scene: dict,
+    family: str,
+    config: PlannerConfig,
+    run_kw: dict,
+) -> SceneRecord:
+    result = run_scholar(scene, config=config, **run_kw)
+    return SceneRecord(
+        scene_idx=scene["scene_idx"],
+        family=family,
+        config=config,
+        summary=result.scene_summary,
+    )
 
 
 def _init_config_for_family(prev_frozen: "PlannerConfig | None") -> PlannerConfig:
@@ -483,6 +510,131 @@ def _run_llm(
     return records, family_configs
 
 
+def _run_llm_same_scene(
+    scenes_by_family: dict,
+    updater: VLMWeightUpdater,
+    run_kw: dict,
+    battery_only: bool = False,
+    label: str = "B",
+    same_scene_tuning_passes: int = 2,
+    save_dir=None,
+) -> tuple[list, dict]:
+    """
+    Conditions B/C — same-scene adaptation benchmark.
+    For each scene, start from a fresh family seed config, run the planner once,
+    let the LLM propose updates from that exact scene's diagnostics, and rerun the
+    same scene for a small number of local tuning passes. Report the post-tuning
+    rollout as the condition result and log the pre/post delta explicitly.
+    """
+    records: list[SceneRecord] = []
+    update_trace: list[dict] = []
+    family_configs: dict[str, PlannerConfig] = {}
+    tuning_passes = max(0, int(same_scene_tuning_passes))
+
+    prev_frozen: PlannerConfig | None = None
+    for fam, scenes in scenes_by_family.items():
+        seed_config = _init_config_for_family(prev_frozen)
+        final_scene_configs: list[PlannerConfig] = []
+
+        for idx, scene in enumerate(scenes):
+            config = copy.deepcopy(seed_config)
+            current_record = _run_single_scene(scene, fam, config, run_kw)
+            current_metrics = _batch_metrics([current_record], battery_only)
+            scene_history: list[tuple[PlannerConfig, object]] = [(config, current_record.summary)]
+            scene_trace = {
+                "family": fam,
+                "condition": label,
+                "battery_only": battery_only,
+                "scene_idx": scene["scene_idx"],
+                "initial_metrics": current_metrics,
+                "passes": [],
+            }
+
+            print(
+                f"  {label} [{fam}] scene {scene['scene_idx']} pre-tune: "
+                f"{_format_batch_metrics(current_metrics)}"
+            )
+
+            for tune_idx in range(tuning_passes):
+                proposed = updater.update(
+                    config,
+                    current_record.summary,
+                    scene_history,
+                    family=fam,
+                    scene_idx_in_family=scene["scene_idx"],
+                    scenes_remaining=0,
+                    battery_only=battery_only,
+                )
+                if proposed == config:
+                    scene_trace["passes"].append({
+                        "pass_idx": tune_idx + 1,
+                        "accepted": False,
+                        "reason": "no_effective_parameter_change",
+                        "config_delta": "no effective parameter change",
+                        "baseline_metrics": current_metrics,
+                        "candidate_metrics": current_metrics,
+                    })
+                    break
+
+                candidate_record = _run_single_scene(scene, fam, proposed, run_kw)
+                candidate_metrics = _batch_metrics([candidate_record], battery_only)
+                baseline_score = current_metrics["objective"]
+                candidate_score = candidate_metrics["objective"]
+                delta_summary = _summarize_config_delta(config, proposed)
+                accepted = _score_improved(candidate_score, baseline_score)
+                scene_trace["passes"].append({
+                    "pass_idx": tune_idx + 1,
+                    "accepted": accepted,
+                    "config_delta": delta_summary,
+                    "baseline_metrics": current_metrics,
+                    "candidate_metrics": candidate_metrics,
+                })
+
+                status = "accepted" if accepted else "rejected"
+                print(
+                    f"    {label} [{fam}] scene {scene['scene_idx']} pass {tune_idx + 1}: "
+                    f"{status} {baseline_score:.4f} → {candidate_score:.4f} ({delta_summary})"
+                )
+                print(f"      baseline:  {_format_batch_metrics(current_metrics)}")
+                print(f"      candidate: {_format_batch_metrics(candidate_metrics)}")
+
+                if not accepted:
+                    break
+
+                config = proposed
+                current_record = candidate_record
+                current_metrics = candidate_metrics
+                scene_history.append((config, current_record.summary))
+
+            records.append(current_record)
+            final_scene_configs.append(config)
+            scene_trace["final_metrics"] = current_metrics
+            scene_trace["final_config"] = _config_as_json_dict(config)
+            update_trace.append(scene_trace)
+            print(
+                f"  {label} [{fam}] scene {scene['scene_idx']} post-tune: "
+                f"{_format_batch_metrics(current_metrics)}"
+            )
+
+            if (idx + 1) % 25 == 0 or idx + 1 == len(scenes):
+                print(f"  {label} [{fam}]: {idx + 1}/{len(scenes)}")
+
+        family_configs[fam] = _mean_config(final_scene_configs)
+        prev_frozen = family_configs[fam]
+
+    if save_dir:
+        p = Path(save_dir) / f"family_configs_{label.lower()}.json"
+        payload = {fam: _config_as_json_dict(cfg) for fam, cfg in family_configs.items()}
+        p.write_text(json.dumps(payload, indent=2))
+        print(f"  {label} family configs → {p}")
+        trace_path = _update_trace_path(save_dir, label)
+        if trace_path is not None:
+            trace_path.write_text(json.dumps(update_trace, indent=2))
+            print(f"  {label} update trace → {trace_path}")
+
+    return records, family_configs
+
+
 # ── Family-config diagnostics ─────────────────────────────────────────────────
 
 _DIFFERENTIATION_PARAMS = ("sem_weight", "kl_threshold", "w_r_scale")
@@ -701,7 +853,8 @@ def run_benchmark(
     llm_batch_size:      int   = 64,
     update_batch_size:   int   = 8,
     accept_batch_size:   int   = 2,
-    same_scene_tuning_passes: int = 0,
+    same_scene_tuning_passes: int = 2,
+    llm_experiment_mode: str = "same_scene",
     conditions:          list  = None,
     save_dir                   = None,
     show_plots:          bool  = True,
@@ -711,6 +864,8 @@ def run_benchmark(
     invalid_conditions = [cond for cond in conditions if cond not in _ALL_CONDITIONS]
     if invalid_conditions:
         raise ValueError(f"Invalid conditions requested: {invalid_conditions}")
+    if llm_experiment_mode not in _LLM_EXPERIMENT_MODES:
+        raise ValueError(f"Invalid llm_experiment_mode: {llm_experiment_mode}")
     n_total  = n_scenes_per_family * len(families)
 
     if save_dir:
@@ -755,24 +910,46 @@ def run_benchmark(
             updater_c = VLMWeightUpdater(model=llm_model, max_num_seqs=llm_batch_size)
 
         if "B" in conditions:
-            print(f"\n── Condition B — LLM all weights ({n_total} episodes) ──")
-            records_b, family_configs_b = _run_llm(scenes_by_family, updater_b, run_kw,
-                                                    battery_only=False, label="B",
-                                                    update_batch_size=update_batch_size,
-                                                    accept_batch_size=accept_batch_size,
-                                                    same_scene_tuning_passes=same_scene_tuning_passes,
-                                                    save_dir=save_dir)
+            print(f"\n── Condition B — LLM all weights ({n_total} episodes, mode={llm_experiment_mode}) ──")
+            if llm_experiment_mode == "same_scene":
+                records_b, family_configs_b = _run_llm_same_scene(
+                    scenes_by_family,
+                    updater_b,
+                    run_kw,
+                    battery_only=False,
+                    label="B",
+                    same_scene_tuning_passes=same_scene_tuning_passes,
+                    save_dir=save_dir,
+                )
+            else:
+                records_b, family_configs_b = _run_llm(scenes_by_family, updater_b, run_kw,
+                                                        battery_only=False, label="B",
+                                                        update_batch_size=update_batch_size,
+                                                        accept_batch_size=accept_batch_size,
+                                                        same_scene_tuning_passes=same_scene_tuning_passes,
+                                                        save_dir=save_dir)
             records_by_condition["B"] = records_b
             family_configs_by_condition["B"] = family_configs_b
 
         if "C" in conditions:
-            print(f"\n── Condition C — LLM battery terms only ({n_total} episodes) ──")
-            records_c, family_configs_c = _run_llm(scenes_by_family, updater_c, run_kw,
-                                                    battery_only=True,  label="C",
-                                                    update_batch_size=update_batch_size,
-                                                    accept_batch_size=accept_batch_size,
-                                                    same_scene_tuning_passes=same_scene_tuning_passes,
-                                                    save_dir=save_dir)
+            print(f"\n── Condition C — LLM battery terms only ({n_total} episodes, mode={llm_experiment_mode}) ──")
+            if llm_experiment_mode == "same_scene":
+                records_c, family_configs_c = _run_llm_same_scene(
+                    scenes_by_family,
+                    updater_c,
+                    run_kw,
+                    battery_only=True,
+                    label="C",
+                    same_scene_tuning_passes=same_scene_tuning_passes,
+                    save_dir=save_dir,
+                )
+            else:
+                records_c, family_configs_c = _run_llm(scenes_by_family, updater_c, run_kw,
+                                                        battery_only=True,  label="C",
+                                                        update_batch_size=update_batch_size,
+                                                        accept_batch_size=accept_batch_size,
+                                                        same_scene_tuning_passes=same_scene_tuning_passes,
+                                                        save_dir=save_dir)
             records_by_condition["C"] = records_c
             family_configs_by_condition["C"] = family_configs_c
 
@@ -824,12 +1001,15 @@ if __name__ == "__main__":
                         help="Thread-pool size for condition A")
     parser.add_argument("--llm-batch-size", type=int, default=64,
                         help="vLLM engine max_num_seqs batch capacity")
+    parser.add_argument("--llm-experiment-mode", type=str, default="same_scene",
+                        choices=_LLM_EXPERIMENT_MODES,
+                        help="LLM benchmark architecture: tune on the same scene before scoring it, or use the older cross-scene batched updater.")
     parser.add_argument("--update-batch-scenes", type=int, default=8,
-                        help="Number of official scenes to aggregate before each LLM update")
+                        help="Cross-scene mode only: number of official scenes to aggregate before each LLM update")
     parser.add_argument("--accept-batch-scenes", type=int, default=2,
-                        help="Number of future scenes used to accept/reject a proposed update")
-    parser.add_argument("--same-scene-tuning-passes", type=int, default=0,
-                        help="Optional number of same-scene local adaptation passes after each batch")
+                        help="Cross-scene mode only: number of future scenes used to accept/reject a proposed update")
+    parser.add_argument("--same-scene-tuning-passes", type=int, default=2,
+                        help="Same-scene mode: number of local adaptation passes on each scene. Cross-scene mode: optional local tuning passes after each batch.")
     parser.add_argument("--conditions", nargs="+", default=list(_ALL_CONDITIONS),
                         choices=_ALL_CONDITIONS,
                         help="Subset of conditions to run. Use 'A' on cheap compute, then 'B C' on A100 with the same --save dir.")
@@ -851,6 +1031,7 @@ if __name__ == "__main__":
         update_batch_size   = args.update_batch_scenes,
         accept_batch_size   = args.accept_batch_scenes,
         same_scene_tuning_passes = args.same_scene_tuning_passes,
+        llm_experiment_mode = args.llm_experiment_mode,
         conditions          = args.conditions,
         save_dir            = args.save,
         show_plots          = not args.no_show,
