@@ -10,8 +10,8 @@ from typing import Optional
 
 import numpy as np
 
-from NewProject.models import SceneSummary
-from planning.scholar import PlannerConfig
+from scholar.core.models import SceneSummary
+from scholar.planning.scholar import PlannerConfig
 
 _SYSTEM_PROMPT = (
     "You are tuning a motion planner with cost "

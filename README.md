@@ -1,4 +1,4 @@
-# SURP / SCHOLAR
+# SURP / BEACON
 
 Online motion planning experiments for a disk robot in partially known environments.
 
@@ -15,10 +15,10 @@ python3 -m pip install numpy matplotlib shapely pybullet
 Main commands:
 
 ```bash
-# Run the main SCHOLAR demo on one scene
+# Run the main BEACON demo on one scene
 python3 scholar/demo_scholar.py --scene 0
 
-# Run SCHOLAR on scenes 0-99 and save outputs
+# Run BEACON on scenes 0-99 and save outputs
 python3 scholar/demo_scholar.py --scenes 0-99 --save --clear-past
 
 # Run Bug baselines
@@ -26,7 +26,7 @@ python3 scholar/demo_bug1.py --scene 0
 python3 scholar/demo_bug2.py --scene 0
 
 # Run the shared scene-complex benchmark
-python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug bug2 dstar_lite
+python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners beacon bug bug2 dstar_lite
 
 # Summarize and compare saved metrics
 python3 scholar/experiments/summarize_scene_complex_metrics.py
@@ -38,28 +38,28 @@ python3 scholar/experiments/compare_scene_complex_metrics.py
 ```text
 SURP/
   scholar/                Main demos, planner code, and experiment scripts
-    demo_scholar.py       Best entry point for SCHOLAR runs
+    demo_scholar.py       Best entry point for BEACON runs
     demo_bug1.py          Bug1 demo entry point
     demo_bug2.py          Bug2 demo entry point
-    planning/             SCHOLAR planner and planner-side utilities
+    planning/             BEACON planner and planner-side utilities
     experiments/          Benchmark runners, summaries, and paper figures
     environment/data/     Saved logs, videos, and metrics
 
-  NewProject/             Core planner implementations and baseline algorithms
+  scholar/core/             Core planner implementations and baseline algorithms
     planner.py            Main online planner logic
     bug_algorithm.py      Bug baseline
     bug2_algorithm.py     Bug2 baseline
     dstar_lite_algorithm.py
     scene_setup.py        Scene normalization and setup helpers
 
-  enviornment/            Top-level scene generators used by SCHOLAR
+  enviornment/            Top-level scene generators used by BEACON
     scene_complex.py      Main scene family generator
     scene_generator.py    Alternate generator utilities
 ```
 
 ## What To Run
 
-Use `scholar/demo_scholar.py` for most interactive or saved SCHOLAR runs.
+Use `scholar/demo_scholar.py` for most interactive or saved BEACON runs.
 It generates scenes from `enviornment/scene_complex.py` and supports:
 
 - `sparse`
@@ -87,7 +87,7 @@ Run one or more planners on the shared `scene_complex` benchmark:
 ```bash
 python3 scholar/experiments/run_scene_complex_metrics.py \
   --scenes 0-99 \
-  --planners scholar bug bug2 dstar_lite
+  --planners beacon bug bug2 dstar_lite
 ```
 
 This writes CSV metrics under:

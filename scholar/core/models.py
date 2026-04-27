@@ -13,7 +13,7 @@ class SimulationFrame:
 
 @dataclass
 class SceneSummary:
-    """Post-run SCHOLAR diagnostics used for analysis and adaptation."""
+    """Post-run BEACON diagnostics used for analysis and adaptation."""
 
     family: str
     success: bool

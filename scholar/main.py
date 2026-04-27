@@ -1,8 +1,8 @@
 """
-main.py — Entry point for SCHOLAR experiments.
+main.py — Entry point for BEACON experiments.
 
 Run from the repo root:
-    python -m scholar.main --planner scholar --trials 10 --visualize
+    python -m scholar.main --planner beacon --trials 10 --visualize
 or:
     python scholar/main.py --planner bug --trials 5
 """
@@ -16,15 +16,15 @@ if str(REPO_ROOT) not in sys.path:
 
 import argparse
 
-from experiments.run_trials import run_trials, ALL_PLANNERS
-from utils.metrics import print_summary, aggregate
+from scholar.experiments.run_trials import run_trials, ALL_PLANNERS
+from scholar.utils.metrics import print_summary, aggregate
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run SCHOLAR planning trials.")
+    parser = argparse.ArgumentParser(description="Run BEACON planning trials.")
     parser.add_argument("--trials",    type=int, default=10,
                         help="Number of trials to run.")
-    parser.add_argument("--planner",   type=str, default="scholar",
+    parser.add_argument("--planner",   type=str, default="beacon",
                         help=f"Planner to use: {sorted(ALL_PLANNERS)}")
     parser.add_argument("--visualize", action="store_true",
                         help="Plot aggregate results after trials.")
@@ -34,7 +34,7 @@ def main() -> None:
     print_summary(aggregate(episodes), planner_name=args.planner)
 
     if args.visualize:
-        from experiments.visualize import plot_results
+        from scholar.experiments.visualize import plot_results
         plot_results(episodes, show=True)
 
 

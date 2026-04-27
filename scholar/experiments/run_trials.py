@@ -12,19 +12,19 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from NewProject.scene_setup import generate_one_random_environment
+from scholar.core.scene_setup import generate_one_random_environment
 
-from planning.baselines import PLANNERS
-from planning.scholar import run_scholar
-from utils.metrics import EpisodeMetrics, compute_metrics
+from scholar.planning.baselines import PLANNERS
+from scholar.planning.scholar import run_scholar
+from scholar.utils.metrics import EpisodeMetrics, compute_metrics
 
-# Register the SCHOLAR planner alongside the baselines
-ALL_PLANNERS = {**PLANNERS, "scholar": run_scholar}
+# Register the BEACON planner alongside the baselines
+ALL_PLANNERS = {**PLANNERS, "beacon": run_scholar}
 
 
 def run_trials(
     n_trials: int = 10,
-    planner_name: str = "scholar",
+    planner_name: str = "beacon",
 ) -> list[EpisodeMetrics]:
     """Run `planner_name` on `n_trials` random scenes.
 

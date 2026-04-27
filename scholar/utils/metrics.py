@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from NewProject.models import OnlineSurpResult
+from scholar.core.models import OnlineSurpResult
 
 
 @dataclass

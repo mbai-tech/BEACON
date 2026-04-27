@@ -1,4 +1,4 @@
-"""User-facing SCHOLAR demo entry point.
+"""User-facing BEACON demo entry point.
 
 This wrapper keeps the clearer ``demo_*`` naming while the implementation
 remains in ``main_scholar.py``.

@@ -19,7 +19,7 @@ RAY_COUNT              = 24
 RAY_STEP_SIZE          = 0.06
 CHAIN_ATTENUATION      = 0.7
 
-# SCHOLAR paper battery model
+# BEACON paper battery model
 BATTERY_INITIAL   = 1000.0
 DELTA_MOVE        = 1.0
 DELTA_TIME        = 0.1

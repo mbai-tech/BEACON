@@ -7,10 +7,10 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
-from NewProject.constants import OUTPUT_DIR
-from NewProject.planner import run_online_surp_push
-from NewProject.scene_setup import generate_one_random_environment
-from NewProject.visualization import animate_result, plot_final_snapshot, save_scene_snapshot
+from scholar.core.constants import OUTPUT_DIR
+from scholar.core.planner import run_online_surp_push
+from scholar.core.scene_setup import generate_one_random_environment
+from scholar.core.visualization import animate_result, plot_final_snapshot, save_scene_snapshot
 
 
 def main() -> None:

@@ -1,5 +1,5 @@
 """
-scene_generator.py — PyBullet scene generator for SCHOLAR experiments.
+scene_generator.py — PyBullet scene generator for BEACON experiments.
 
 Configurations
 --------------
@@ -36,7 +36,7 @@ import pybullet_data
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
-from planning.semantic_cost import (
+from scholar.planning.semantic_cost import (
     MOVABLE_THRESHOLD,
     _assign_cost_on_client,
 )
@@ -152,7 +152,7 @@ class Scene:
     # ── planner-compatible dict ────────────────────────────────────────────────
 
     def to_planner_dict(self) -> dict:
-        """Return a scene dict in the format expected by the SCHOLAR planner.
+        """Return a scene dict in the format expected by the BEACON planner.
 
         Each obstacle becomes:
           {

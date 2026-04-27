@@ -3,9 +3,9 @@ from collections import defaultdict, deque
 
 import numpy as np
 
-from NewProject.constants import DEFAULT_SENSING_RANGE, ROBOT_RADIUS
-from NewProject.models import OnlineSurpResult
-from NewProject.planner import (
+from scholar.core.constants import DEFAULT_SENSING_RANGE, ROBOT_RADIUS
+from scholar.core.models import OnlineSurpResult
+from scholar.core.planner import (
     clip_point_to_workspace,
     normalize,
     obstacle_polygon,
@@ -13,7 +13,7 @@ from NewProject.planner import (
     robot_body,
     snapshot_frame,
 )
-from NewProject.scene_setup import normalize_scene_for_online_use
+from scholar.core.scene_setup import normalize_scene_for_online_use
 
 
 INF = float("inf")

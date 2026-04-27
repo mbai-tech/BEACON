@@ -18,9 +18,9 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Polygon as MplPolygon
 
-import NewProject.planner as _planner_module
-from NewProject.planner import run_online_surp_push
-from environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
+import scholar.core.planner as _planner_module
+from scholar.core.planner import run_online_surp_push
+from scholar.environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
 from enviornment.scene_complex import generate_scene as _generate_complex_scene
 
 FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
@@ -48,7 +48,7 @@ _planner_module.snapshot_frame = _patched_snapshot
 
 
 def clear_saved_simulations() -> None:
-    """Delete previously saved SCHOLAR logs/videos without touching scene assets."""
+    """Delete previously saved BEACON logs/videos without touching scene assets."""
     removed = 0
     patterns = ("simulation_scene*.txt", "simulation_scene*.mp4", "simulation_scene*.gif")
 
@@ -65,7 +65,7 @@ def clear_saved_simulations() -> None:
 
 
 def load_scene(scene_idx: int, family: str, fragility: str = "mixed", seed: int | None = None) -> dict:
-    """Generate one SCHOLAR scene via the top-level enviornment branch code.
+    """Generate one BEACON scene via the top-level enviornment branch code.
 
     The demo keeps its historical four-family interface, but the actual scene
     geometry now comes from the newer top-level ``enviornment`` generator.
@@ -138,7 +138,7 @@ def run_realtime(families, scene_idx, max_steps, step_size=0.04,
     fig, axes = plt.subplots(1, n, figsize=(5 * n, 5.5))
     if n == 1:
         axes = [axes]
-    fig.suptitle(f"SCHOLAR push simulation — scene {scene_idx:03d}  (live)", fontsize=10)
+    fig.suptitle(f"BEACON push simulation — scene {scene_idx:03d}  (live)", fontsize=10)
 
     panels = []
     for ax, t in zip(axes, threads):
@@ -285,7 +285,7 @@ def _save_log(threads, scene_idx):
     log_path  = log_dir / f"simulation_scene{scene_idx:03d}_{timestamp}.txt"
 
     with open(log_path, "w") as f:
-        f.write("SCHOLAR Simulation Log\n")
+        f.write("BEACON Simulation Log\n")
         f.write(f"Scene: {scene_idx:03d}   Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write("=" * 70 + "\n\n")
 
@@ -314,7 +314,7 @@ def _save_video(threads, scene_idx, speedup=3, fps=30):
     fig, axes = plt.subplots(1, n, figsize=(5 * n, 5.5))
     if n == 1:
         axes = [axes]
-    fig.suptitle(f"SCHOLAR — scene {scene_idx:03d}", fontsize=10)
+    fig.suptitle(f"BEACON — scene {scene_idx:03d}", fontsize=10)
 
     panels = []
     for ax, t in zip(axes, threads):
@@ -424,7 +424,7 @@ if __name__ == "__main__":
         scene_indices = args.scene
 
     if len(scene_indices) > 1 or args.scenes:
-        print(f"SCHOLAR batch — {len(scene_indices)} scenes  families: {', '.join(families)}")
+        print(f"BEACON batch — {len(scene_indices)} scenes  families: {', '.join(families)}")
         run_batch(
             families,
             scene_indices = scene_indices,

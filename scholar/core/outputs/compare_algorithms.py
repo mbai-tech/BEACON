@@ -1,7 +1,7 @@
-"""Algorithm comparison: SCHOLAR vs Bug1, Bug2, Greedy.
+"""Algorithm comparison: BEACON vs Bug1, Bug2, Greedy.
 
 Usage:
-    python NewProject/outputs/compare_algorithms.py
+    python scholar/core/outputs/compare_algorithms.py
 """
 import sys
 from pathlib import Path
@@ -16,8 +16,8 @@ CSV = Path(__file__).parent / "scholar_metrics.csv"
 OUT = Path(__file__).parent / "figures"
 OUT.mkdir(exist_ok=True)
 
-ALG_ORDER   = ["SCHOLAR", "Bug2", "Greedy", "Bug1"]
-ALG_COLORS  = {"SCHOLAR": "#2196F3", "Bug1": "#F44336", "Bug2": "#FF9800", "Greedy": "#4CAF50"}
+ALG_ORDER   = ["BEACON", "Bug2", "Greedy", "Bug1"]
+ALG_COLORS  = {"BEACON": "#2196F3", "Bug1": "#F44336", "Bug2": "#FF9800", "Greedy": "#4CAF50"}
 DENSITY_ORDER = ["sparse", "medium", "dense"]
 
 

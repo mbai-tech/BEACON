@@ -2,9 +2,9 @@
 
 After running enough simulations with COLLECT=True in push_policy.py:
 
-    python -m NewProject.ml.train_push_policy
+    python -m scholar.core.ml.train_push_policy
 
-The trained model is saved to NewProject/ml/push_policy_model.pkl and will
+The trained model is saved to scholar/core/ml/push_policy_model.pkl and will
 be loaded automatically by PushAvoidPolicy on the next planner import.
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 
-from NewProject.ml.push_policy import LOG_PATH, MODEL_PATH, extract_features
+from scholar.core.ml.push_policy import LOG_PATH, MODEL_PATH, extract_features
 
 FEATURE_NAMES = [
     "j_avoid",

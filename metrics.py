@@ -1,4 +1,4 @@
-"""SCHOLAR paper evaluation metrics (Section VII-D).
+"""BEACON paper evaluation metrics (Section VII-D).
 
 ``compute_metrics`` derives one ``RunMetrics`` row from a single
 ``OnlineSurpResult``.  Pass ``planning_time_s`` (total wall-clock seconds for
@@ -14,7 +14,7 @@ path_efficiency   float   – straight_line_dist / path_length  (1.0 = optimal)
 battery_consumed  float   – units used  (B0 - B_remaining)
 battery_remaining float   – B0 - battery_consumed  (< 0 → battery died)
 contact_cost      float   – Σ c(Ok) over all obstacles contacted
-dangerous_contacts int    – contacts where c(Ok) > C_MAX  (should be 0 for SCHOLAR)
+dangerous_contacts int    – contacts where c(Ok) > C_MAX  (should be 0 for BEACON)
 planning_time_ms  float   – mean wall-clock ms per step
 obstacle_count    int
 density           str
@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from NewProject.constants import (
+from scholar.core.constants import (
     BATTERY_INITIAL,
     C_MAX,
     DELTA_COL,
@@ -35,8 +35,8 @@ from NewProject.constants import (
     DELTA_TIME,
     T_MAP,
 )
-from NewProject.models import OnlineSurpResult
-from NewProject.scene_configs import assign_semantic_cost
+from scholar.core.models import OnlineSurpResult
+from scholar.core.scene_configs import assign_semantic_cost
 
 
 # ── data class ────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ from NewProject.scene_configs import assign_semantic_cost
 class RunMetrics:
     # ── identity ───────────────────────────────────────────────────────────
     config:            str    # "S-U" | "S-M" | "M-U" | "M-M" | "D-U" | "D-M"
-    algorithm:         str    # "SCHOLAR" | "Bug1" | "Bug2" | "Greedy"
+    algorithm:         str    # "BEACON" | "Bug1" | "Bug2" | "Greedy"
     trial:             int
     seed:              int
     family:            str
@@ -140,7 +140,7 @@ def _parse_contacts(contact_log: list[str], obstacles: list[dict]) -> tuple[floa
 
 def compute_metrics(
     result:           OnlineSurpResult,
-    algorithm:        str   = "SCHOLAR",
+    algorithm:        str   = "BEACON",
     config:           str   = "unknown",
     trial:            int   = 0,
     planning_time_s:  float = 0.0,

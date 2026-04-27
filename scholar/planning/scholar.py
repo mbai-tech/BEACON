@@ -6,9 +6,9 @@ from typing import Dict, List, Optional, Tuple
 from scipy.interpolate import make_interp_spline
 from shapely.geometry import LineString, Point
 
-from NewProject.constants import DEFAULT_SENSING_RANGE
-from NewProject.models import OnlineSurpResult, SceneSummary
-from NewProject.planner import (
+from scholar.core.constants import DEFAULT_SENSING_RANGE
+from scholar.core.models import OnlineSurpResult, SceneSummary
+from scholar.core.planner import (
     clip_point_to_workspace,
     normalize,
     obstacle_polygon,
@@ -16,16 +16,16 @@ from NewProject.planner import (
     robot_body,
     snapshot_frame,
 )
-from NewProject.scene_setup import normalize_scene_for_online_use
+from scholar.core.scene_setup import normalize_scene_for_online_use
 
-from planning.cost_map import (
+from scholar.planning.cost_map import (
     SEMANTIC_COSTS,
     CostMap,
     build_voxel_grid,
     compute_anisotropic_map,
     update as update_cost_map,
 )
-from utils.geometry import ray_cast, visibility_range
+from scholar.utils.geometry import ray_cast, visibility_range
 
 V_MAX          = 0.15   # max robot speed (m/step)
 N_RAYS         = 36     # rays for visibility polygon
@@ -706,7 +706,7 @@ def run_scholar(
                 position, working_scene, f"sensed {ids} — cost map updated"
             ))
 
-        # SCHOLAR tick
+        # BEACON tick
         robot.position = position.copy()
         observed_now = [o for o in working_scene["obstacles"] if o.get("observed", False)]
         q_star = planner.select_next_state(robot, working_scene, cost_map, goal)
@@ -766,7 +766,7 @@ def run_scholar(
         path_taken.append(tuple(position))
         frames.append(snapshot_frame(
             position, working_scene,
-            f"SCHOLAR → {tuple(np.round(q_star.position, 2))}  "
+            f"BEACON → {tuple(np.round(q_star.position, 2))}  "
             f"B={robot.battery:.2f}"
         ))
 

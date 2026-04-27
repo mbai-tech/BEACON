@@ -6,8 +6,8 @@ import argparse
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MplPolygon
 
-from environment.scene_generator import load_scene
-from environment.scene_generator_v2 import FAMILIES_V2
+from scholar.environment.scene_generator import load_scene
+from scholar.environment.scene_generator_v2 import FAMILIES_V2
 
 CLASS_COLORS = {
     "movable":     "gold",

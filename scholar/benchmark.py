@@ -1,5 +1,5 @@
 """
-SCHOLAR three-condition benchmark.
+BEACON three-condition benchmark.
 
 Conditions
 ----------
@@ -41,9 +41,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 from enviornment.scene_generator import generate_scene as _gen_scene
-from planning.scholar import PlannerConfig, run_scholar
-from planning.vlm_updater import VLMWeightUpdater
-from utils.analysis import SceneRecord
+from scholar.planning.scholar import PlannerConfig, run_scholar
+from scholar.planning.vlm_updater import VLMWeightUpdater
+from scholar.utils.analysis import SceneRecord
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -320,7 +320,7 @@ def _check_family_differentiation(
 # ── Report ────────────────────────────────────────────────────────────────────
 
 def _print_report(sa: dict, sb: dict, sc: dict, n_total: int) -> None:
-    title = f"── SCHOLAR Benchmark — {n_total} episodes"
+    title = f"── BEACON Benchmark — {n_total} episodes"
     div   = "─" * 80
 
     print(f"\n{title}\n{div}")
@@ -392,7 +392,7 @@ def _plot_comparison(
     ]
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 7), constrained_layout=True)
-    fig.suptitle("SCHOLAR three-condition benchmark", fontsize=12)
+    fig.suptitle("BEACON three-condition benchmark", fontsize=12)
 
     for ax, (key, title, is_rate) in zip(axes.flatten(), metrics):
         if is_rate:
@@ -486,7 +486,7 @@ def run_benchmark(
     show_plots:          bool  = True,
 ) -> dict:
     """
-    Run the three-condition SCHOLAR benchmark.
+    Run the three-condition BEACON benchmark.
 
     Parameters
     ----------
@@ -569,7 +569,7 @@ def run_benchmark(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="SCHOLAR three-condition benchmark (A=fixed, B=VLM-full, C=VLM-battery)",
+        description="BEACON three-condition benchmark (A=fixed, B=VLM-full, C=VLM-battery)",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(

@@ -1,4 +1,4 @@
-"""ML push/avoid policy for the SCHOLAR planner.
+"""ML push/avoid policy for the BEACON planner.
 
 Phase 1: COLLECT=True logs every reconcile decision to decision_log.pkl.
 Phase 2: after running train_push_policy.py, loads the model and overrides
@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from NewProject.planner import TrajectoryCandidate
+    from scholar.core.planner import TrajectoryCandidate
 
 _HERE = Path(__file__).parent
 MODEL_PATH = _HERE / "push_policy_model.pkl"

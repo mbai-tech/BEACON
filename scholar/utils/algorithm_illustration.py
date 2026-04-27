@@ -540,7 +540,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(15, 11.5))
     fig.patch.set_facecolor("#fafafa")
     fig.suptitle(
-        "SCHOLAR — How the Algorithm Reasons at Each Step",
+        "BEACON — How the Algorithm Reasons at Each Step",
         fontsize=14, fontweight="bold", y=0.995,
     )
 

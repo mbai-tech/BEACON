@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Polygon as MplPolygon
 
-import NewProject.bug2_algorithm as _bug2_module
-from NewProject.bug2_algorithm import run_bug2
-from environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
+import scholar.core.bug2_algorithm as _bug2_module
+from scholar.core.bug2_algorithm import run_bug2
+from scholar.environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
 
 FAMILIES   = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 SCENES_DIR = Path(__file__).resolve().parent / "environment" / "data" / "scenes"

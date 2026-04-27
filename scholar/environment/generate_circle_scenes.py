@@ -369,7 +369,7 @@ def generate_all(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Generate circle-obstacle scenes for SCHOLAR experiments."
+        description="Generate circle-obstacle scenes for BEACON experiments."
     )
     parser.add_argument("--n", type=int, default=100,
                         help="Number of scenes per family (default: 100)")

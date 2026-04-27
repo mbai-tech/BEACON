@@ -15,9 +15,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import random
 import numpy as np
 
-from NewProject.constants import DEFAULT_SENSING_RANGE
-from NewProject.models import OnlineSurpResult
-from NewProject.planner import (
+from scholar.core.constants import DEFAULT_SENSING_RANGE
+from scholar.core.models import OnlineSurpResult
+from scholar.core.planner import (
     clip_point_to_workspace,
     normalize,
     obstacle_polygon,
@@ -25,7 +25,7 @@ from NewProject.planner import (
     robot_body,
     snapshot_frame,
 )
-from NewProject.scene_setup import normalize_scene_for_online_use
+from scholar.core.scene_setup import normalize_scene_for_online_use
 
 def _collides_observed(scene: dict, position: np.ndarray) -> bool:
     body = robot_body(position)

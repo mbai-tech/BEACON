@@ -5,7 +5,7 @@ import numpy as np
 from shapely.affinity import translate
 from shapely.geometry import Point, Polygon
 
-from NewProject.constants import CLUTTER_BIASED_FAMILIES, TARGET_MAX_WORKSPACE_SPAN
+from scholar.core.constants import CLUTTER_BIASED_FAMILIES, TARGET_MAX_WORKSPACE_SPAN
 
 def _import_enviornment():
     from enviornment.scene_generator import generate_scene, polygon_to_list, valid_candidate

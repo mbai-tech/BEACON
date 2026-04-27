@@ -6,8 +6,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import argparse
 
-from experiments.run_trials import run_trials
-from utils.metrics import print_summary, aggregate
+from scholar.experiments.run_trials import run_trials
+from scholar.utils.metrics import print_summary, aggregate
 
 
 if __name__ == "__main__":
@@ -22,5 +22,5 @@ if __name__ == "__main__":
     print_summary(aggregate(episodes), planner_name="bug2")
 
     if args.visualize:
-        from experiments.visualize import plot_results
+        from scholar.experiments.visualize import plot_results
         plot_results(episodes, show=True)

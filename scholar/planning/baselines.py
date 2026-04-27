@@ -1,16 +1,16 @@
 """
-baselines.py — Thin wrappers around existing NewProject planners.
+baselines.py — Thin wrappers around existing core planners.
 
 Exposes run_bug (Bug2), run_rrt (online greedy RRT), and run_surp_push
 (the full SURP push planner) under a common interface for trial runners.
 """
 
-from NewProject.bug_algorithm import run_bug
-from NewProject.bug2_algorithm import run_bug2
-from NewProject.dstar_lite_algorithm import run_dstar_lite
-from NewProject.rrt_greedy import run_rrt
-from NewProject.planner import run_online_surp_push
-from NewProject.models import OnlineSurpResult
+from scholar.core.bug_algorithm import run_bug
+from scholar.core.bug2_algorithm import run_bug2
+from scholar.core.dstar_lite_algorithm import run_dstar_lite
+from scholar.core.rrt_greedy import run_rrt
+from scholar.core.planner import run_online_surp_push
+from scholar.core.models import OnlineSurpResult
 
 __all__ = [
     "run_bug",

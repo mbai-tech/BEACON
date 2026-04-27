@@ -1,5 +1,5 @@
 """
-experiments/visualize.py — Result plotting using NewProject visualization.
+experiments/visualize.py — Result plotting using scholar.core visualization.
 """
 
 import sys
@@ -12,11 +12,11 @@ if str(REPO_ROOT) not in sys.path:
 import matplotlib.pyplot as plt
 import numpy as np
 
-from NewProject.constants import OUTPUT_DIR
-from NewProject.models import OnlineSurpResult
-from NewProject.visualization import animate_result, plot_final_snapshot, save_scene_snapshot
+from scholar.core.constants import OUTPUT_DIR
+from scholar.core.models import OnlineSurpResult
+from scholar.core.visualization import animate_result, plot_final_snapshot, save_scene_snapshot
 
-from utils.metrics import EpisodeMetrics, aggregate, print_summary
+from scholar.utils.metrics import EpisodeMetrics, aggregate, print_summary
 
 __all__ = ["animate_result", "plot_final_snapshot", "save_scene_snapshot", "plot_results"]
 

@@ -194,7 +194,7 @@ def summarize_by_family(rows: list[dict]) -> list[str]:
     )]
 
 
-def summarize_relative(rows: list[dict], base_planner: str = "scholar") -> list[str]:
+def summarize_relative(rows: list[dict], base_planner: str = "beacon") -> list[str]:
     planners = sorted({row["planner"] for row in rows})
     index = {(row["planner"], row["family"], row["scene_idx"]): row for row in rows}
     families = sorted({row["family"] for row in rows})
@@ -242,7 +242,7 @@ def summarize_relative(rows: list[dict], base_planner: str = "scholar") -> list[
         )
 
     return ["", f"RELATIVE TO {base_planner.upper()}", *render_table(
-        ["other_planner", "common_episodes", "both_success", "scholar_path_ratio", "scholar_step_ratio"],
+        ["other_planner", "common_episodes", "both_success", "beacon_path_ratio", "beacon_step_ratio"],
         table_rows,
     )]
 

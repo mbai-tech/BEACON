@@ -6,8 +6,8 @@ import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Polygon as MplPolygon
 
-from NewProject.constants import DISPLAY_COLORS, OUTPUT_DIR
-from NewProject.models import OnlineSurpResult
+from scholar.core.constants import DISPLAY_COLORS, OUTPUT_DIR
+from scholar.core.models import OnlineSurpResult
 
 
 def save_scene_snapshot(scene: dict, family: str, seed: int) -> Path:

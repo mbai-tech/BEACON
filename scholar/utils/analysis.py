@@ -1,8 +1,8 @@
-"""Post-run adaptation diagnostics for SCHOLAR VLM weight tuning.
+"""Post-run adaptation diagnostics for BEACON VLM weight tuning.
 
 Usage
 -----
-from utils.analysis import SceneRecord, plot_adaptation_diagnostics
+from scholar.utils.analysis import SceneRecord, plot_adaptation_diagnostics
 
 records = [SceneRecord(scene_idx=i, family=fam, config=cfg, summary=summ), ...]
 stats   = plot_adaptation_diagnostics(records, save_dir=Path("data/plots"))
@@ -21,8 +21,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 
-from NewProject.models import SceneSummary
-from planning.scholar import PlannerConfig
+from scholar.core.models import SceneSummary
+from scholar.planning.scholar import PlannerConfig
 
 
 # ── Data type ─────────────────────────────────────────────────────────────────
@@ -172,7 +172,7 @@ def plot_adaptation_diagnostics(
         figsize=(ncols * 3.6, nrows * 2.8),
         constrained_layout=True,
     )
-    fig1.suptitle("SCHOLAR — weight adaptation across scenes", fontsize=11, y=1.01)
+    fig1.suptitle("BEACON — weight adaptation across scenes", fontsize=11, y=1.01)
     flat = axes1.flatten() if hasattr(axes1, "flatten") else [axes1]
 
     for ax in flat[n_w:]:

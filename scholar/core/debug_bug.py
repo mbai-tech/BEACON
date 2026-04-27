@@ -7,8 +7,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
-from NewProject.bug_algorithm import run_bug
-from NewProject.scene_setup import generate_one_random_environment
+from scholar.core.bug_algorithm import run_bug
+from scholar.core.scene_setup import generate_one_random_environment
 
 
 def main() -> None:

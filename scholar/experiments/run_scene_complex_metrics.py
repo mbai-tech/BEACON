@@ -1,7 +1,7 @@
-"""Run metrics for multiple planners on the SCHOLAR scene_complex scenes.
+"""Run metrics for multiple planners on the BEACON scene_complex scenes.
 
 This script uses ``scholar.demo_scholar.load_scene(...)`` so the evaluated
-scenes match the same scene source used by the main SCHOLAR demo CLI.
+scenes match the same scene source used by the main BEACON demo CLI.
 """
 
 from __future__ import annotations
@@ -28,14 +28,14 @@ try:
     from scholar.planning.baselines import PLANNERS
     from scholar.utils.metrics import compute_metrics
 except ModuleNotFoundError:
-    from planning.baselines import PLANNERS
-    from utils.metrics import compute_metrics
+    from scholar.planning.baselines import PLANNERS
+    from scholar.utils.metrics import compute_metrics
 
 
 FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 
 
-ALL_PLANNERS = sorted([*PLANNERS.keys(), "scholar"])
+ALL_PLANNERS = sorted([*PLANNERS.keys(), "beacon"])
 
 DEFAULT_OUTPUT = (
     REPO_ROOT
@@ -64,7 +64,7 @@ def parse_scene_indices(scene_args: list[int], scene_range: str | None) -> list[
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run one or more planners on the scene_complex SCHOLAR scenes and save metrics to CSV."
+        description="Run one or more planners on the scene_complex BEACON scenes and save metrics to CSV."
     )
     parser.add_argument(
         "--scene",
@@ -84,12 +84,12 @@ def parse_args() -> argparse.Namespace:
         nargs="*",
         default=None,
         choices=FAMILIES,
-        help="Restrict evaluation to specific SCHOLAR families.",
+        help="Restrict evaluation to specific BEACON families.",
     )
     parser.add_argument(
         "--planners",
         nargs="+",
-        default=["scholar", "bug", "rrt", "surp"],
+        default=["beacon", "bug", "rrt", "surp"],
         choices=ALL_PLANNERS,
         help="Planner names to evaluate.",
     )
@@ -103,13 +103,13 @@ def parse_args() -> argparse.Namespace:
         "--sense",
         type=float,
         default=0.35,
-        help="Sensing radius for SCHOLAR/SURP-style planners.",
+        help="Sensing radius for BEACON/SURP-style planners.",
     )
     parser.add_argument(
         "--step",
         type=float,
         default=0.04,
-        help="Step size for SCHOLAR/SURP-style planners.",
+        help="Step size for BEACON/SURP-style planners.",
     )
     parser.add_argument(
         "--output",
@@ -121,11 +121,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def run_planner(planner_name: str, scene: dict, max_steps: int, step_size: float, sensing_range: float):
-    if planner_name == "scholar":
+    if planner_name == "beacon":
         try:
             from scholar.planning.scholar import run_scholar
         except ModuleNotFoundError:
-            from planning.scholar import run_scholar
+            from scholar.planning.scholar import run_scholar
         return run_scholar(scene, max_steps=max_steps, step_size=step_size, sensing_range=sensing_range)
     planner_fn = PLANNERS[planner_name]
     if planner_name == "surp":

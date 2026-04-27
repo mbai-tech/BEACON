@@ -1,15 +1,15 @@
-"""SCHOLAR result plots (Figures 1–4 from the paper).
+"""BEACON result plots (Figures 1–4 from the paper).
 
 Usage
 -----
     python plots.py                                   # reads scholar_metrics.csv
     python plots.py --csv path/to/custom.csv
 
-Outputs (saved to NewProject/outputs/figures/)
+Outputs (saved to scholar/core/outputs/figures/)
 ----------------------------------------------
     fig1_success_battery_vs_density.png
     fig2_uniform_vs_mixed_medium.png
-    fig3_battery_over_time.png       (single SCHOLAR Dense/Mixed trial)
+    fig3_battery_over_time.png       (single BEACON Dense/Mixed trial)
     fig4_planning_time_table.png     (per-algorithm planning time)
 """
 
@@ -23,14 +23,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-from NewProject.constants import OUTPUT_DIR
+from scholar.core.constants import OUTPUT_DIR
 
 FIG_DIR = OUTPUT_DIR / "figures"
 CSV_DEFAULT = OUTPUT_DIR / "scholar_metrics.csv"
 
-ALGO_ORDER  = ["SCHOLAR", "Bug1", "Bug2", "Greedy"]
+ALGO_ORDER  = ["BEACON", "Bug1", "Bug2", "Greedy"]
 ALGO_COLORS = {
-    "SCHOLAR": "#2196F3",
+    "BEACON": "#2196F3",
     "Bug1":    "#FF9800",
     "Bug2":    "#4CAF50",
     "Greedy":  "#E91E63",
@@ -168,33 +168,33 @@ def plot_fig2(df: pd.DataFrame) -> Path:
     return _save(fig, "fig2_uniform_vs_mixed_medium.png")
 
 
-# ── Figure 3: battery over time (single representative SCHOLAR trial) ─────────
+# ── Figure 3: battery over time (single representative BEACON trial) ─────────
 
 def plot_fig3(df: pd.DataFrame) -> Path:
-    """Simulate a battery-level time series for SCHOLAR under Dense/Mixed using
+    """Simulate a battery-level time series for BEACON under Dense/Mixed using
     the aggregate stats (since step-level data is not stored in the CSV).
 
     A synthetic trace is constructed from:
       battery(t) = B0 - δ_move × cumulative_path(t) - δ_time × t
     approximated by drawing from the distribution of recorded metrics.
     """
-    from NewProject.constants import BATTERY_INITIAL, DELTA_MOVE, DELTA_TIME, DELTA_COL
+    from scholar.core.constants import BATTERY_INITIAL, DELTA_MOVE, DELTA_TIME, DELTA_COL
 
     scholar_dm = df[
-        (df["algorithm"] == "SCHOLAR") &
+        (df["algorithm"] == "BEACON") &
         (df["density"] == "dense") &
         (df["fragility_profile"] == "mixed") &
         (df["success"] == True)
     ]
 
     if len(scholar_dm) == 0:
-        # Fall back to any SCHOLAR successful trial
-        scholar_dm = df[(df["algorithm"] == "SCHOLAR") & (df["success"] == True)]
+        # Fall back to any BEACON successful trial
+        scholar_dm = df[(df["algorithm"] == "BEACON") & (df["success"] == True)]
 
     if len(scholar_dm) == 0:
-        print("  [fig3] no successful SCHOLAR trials — skipping")
+        print("  [fig3] no successful BEACON trials — skipping")
         fig, ax = plt.subplots(figsize=(8, 4))
-        ax.text(0.5, 0.5, "No successful SCHOLAR trials in data",
+        ax.text(0.5, 0.5, "No successful BEACON trials in data",
                 ha="center", va="center", transform=ax.transAxes)
         return _save(fig, "fig3_battery_over_time.png")
 
@@ -223,8 +223,8 @@ def plot_fig3(df: pd.DataFrame) -> Path:
     t_axis = np.arange(len(battery))
 
     fig, ax = plt.subplots(figsize=(9, 4))
-    ax.plot(t_axis, battery, color=ALGO_COLORS["SCHOLAR"], lw=2,
-            label="SCHOLAR (Dense/Mixed)")
+    ax.plot(t_axis, battery, color=ALGO_COLORS["BEACON"], lw=2,
+            label="BEACON (Dense/Mixed)")
     ax.axhline(0, color="red", lw=1, linestyle="--", label="Battery depleted")
     ax.axhline(0.3 * BATTERY_INITIAL, color="orange", lw=1, linestyle=":",
                label=f"B_thresh = 0.3 B₀")
@@ -239,7 +239,7 @@ def plot_fig3(df: pd.DataFrame) -> Path:
 
     ax.set_xlabel("Control step")
     ax.set_ylabel("Battery (units)")
-    ax.set_title("Battery Level Over Time — SCHOLAR representative trial (Dense/Mixed)")
+    ax.set_title("Battery Level Over Time — BEACON representative trial (Dense/Mixed)")
     ax.legend(fontsize=9)
     ax.yaxis.grid(True, alpha=0.3)
     ax.set_axisbelow(True)
@@ -298,7 +298,7 @@ def main(csv_path: Path) -> None:
     print("Figure 2: Uniform vs Mixed at medium density")
     plot_fig2(df)
 
-    print("Figure 3: battery over time (representative SCHOLAR trial)")
+    print("Figure 3: battery over time (representative BEACON trial)")
     plot_fig3(df)
 
     print("Figure 4: planning time per algorithm")

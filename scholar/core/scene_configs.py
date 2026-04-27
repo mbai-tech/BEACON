@@ -1,4 +1,4 @@
-"""SCHOLAR scene configuration generation — SCHOLAR branch version.
+"""BEACON scene configuration generation — BEACON branch version.
 
 Uses ``scholar.environment.scene_basic`` as the scene backend (available on
 this branch) instead of the ``enviornment`` package used on New-alg.
@@ -16,12 +16,12 @@ _SCHOLAR_DIR = str(Path(__file__).resolve().parent.parent / "scholar")
 if _SCHOLAR_DIR not in sys.path:
     sys.path.insert(0, _SCHOLAR_DIR)
 
-from environment.scene_basic import (
+from scholar.environment.scene_basic import (
     generate_circle_scene,
     polygon_to_list,
     valid_candidate,
 )
-from NewProject.constants import (
+from scholar.core.constants import (
     DENSITY_OBSTACLE_COUNTS,
     SCENE_CONFIGS,
 )
@@ -95,7 +95,7 @@ def _add_obstacles_to_scene(scene: dict, n: int, fragility_profile: str) -> dict
 # ── public API ────────────────────────────────────────────────────────────────
 
 def generate_config_environment(config: str) -> dict:
-    """Generate one scene for the named SCHOLAR config (e.g. "D-M")."""
+    """Generate one scene for the named BEACON config (e.g. "D-M")."""
     density_name, fragility = SCENE_CONFIGS[config]
     n_min, n_max = DENSITY_OBSTACLE_COUNTS[density_name]
     target_n = random.randint(n_min, n_max)
