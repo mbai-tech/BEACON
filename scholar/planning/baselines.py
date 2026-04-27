@@ -1,8 +1,8 @@
 """
 baselines.py — Thin wrappers around existing NewProject planners.
 
-Exposes run_bug (Bug2), run_rrt (online greedy RRT), and run_surp_push
-(the full SURP push planner) under a common interface for trial runners.
+Exposes run_bug (Bug2), run_rrt (online greedy RRT), and run_online_surp_push
+(the full BEACON push planner) under a common interface for trial runners.
 """
 
 from NewProject.bug_algorithm import run_bug
@@ -16,5 +16,5 @@ __all__ = ["run_bug", "run_rrt", "run_online_surp_push", "PLANNERS"]
 PLANNERS = {
     "bug":    run_bug,
     "rrt":    run_rrt,
-    "surp":   run_online_surp_push,
+    "beacon": run_online_surp_push,
 }

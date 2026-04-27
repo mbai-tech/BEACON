@@ -1,6 +1,9 @@
 import json
 import math
 import random
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from shapely.geometry import Point, Polygon, box, LineString
 from shapely.affinity import translate, rotate
 from validator import validate_scene
