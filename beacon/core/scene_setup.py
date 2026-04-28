@@ -7,8 +7,8 @@ from shapely.geometry import Point, Polygon
 
 from beacon.core.constants import CLUTTER_BIASED_FAMILIES, TARGET_MAX_WORKSPACE_SPAN
 
-def _import_enviornment():
-    from enviornment.scene_generator import generate_scene, polygon_to_list, valid_candidate
+def _import_scene_generator():
+    from beacon.environment.scene_generator_shapely import generate_scene, polygon_to_list, valid_candidate
     return generate_scene, polygon_to_list, valid_candidate
 
 
@@ -83,7 +83,7 @@ def normalize_scene_for_online_use(scene: dict) -> dict:
 
 
 def create_cluttered_variant(scene: dict, extra_obstacles: int = 10) -> dict:
-    generate_scene, polygon_to_list, valid_candidate = _import_enviornment()
+    generate_scene, polygon_to_list, valid_candidate = _import_scene_generator()
     """Add extra circular clutter near the start-goal corridor.
 
     The corridor bias increases the probability that the robot must either
@@ -158,7 +158,7 @@ def create_cluttered_variant(scene: dict, extra_obstacles: int = 10) -> dict:
 
 
 def convert_scene_obstacles_to_circles(scene: dict) -> dict:
-    generate_scene, polygon_to_list, valid_candidate = _import_enviornment()
+    generate_scene, polygon_to_list, valid_candidate = _import_scene_generator()
     """Convert generator output into circles of roughly matched area.
 
     For an obstacle of area ``A``, the equivalent circle radius is chosen using
@@ -236,7 +236,7 @@ def shrink_scene(scene: dict, target_max_span: float = TARGET_MAX_WORKSPACE_SPAN
 
 
 def generate_one_random_environment() -> dict:
-    generate_scene, polygon_to_list, valid_candidate = _import_enviornment()
+    generate_scene, polygon_to_list, valid_candidate = _import_scene_generator()
     """Generate one random circle-only environment for the demo."""
     family = random.choice(CLUTTER_BIASED_FAMILIES)
     base_scene = convert_scene_obstacles_to_circles(shrink_scene(generate_scene(family)))

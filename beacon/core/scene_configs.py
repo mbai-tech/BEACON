@@ -1,8 +1,4 @@
-"""BEACON scene configuration generation — BEACON branch version.
-
-Uses ``beacon.environment.scene_basic`` as the scene backend (available on
-this branch) instead of the ``enviornment`` package used on New-alg.
-"""
+"""BEACON scene configuration generation."""
 
 import copy
 import random

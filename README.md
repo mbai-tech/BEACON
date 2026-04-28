@@ -98,9 +98,10 @@ SURP/
       data/metrics/             Benchmark CSVs
       data/scenes/              Pre-saved scene JSONs (100 per family)
 
-  enviornment/                  Scene generators (note: intentional typo in folder name)
+  beacon/environment/
     scene_complex.py            Primary generator — sparse, cluttered, collision_required, collision_shortcut
-    scene_generator.py          Circle-based generator
+    scene_generator_shapely.py  Shapely-based polygon generator
+    scene_generator_pybullet.py PyBullet-based scene generator
     validator.py                Scene validity checks
     run_family.py               Generate and save scenes for one family
 
@@ -118,6 +119,5 @@ Four families:
 
 ## Notes
 
-- The folder is named `enviornment/` (typo preserved) because the code imports it directly.
 - `main_beacon.py` runs only BEACON. Use `run_one_scene.py` to compare against baselines.
 - Benchmark CSVs record: `planner, family, scene_idx, seed, success, steps, path_length, n_contacts, n_sensed, png_path`.

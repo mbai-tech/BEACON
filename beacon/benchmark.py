@@ -40,7 +40,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-from enviornment.scene_generator import generate_scene as _gen_scene
+from beacon.environment.scene_generator_shapely import generate_scene as _gen_scene
 from beacon.planning.beacon_planner import PlannerConfig, run_beacon
 from beacon.planning.vlm_updater import VLMWeightUpdater
 from beacon.utils.analysis import SceneRecord

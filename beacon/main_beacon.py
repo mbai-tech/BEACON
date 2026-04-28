@@ -21,7 +21,7 @@ from matplotlib.patches import Polygon as MplPolygon
 import beacon.core.planner as _planner_module
 from beacon.core.planner import run_online_surp_push
 from beacon.environment.visualize_v2 import CLASS_COLORS as DISPLAY_COLORS
-from enviornment.scene_complex import generate_scene as _generate_complex_scene
+from beacon.environment.scene_complex import generate_scene as _generate_complex_scene
 
 FAMILIES = ["sparse", "cluttered", "collision_required", "collision_shortcut"]
 DATA_DIR = Path(__file__).resolve().parent / "environment" / "data"
@@ -65,11 +65,7 @@ def clear_saved_simulations() -> None:
 
 
 def load_scene(scene_idx: int, family: str, fragility: str = "mixed", seed: int | None = None) -> dict:
-    """Generate one BEACON scene via the top-level enviornment branch code.
-
-    The demo keeps its historical four-family interface, but the actual scene
-    geometry now comes from the newer top-level ``enviornment`` generator.
-    """
+    """Generate one BEACON scene."""
     del fragility  # The new environment generator does not use this parameter.
 
     effective_seed = scene_idx if seed is None else seed

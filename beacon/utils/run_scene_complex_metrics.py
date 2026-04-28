@@ -24,11 +24,7 @@ if str(REPO_ROOT) not in sys.path:
 BEACON_ROOT = REPO_ROOT / "beacon"
 if str(BEACON_ROOT) not in sys.path:
     sys.path.insert(0, str(BEACON_ROOT))
-ENV_ROOT = REPO_ROOT / "enviornment"
-if str(ENV_ROOT) not in sys.path:
-    sys.path.insert(0, str(ENV_ROOT))
-
-from scene_complex import generate_scene as _generate_complex_scene
+from beacon.environment.scene_complex import generate_scene as _generate_complex_scene
 
 try:
     from beacon.planning.baselines import PLANNERS

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from draw_scene import draw_scene
-from scene_generator import generate_scene, save_scene_json
+from beacon.environment.draw_scene import draw_scene
+from beacon.environment.scene_generator_shapely import generate_scene, save_scene_json
 
 
 for i in range(100):

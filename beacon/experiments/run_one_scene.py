@@ -20,11 +20,11 @@ import numpy as np
 from matplotlib.patches import Polygon as MplPolygon
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-for p in [str(REPO_ROOT), str(REPO_ROOT / "beacon"), str(REPO_ROOT / "enviornment")]:
+for p in [str(REPO_ROOT), str(REPO_ROOT / "beacon")]:
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from scene_complex import generate_scene as _generate_scene
+from beacon.environment.scene_complex import generate_scene as _generate_scene
 from beacon.core.bug_algorithm import run_bug
 from beacon.core.bug2_algorithm import run_bug2
 from beacon.core.dstar_lite_algorithm import run_dstar_lite

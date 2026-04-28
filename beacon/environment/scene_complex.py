@@ -3,14 +3,10 @@ import math
 import random
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 from shapely.geometry import Point, Polygon, box, LineString
 from shapely.affinity import translate, rotate
 
-try:
-    from enviornment.validator import validate_scene
-except ModuleNotFoundError:
-    from validator import validate_scene
+from beacon.environment.validator import validate_scene
 
 WORKSPACE = (0, 6, 0, 6)   # xmin, xmax, ymin, ymax
 CLASSES = ["safe", "movable", "fragile"]

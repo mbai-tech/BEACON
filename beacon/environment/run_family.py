@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 
-from scene_generator import generate_scene, save_scene_json
+from beacon.environment.scene_generator_shapely import generate_scene, save_scene_json
 
 
 VALID_FAMILIES = [
@@ -37,7 +37,7 @@ def next_available_path(directory, base_name, suffix):
 
 def main():
     if len(sys.argv) not in (2, 3) or sys.argv[1] not in VALID_FAMILIES:
-        print("Usage: python3 enviornment/run_family.py <family> [seed]")
+        print("Usage: python3 beacon/environment/run_family.py <family> [seed]")
         print("Valid families:", ", ".join(VALID_FAMILIES))
         sys.exit(1)
 
@@ -67,7 +67,7 @@ def main():
     save_scene_json(scene, json_path)
 
     try:
-        from draw_scene import draw_scene
+        from beacon.environment.draw_scene import draw_scene
     except Exception:
         draw_scene = None
 

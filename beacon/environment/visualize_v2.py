@@ -6,7 +6,7 @@ import argparse
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MplPolygon
 
-from beacon.environment.scene_generator import load_scene
+from beacon.environment.scene_generator_pybullet import load_scene
 from beacon.environment.scene_generator_v2 import FAMILIES_V2
 
 CLASS_COLORS = {

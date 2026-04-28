@@ -1,7 +1,7 @@
 import sys
 import os
-from scene_complex import generate_scene, save_scene_json
-from draw_complex import draw_scene
+from beacon.environment.scene_complex import generate_scene, save_scene_json
+from beacon.environment.draw_complex import draw_scene
 
 os.makedirs("images", exist_ok=True)
 os.makedirs("scenes", exist_ok=True)

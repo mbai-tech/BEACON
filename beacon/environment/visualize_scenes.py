@@ -8,7 +8,7 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import Polygon as MplPolygon, Circle as MplCircle
 import numpy as np
 
-from beacon.environment.scene_generator import load_scene, load_all_scenes, _SCENES_DIR
+from beacon.environment.scene_generator_pybullet import load_scene, load_all_scenes, _SCENES_DIR
 
 IMAGES_DIR = Path(__file__).resolve().parent / "data" / "images"
 
