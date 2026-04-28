@@ -1,0 +1,104 @@
+{
+  "name": "smoothness_vs_progress",
+  "family": "formula_demo",
+  "workspace": [
+    0.0,
+    6.0,
+    0.0,
+    6.0
+  ],
+  "start": [
+    0.8,
+    1.2,
+    0.0
+  ],
+  "goal": [
+    5.15,
+    4.9,
+    0.0
+  ],
+  "obstacles": [
+    {
+      "id": 0,
+      "shape_type": "polygon",
+      "true_class": "movable",
+      "class_true": "movable",
+      "center": [
+        2.6500000000000004,
+        2.5125
+      ],
+      "vertices": [
+        [
+          2.3,
+          2.25
+        ],
+        [
+          2.85,
+          2.1
+        ],
+        [
+          3.0,
+          2.75
+        ],
+        [
+          2.45,
+          2.95
+        ]
+      ],
+      "observed": false
+    },
+    {
+      "id": 1,
+      "shape_type": "polygon",
+      "true_class": "movable",
+      "class_true": "movable",
+      "center": [
+        3.5,
+        3.1125
+      ],
+      "vertices": [
+        [
+          3.1,
+          3.0
+        ],
+        [
+          3.55,
+          2.7
+        ],
+        [
+          3.9,
+          3.2
+        ],
+        [
+          3.45,
+          3.55
+        ]
+      ],
+      "observed": false
+    },
+    {
+      "id": 2,
+      "shape_type": "circle",
+      "true_class": "unmovable",
+      "class_true": "unmovable",
+      "center": [
+        2.95,
+        3.95
+      ],
+      "radius": 0.34,
+      "observed": false
+    },
+    {
+      "id": 3,
+      "shape_type": "circle",
+      "true_class": "movable",
+      "class_true": "movable",
+      "center": [
+        4.25,
+        2.15
+      ],
+      "radius": 0.3,
+      "observed": false
+    }
+  ]
+}

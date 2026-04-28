@@ -6,7 +6,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from shapely.geometry import Point, Polygon, box, LineString
 from shapely.affinity import translate, rotate
-from validator import validate_scene
+
+try:
+    from enviornment.validator import validate_scene
+except ModuleNotFoundError:
+    from validator import validate_scene
 
 WORKSPACE = (0, 6, 0, 6)   # xmin, xmax, ymin, ymax
 CLASSES = ["safe", "movable", "fragile"]

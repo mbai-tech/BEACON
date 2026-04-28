@@ -72,7 +72,6 @@ def load_scene(scene_idx: int, family: str, fragility: str = "mixed", seed: int 
     """
     del fragility  # The new environment generator does not use this parameter.
 
-    mapped_family = _ENVIRONMENT_FAMILY_MAP.get(family, family)
     effective_seed = scene_idx if seed is None else seed
     scene = _generate_complex_scene(family=family, seed=effective_seed)
     scene["seed"] = effective_seed
