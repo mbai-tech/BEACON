@@ -1,0 +1,18 @@
+Loaded 800 episodes from /Users/ishita/Documents/GitHub/SURP/scholar/environment/data/metrics/metrics_scene_complex.csv
+Note: this CSV does not include wall-clock runtime columns, so 'planning time' is approximated by step counts only.
+OVERALL BY PLANNER
+    beacon | episodes= 400 | success_rate=96.75% | avg_steps= 132.16 | median_steps= 118.0 | avg_path= 5.053m | median_path= 4.418m | avg_contacts= 0.000 | avg_sensed= 3.723 | avg_path_success= 4.551m | avg_steps_success= 119.73
+      surp | episodes= 400 | success_rate=89.25% | avg_steps= 214.82 | median_steps= 163.0 | avg_path= 7.898m | median_path= 6.139m | avg_contacts=14.470 | avg_sensed= 6.125 | avg_path_success= 6.700m | avg_steps_success= 178.04
+
+BY PLANNER AND FAMILY
+    beacon | cluttered          | n=100 | success_rate=96.00% | avg_steps= 133.80 | avg_path= 5.038m | avg_path_success= 4.415m
+    beacon | collision_required | n=100 | success_rate=97.00% | avg_steps= 134.27 | avg_path= 5.190m | avg_path_success= 4.732m
+    beacon | collision_shortcut | n=100 | success_rate=96.00% | avg_steps= 139.73 | avg_path= 5.323m | avg_path_success= 4.712m
+    beacon | sparse             | n=100 | success_rate=98.00% | avg_steps= 120.86 | avg_path= 4.659m | avg_path_success= 4.346m
+      surp | cluttered          | n=100 | success_rate=63.00% | avg_steps= 332.92 | avg_path=11.945m | avg_path_success= 8.237m
+      surp | collision_required | n=100 | success_rate=99.00% | avg_steps= 160.89 | avg_path= 6.063m | avg_path_success= 5.978m
+      surp | collision_shortcut | n=100 | success_rate=95.00% | avg_steps= 229.27 | avg_path= 8.341m | avg_path_success= 7.967m
+      surp | sparse             | n=100 | success_rate=100.00% | avg_steps= 136.20 | avg_path= 5.242m | avg_path_success= 5.242m
+
+BEACON VS OTHERS (MATCHED SUCCESS EPISODES)
+    beacon vs surp       | common= 400 | both_success= 348 | mean_path_ratio= 0.748 | mean_step_ratio= 0.745

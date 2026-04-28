@@ -1,0 +1,30 @@
+Loaded 1600 episodes from /Users/ishita/Documents/GitHub/SURP/scholar/environment/data/metrics/metrics_polyonobstacles.csv
+Note: this CSV does not include wall-clock runtime columns, so 'planning time' is approximated by step counts only.
+OVERALL BY PLANNER
+    beacon | episodes= 400 | success_rate=96.50% | avg_steps= 137.59 | median_steps= 124.5 | avg_path= 5.179m | median_path= 4.616m | avg_contacts= 0.000 | avg_sensed= 6.115 | avg_path_success= 4.642m | avg_steps_success= 124.36
+       bug | episodes= 400 | success_rate=82.25% | avg_steps= 180.47 | median_steps=  96.5 | avg_path= 9.604m | median_path= 5.864m | avg_contacts= 0.000 | avg_sensed= 9.725 | avg_path_success= 6.859m | avg_steps_success= 111.29
+      bug2 | episodes= 400 | success_rate=91.25% | avg_steps= 185.97 | median_steps= 102.0 | avg_path= 8.055m | median_path= 6.228m | avg_contacts= 0.000 | avg_sensed=11.203 | avg_path_success= 7.804m | avg_steps_success= 126.99
+dstar_lite | episodes= 400 | success_rate=97.25% | avg_steps= 159.67 | median_steps= 126.0 | avg_path= 8.387m | median_path= 6.669m | avg_contacts= 0.000 | avg_sensed=10.045 | avg_path_success= 8.207m | avg_steps_success= 156.15
+
+BY PLANNER AND FAMILY
+    beacon | cluttered          | n=100 | success_rate=94.00% | avg_steps= 141.47 | avg_path= 5.367m | avg_path_success= 4.433m
+    beacon | collision_required | n=100 | success_rate=96.00% | avg_steps= 153.78 | avg_path= 5.631m | avg_path_success= 5.032m
+    beacon | collision_shortcut | n=100 | success_rate=97.00% | avg_steps= 137.32 | avg_path= 5.183m | avg_path_success= 4.724m
+    beacon | sparse             | n=100 | success_rate=99.00% | avg_steps= 117.78 | avg_path= 4.537m | avg_path_success= 4.381m
+       bug | cluttered          | n=100 | success_rate=92.00% | avg_steps= 127.04 | avg_path= 6.708m | avg_path_success= 5.701m
+       bug | collision_required | n=100 | success_rate=61.00% | avg_steps= 322.28 | avg_path=14.157m | avg_path_success=12.723m
+       bug | collision_shortcut | n=100 | success_rate=80.00% | avg_steps= 182.10 | avg_path=11.940m | avg_path_success= 6.290m
+       bug | sparse             | n=100 | success_rate=96.00% | avg_steps=  90.45 | avg_path= 5.610m | avg_path_success= 4.716m
+      bug2 | cluttered          | n=100 | success_rate=95.00% | avg_steps= 141.20 | avg_path= 6.586m | avg_path_success= 6.460m
+      bug2 | collision_required | n=100 | success_rate=71.00% | avg_steps= 411.89 | avg_path=14.216m | avg_path_success=15.482m
+      bug2 | collision_shortcut | n=100 | success_rate=100.00% | avg_steps= 106.47 | avg_path= 6.471m | avg_path_success= 6.471m
+      bug2 | sparse             | n=100 | success_rate=99.00% | avg_steps=  84.32 | avg_path= 4.945m | avg_path_success= 4.933m
+dstar_lite | cluttered          | n=100 | success_rate=100.00% | avg_steps= 123.67 | avg_path= 6.439m | avg_path_success= 6.439m
+dstar_lite | collision_required | n=100 | success_rate=89.00% | avg_steps= 282.38 | avg_path=14.700m | avg_path_success=14.692m
+dstar_lite | collision_shortcut | n=100 | success_rate=100.00% | avg_steps= 126.36 | avg_path= 6.679m | avg_path_success= 6.679m
+dstar_lite | sparse             | n=100 | success_rate=100.00% | avg_steps= 106.26 | avg_path= 5.732m | avg_path_success= 5.732m
+
+BEACON VS OTHERS (MATCHED SUCCESS EPISODES)
+    beacon vs bug        | common= 400 | both_success= 318 | mean_path_ratio= 0.776 | mean_step_ratio= 1.276
+    beacon vs bug2       | common= 400 | both_success= 351 | mean_path_ratio= 0.725 | mean_step_ratio= 1.187
+    beacon vs dstar_lite | common= 400 | both_success= 375 | mean_path_ratio= 0.654 | mean_step_ratio= 0.919

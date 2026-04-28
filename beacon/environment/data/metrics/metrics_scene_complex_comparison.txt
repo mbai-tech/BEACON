@@ -1,0 +1,45 @@
+Loaded 2000 unique episodes from 4 metrics CSV file(s).
+Metrics directory: /Users/ishita/Documents/GitHub/SURP/scholar/environment/data/metrics
+Planners found: beacon, bug, bug2, dstar_lite, surp
+Note: planning time is not stored in these CSVs, so step count is used as a planning-effort proxy.
+
+OVERALL COMPARISON
+planner    | episodes | success_rate | avg_steps | avg_path_m | avg_contacts | avg_sensed | avg_path_success_m | avg_steps_success
+-----------+----------+--------------+-----------+------------+--------------+------------+--------------------+------------------
+beacon     | 400      | 96.75%       | 132.16    | 5.053      | 0.000        | 3.723      | 4.551              | 119.73           
+bug        | 400      | 82.25%       | 180.47    | 9.604      | 0.000        | 9.725      | 6.859              | 111.29           
+bug2       | 400      | 91.25%       | 185.97    | 8.055      | 0.000        | 11.203     | 7.804              | 126.99           
+dstar_lite | 400      | 97.25%       | 159.67    | 8.387      | 0.000        | 10.045     | 8.207              | 156.15           
+surp       | 400      | 89.25%       | 214.82    | 7.898      | 14.470       | 6.125      | 6.700              | 178.04           
+
+BY FAMILY
+planner    | family             | episodes | success_rate | avg_steps | avg_path_m | avg_path_success_m
+-----------+--------------------+----------+--------------+-----------+------------+-------------------
+beacon     | cluttered          | 100      | 96.00%       | 133.80    | 5.038      | 4.415             
+beacon     | collision_required | 100      | 97.00%       | 134.27    | 5.190      | 4.732             
+beacon     | collision_shortcut | 100      | 96.00%       | 139.73    | 5.323      | 4.712             
+beacon     | sparse             | 100      | 98.00%       | 120.86    | 4.659      | 4.346             
+bug        | cluttered          | 100      | 92.00%       | 127.04    | 6.708      | 5.701             
+bug        | collision_required | 100      | 61.00%       | 322.28    | 14.157     | 12.723            
+bug        | collision_shortcut | 100      | 80.00%       | 182.10    | 11.940     | 6.290             
+bug        | sparse             | 100      | 96.00%       | 90.45     | 5.610      | 4.716             
+bug2       | cluttered          | 100      | 95.00%       | 141.20    | 6.586      | 6.460             
+bug2       | collision_required | 100      | 71.00%       | 411.89    | 14.216     | 15.482            
+bug2       | collision_shortcut | 100      | 100.00%      | 106.47    | 6.471      | 6.471             
+bug2       | sparse             | 100      | 99.00%       | 84.32     | 4.945      | 4.933             
+dstar_lite | cluttered          | 100      | 100.00%      | 123.67    | 6.439      | 6.439             
+dstar_lite | collision_required | 100      | 89.00%       | 282.38    | 14.700     | 14.692            
+dstar_lite | collision_shortcut | 100      | 100.00%      | 126.36    | 6.679      | 6.679             
+dstar_lite | sparse             | 100      | 100.00%      | 106.26    | 5.732      | 5.732             
+surp       | cluttered          | 100      | 63.00%       | 332.92    | 11.945     | 8.237             
+surp       | collision_required | 100      | 99.00%       | 160.89    | 6.063      | 5.978             
+surp       | collision_shortcut | 100      | 95.00%       | 229.27    | 8.341      | 7.967             
+surp       | sparse             | 100      | 100.00%      | 136.20    | 5.242      | 5.242             
+
+RELATIVE TO BEACON
+other_planner | common_episodes | both_success | beacon_path_ratio | beacon_step_ratio
+--------------+-----------------+--------------+-------------------+------------------
+bug           | 400             | 318          | 0.769             | 1.257            
+bug2          | 400             | 354          | 0.717             | 1.166            
+dstar_lite    | 400             | 376          | 0.647             | 0.901            
+surp          | 400             | 348          | 0.748             | 0.745            

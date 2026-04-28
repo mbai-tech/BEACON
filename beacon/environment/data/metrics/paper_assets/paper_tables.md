@@ -1,0 +1,19 @@
+# Paper Tables
+
+## Overall benchmark results
+
+| Planner | Success Rate | Avg. Steps | Avg. Path (m) | Avg. Contacts | Avg. Sensed |
+|---|---:|---:|---:|---:|---:|
+| Bug | 82.25% | 180.47 | 9.604 | 0.000 | 9.725 |
+| Bug2 | 91.25% | 185.97 | 8.055 | 0.000 | 11.203 |
+| D* Lite | 97.25% | 159.67 | 8.387 | 0.000 | 10.045 |
+| BEACON | 96.75% | 132.16 | 5.053 | 0.000 | 3.723 |
+
+## Family-level BEACON results
+
+| Family | BEACON Success | BEACON Path (m) | BEACON Steps | BEACON Sensed |
+|---|---:|---:|---:|---:|
+| sparse | 98.00% | 4.659 | 120.86 | 2.130 |
+| cluttered | 96.00% | 5.038 | 133.80 | 6.080 |
+| collision required | 97.00% | 5.190 | 134.27 | 2.180 |
+| collision shortcut | 96.00% | 5.323 | 139.73 | 4.500 |

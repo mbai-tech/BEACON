@@ -1,0 +1,13 @@
+Loaded 400 episodes from /Users/ishita/Documents/GitHub/SURP/scholar/environment/data/metrics/metrics_dstar_lite_scene_complex.csv
+Note: this CSV does not include wall-clock runtime columns, so 'planning time' is approximated by step counts only.
+OVERALL BY PLANNER
+dstar_lite | episodes= 400 | success_rate=97.25% | avg_steps= 159.67 | median_steps= 126.0 | avg_path= 8.387m | median_path= 6.669m | avg_contacts= 0.000 | avg_sensed=10.045 | avg_path_success= 8.207m | avg_steps_success= 156.15
+
+BY PLANNER AND FAMILY
+dstar_lite | cluttered          | n=100 | success_rate=100.00% | avg_steps= 123.67 | avg_path= 6.439m | avg_path_success= 6.439m
+dstar_lite | collision_required | n=100 | success_rate=89.00% | avg_steps= 282.38 | avg_path=14.700m | avg_path_success=14.692m
+dstar_lite | collision_shortcut | n=100 | success_rate=100.00% | avg_steps= 126.36 | avg_path= 6.679m | avg_path_success= 6.679m
+dstar_lite | sparse             | n=100 | success_rate=100.00% | avg_steps= 106.26 | avg_path= 5.732m | avg_path_success= 5.732m
+
+BEACON VS OTHERS (MATCHED SUCCESS EPISODES)
+    beacon vs dstar_lite | common=   0 | both_success=   0 | mean_path_ratio=   nan | mean_step_ratio=   nan

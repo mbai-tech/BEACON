@@ -1,0 +1,13 @@
+Loaded 400 episodes from /Users/ishita/Documents/GitHub/SURP/scholar/environment/data/metrics/metrics_bug2_scene_complex.csv
+Note: this CSV does not include wall-clock runtime columns, so 'planning time' is approximated by step counts only.
+OVERALL BY PLANNER
+      bug2 | episodes= 400 | success_rate=91.25% | avg_steps= 185.97 | median_steps= 102.0 | avg_path= 8.055m | median_path= 6.228m | avg_contacts= 0.000 | avg_sensed=11.203 | avg_path_success= 7.804m | avg_steps_success= 126.99
+
+BY PLANNER AND FAMILY
+      bug2 | cluttered          | n=100 | success_rate=95.00% | avg_steps= 141.20 | avg_path= 6.586m | avg_path_success= 6.460m
+      bug2 | collision_required | n=100 | success_rate=71.00% | avg_steps= 411.89 | avg_path=14.216m | avg_path_success=15.482m
+      bug2 | collision_shortcut | n=100 | success_rate=100.00% | avg_steps= 106.47 | avg_path= 6.471m | avg_path_success= 6.471m
+      bug2 | sparse             | n=100 | success_rate=99.00% | avg_steps=  84.32 | avg_path= 4.945m | avg_path_success= 4.933m
+
+BEACON VS OTHERS (MATCHED SUCCESS EPISODES)
+    beacon vs bug2       | common=   0 | both_success=   0 | mean_path_ratio=   nan | mean_step_ratio=   nan

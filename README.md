@@ -1,601 +1,123 @@
-## SURP / SCHOLAR
+# BEACON
 
-SCHOLAR is an online navigation and manipulation planner for a disk robot in partially known environments. The current repo combines:
+Online motion planning for a disk robot in partially known environments.
+BEACON navigates by sensing nearby obstacles, learning their semantic class through contact (Bayesian belief update), and choosing between pushing, avoiding, or boundary-following based on a battery-aware cost function.
 
-- a SCHOLAR demo and batch runner under `scholar/`
-- the main online planner under `NewProject/`
-- a newer top-level environment generator under `enviornment/`
-
-This README is the best place to start if you want to run the code on your own machine.
-
-## Repo layout
-
-```text
-SURP/
-  NewProject/
-    planner.py                # Current SCHOLAR-style online planner
-    bug_algorithm.py          # Bug-style baseline
-    bug2_algorithm.py         # Bug2-style baseline
-    rrt_greedy.py             # RRT baseline
-    scene_setup.py            # Random scene generation + normalization helpers
-    online_surp_push.py       # Run the planner once on a random scene
-    run_bug.py                # Run Bug baseline once on a random scene
-    run_rrt.py                # Run RRT baseline once on a random scene
-    visualization.py          # Animation and snapshot utilities
-
-  scholar/
-    demo_scholar.py           # Main SCHOLAR demo and batch runner
-    demo_bug1.py              # Bug1 demo and batch runner
-    demo_bug2.py              # Bug2 demo and batch runner
-    experiments/run_trials.py # Programmatic experiment runner
-    environment/              # Legacy SCHOLAR data/log/video/image directories
-
-  enviornment/
-    scene_complex.py          # Complex scene generator used by demo_scholar.py
-    scene_generator.py        # Alternate newer generator utilities
-    run.py                    # Generate 100 scenes for each new environment family
-    run_complex.py            # Generate scenes with scene_complex.py
-    run_family.py             # Generate one environment family
-    README.md                 # Extra details for environment generation
-```
-
-## What the main demo uses
-
-The current `scholar/demo_scholar.py` now generates scenes through the top-level `enviornment/scene_complex.py`.
-
-The SCHOLAR demo keeps these four user-facing family names:
-
-- `sparse`
-- `cluttered`
-- `collision_required`
-- `collision_shortcut`
-
-Those names are already the native family names used by `scene_complex.py`, so there is no family remapping step anymore.
-
-So when you run `scholar/demo_scholar.py`, the scene source is:
-
-- `enviornment/scene_complex.py`
-
-and not:
-
-- `scholar/environment/data/scenes/...`
-- `enviornment/scene_generator.py`
-
-## Requirements
-
-You should use Python 3.11 if possible. The code has been run with:
-
-- `python3`
-- `/opt/anaconda3/bin/python3`
-
-Core Python packages used in the repo include:
-
-- `numpy`
-- `matplotlib`
-- `shapely`
-- `pybullet`
-
-Depending on your machine and workflow, you may also want:
-
-- `pip`
-- `venv`
-
-## Recommended setup
-
-From the repo root:
+## Setup
 
 ```bash
-cd /Users/ishita/Documents/GitHub/SURP
 python3 -m venv .venv
 source .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install numpy matplotlib shapely pybullet
+pip install numpy matplotlib shapely pybullet
 ```
 
-If you are using Anaconda and want to use the same interpreter as recent runs in this repo:
+## Running
+
+### Live BEACON demo (animated)
 
 ```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 -m pip install numpy matplotlib shapely pybullet
+python3 beacon/main_beacon.py --scene 0
+python3 beacon/main_beacon.py --scene 0 --family cluttered
+python3 beacon/main_beacon.py --scenes 0-9 --save
+python3 beacon/main_beacon.py --scenes 0-99 --save --clear-past --steps 700
 ```
 
-For the environment generator folder specifically, there is also a local requirements file:
+Flags: `--scene N` (seed), `--family sparse|cluttered|collision_required|collision_shortcut`, `--steps N`, `--sense R`, `--step S`, `--save`, `--clear-past`
+
+Saved outputs go to `beacon/environment/data/logs/` and `beacon/environment/data/videos/`.
+
+### Compare all baselines on one scene
 
 ```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 -m pip install -r enviornment/requirements.txt
+python3 beacon/experiments/run_one_scene.py --scene 0 --family cluttered
+python3 beacon/experiments/run_one_scene.py --scene 0 --family cluttered --visuals out/visuals
 ```
 
-## Quick start
+Runs Bug1, Bug2, D\* Lite, and BEACON on the same scene and prints a metrics table.
+With `--visuals DIR`, saves a PNG per planner showing the path and any pushed obstacles.
 
-Run SCHOLAR on one scene interactively:
+### Benchmark across many scenes
 
 ```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scene 0
+python3 beacon/utils/run_scene_complex_metrics.py --scene 0 --planners beacon bug bug2 dstar_lite
+python3 beacon/utils/run_scene_complex_metrics.py --scenes 0-99 --planners beacon bug bug2 dstar_lite
+python3 beacon/utils/run_scene_complex_metrics.py --scenes 0-99 --planners beacon bug bug2 dstar_lite --visuals out/visuals
 ```
 
-Run SCHOLAR on scenes `0-99`, save outputs, and clear old saved simulations first:
+Writes CSV to `beacon/environment/data/metrics/metrics_scene_complex.csv`.
+
+### Summarize and plot results
 
 ```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scenes 0-99 --save --clear-past
+python3 beacon/utils/summarize_scene_complex_metrics.py
+python3 beacon/utils/compare_scene_complex_metrics.py
+python3 beacon/utils/generate_paper_figures.py
+python3 beacon/utils/plots.py --csv path/to/metrics.csv
 ```
 
-That is the main batch command currently used in this repo.
+## Repo Map
 
-## Main SCHOLAR command
+```
+SURP/
+  beacon/
+    main_beacon.py              Live BEACON demo with animation and video saving
+    main.py                     General CLI (planner selection, batch trials)
+    main_bug1.py                Live Bug1 animated demo
+    main_bug2.py                Live Bug2 animated demo
 
-File:
+    core/                       Planner implementations
+      planner.py                BEACON (run_online_surp_push)
+      bug_algorithm.py          Bug1
+      bug2_algorithm.py         Bug2
+      dstar_lite_algorithm.py   D* Lite
+      rrt_greedy.py             Greedy RRT baseline
+      cibp.py                   Bayesian belief updater
+      models.py                 Shared dataclasses
+      constants.py              Shared constants (battery, sensing range, etc.)
+      visualization.py          Plot and animation helpers
 
-- [scholar/demo_scholar.py](/Users/ishita/Documents/GitHub/SURP/scholar/demo_scholar.py:432)
+    planning/
+      baselines.py              Planner registry (PLANNERS dict)
+      cost_map.py               Anisotropic cost map
+      semantic_cost.py          Semantic class cost tables
+      vlm_updater.py            VLM-based belief updater
 
-CLI arguments:
+    experiments/
+      run_one_scene.py          Run all baselines on one scene, print table + PNGs
 
-- `--scene 0`
-  Run one or more specific scene indices. Example: `--scene 0 1 2`
-- `--scenes 0-99`
-  Run an inclusive range of scene indices. This implies batch mode.
-- `--family sparse cluttered`
-  Restrict which SCHOLAR family names to run.
-- `--steps 500`
-  Maximum simulation steps. Default is now `500`.
-- `--sense 0.35`
-  Sensing radius in meters.
-- `--step 0.04`
-  Robot step size in meters.
-- `--save`
-  Save logs and video or gif outputs.
-- `--clear-past`
-  Delete previously saved simulation logs and videos before running.
-- `--speedup 3`
-  Playback speed multiplier for saved output.
-- `--workers 8`
-  Maximum parallel workers in batch mode.
+    utils/
+      run_scene_complex_metrics.py  Batch benchmark, writes CSV
+      summarize_scene_complex_metrics.py
+      compare_scene_complex_metrics.py
+      generate_paper_figures.py
+      plots.py                  Paper figures (trade-off scatter, algorithm illustration)
 
-Useful examples:
+    environment/
+      data/logs/                Simulation step logs
+      data/videos/              Saved MP4/GIF outputs
+      data/metrics/             Benchmark CSVs
+      data/scenes/              Pre-saved scene JSONs (100 per family)
 
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scene 0
+  enviornment/                  Scene generators (note: intentional typo in folder name)
+    scene_complex.py            Primary generator — sparse, cluttered, collision_required, collision_shortcut
+    scene_generator.py          Circle-based generator
+    validator.py                Scene validity checks
+    run_family.py               Generate and save scenes for one family
+
 ```
 
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scene 0 --family sparse
-```
+## Scenes
 
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scenes 0-9 --save
-```
+Scenes are procedurally generated from a seed — `--scene N` is both the index and the random seed, so any integer gives a reproducible scene. There is no fixed dataset limit.
 
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scenes 0-99 --save --clear-past --steps 700
-```
+Four families:
+- `sparse` — few obstacles, open space
+- `cluttered` — many obstacles, navigation requires interaction
+- `collision_required` — a push is necessary to reach the goal
+- `collision_shortcut` — a push creates a shorter path
 
-## SCHOLAR outputs
+## Notes
 
-Saved outputs go under:
-
-- `scholar/environment/data/logs/`
-- `scholar/environment/data/videos/`
-
-Typical output types:
-
-- text logs such as `simulation_scene000_*.txt`
-- gifs such as `simulation_scene000.gif`
-- sometimes mp4 files depending on the run path
-
-The `--clear-past` flag only deletes saved simulation logs and videos. It does not delete source scene assets.
-
-## Baseline demos
-
-### Bug1
-
-File:
-
-- [scholar/demo_bug1.py](/Users/ishita/Documents/GitHub/SURP/scholar/demo_bug1.py:384)
-
-Example commands:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/demo_bug1.py --scene 0
-```
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/demo_bug1.py --scenes 0-19 --save
-```
-
-Important defaults:
-
-- `--steps 500`
-- `--sense 0.55`
-- `--step 0.07`
-
-### Bug2
-
-File:
-
-- [scholar/demo_bug2.py](/Users/ishita/Documents/GitHub/SURP/scholar/demo_bug2.py:386)
-
-Example commands:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/demo_bug2.py --scene 0
-```
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/demo_bug2.py --scenes 0-19 --save
-```
-
-Important defaults:
-
-- `--steps 500`
-- `--sense 0.55`
-- `--step 0.07`
-
-## One-off local runs from `NewProject/`
-
-These are useful if you want to debug one randomly generated scene without using the SCHOLAR batch UI.
-
-### SCHOLAR planner once
-
-File:
-
-- [NewProject/online_surp_push.py](/Users/ishita/Documents/GitHub/SURP/NewProject/online_surp_push.py:1)
-
-Command:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 NewProject/online_surp_push.py
-```
-
-This:
-
-- generates one random environment
-- runs `run_online_surp_push(...)`
-- saves a final snapshot
-- opens the animation path
-
-### Bug baseline once
-
-File:
-
-- [NewProject/run_bug.py](/Users/ishita/Documents/GitHub/SURP/NewProject/run_bug.py:1)
-
-Command:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 NewProject/run_bug.py
-```
-
-### RRT baseline once
-
-File:
-
-- [NewProject/run_rrt.py](/Users/ishita/Documents/GitHub/SURP/NewProject/run_rrt.py:1)
-
-Command:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 NewProject/run_rrt.py
-```
-
-## Programmatic experiments
-
-File:
-
-- [scholar/experiments/run_trials.py](/Users/ishita/Documents/GitHub/SURP/scholar/experiments/run_trials.py:1)
-
-Example:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 -c "from scholar.experiments.run_trials import run_trials; run_trials(n_trials=3, planner_name='scholar')"
-```
-
-Available planner names are defined from:
-
-- `planning.baselines.PLANNERS`
-- plus `"scholar"`
-
-So valid names generally include:
-
-- `scholar`
-- baseline names registered in `scholar/planning/baselines.py`
-
-Important:
-
-- `run_trials.py` uses `NewProject.scene_setup.generate_one_random_environment()`
-- it does not use the `scene_complex.py` scenes from `scholar/demo_scholar.py`
-
-If you want metrics on the exact same scenes used by the SCHOLAR demo, use the dedicated script below.
-
-## Metrics on `scene_complex.py` scenes
-
-File:
-
-- [scholar/experiments/run_scene_complex_metrics.py](/Users/ishita/Documents/GitHub/SURP/scholar/experiments/run_scene_complex_metrics.py:1)
-
-This script:
-
-- uses `load_scene(...)` from `scholar.demo_scholar`
-- evaluates one or more planners on the same `scene_complex.py` scenes
-- computes metrics with `scholar.utils.metrics.compute_metrics(...)`
-- writes the results to CSV
-
-Available planner names:
-
-- `scholar`
-- `bug`
-- `rrt`
-- `surp`
-
-Example: run all planners on scenes `0-99`
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug rrt surp
-```
-
-Example: one scene, one family, one planner
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/experiments/run_scene_complex_metrics.py --scene 0 --family sparse --planners scholar
-```
-
-Example: custom CSV output
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/experiments/run_scene_complex_metrics.py --scenes 0-99 --planners scholar bug rrt surp --output /tmp/scene_metrics.csv
-```
-
-Default CSV output path:
-
-- `scholar/environment/data/metrics_scene_complex.csv`
-
-CSV columns:
-
-- `planner`
-- `family`
-- `scene_idx`
-- `seed`
-- `success`
-- `steps`
-- `path_length`
-- `n_contacts`
-- `n_sensed`
-
-## New environment generator
-
-The alternate top-level environment generator lives in:
-
-- [enviornment/scene_generator.py](/Users/ishita/Documents/GitHub/SURP/enviornment/scene_generator.py:1)
-
-Its native family names are:
-
-- `sparse_clutter`
-- `dense_clutter`
-- `narrow_passage`
-- `semantic_trap`
-- `perturbed`
-
-### Generate all new environment families
-
-File:
-
-- [enviornment/run.py](/Users/ishita/Documents/GitHub/SURP/enviornment/run.py:1)
-
-Command:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 enviornment/run.py
-```
-
-This generates 100 scenes for each family and writes them to:
-
-- `enviornment/data/images/`
-- `enviornment/data/scenes/`
-
-Important:
-
-- `run.py` clears those output folders first
-- the generated files are named with their seed
-
-### Generate one family
-
-File:
-
-- [enviornment/run_family.py](/Users/ishita/Documents/GitHub/SURP/enviornment/run_family.py:1)
-
-Command without fixed seed:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 enviornment/run_family.py sparse_clutter
-```
-
-Command with fixed seed:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 enviornment/run_family.py sparse_clutter 12345
-```
-
-Behavior:
-
-- without a seed, output goes to `enviornment/data/...` and old files there are cleared
-- with a seed, output goes to `enviornment/saved_enviornments/...` and is preserved
-
-## Complex scene generator
-
-The SCHOLAR demo currently uses:
-
-- [enviornment/scene_complex.py](/Users/ishita/Documents/GitHub/SURP/enviornment/scene_complex.py:1)
-
-Its native family names are:
-
-- `sparse`
-- `cluttered`
-- `collision_required`
-- `collision_shortcut`
-
-To generate those scenes directly with the companion script:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP/enviornment
-python3 run_complex.py
-```
-
-or with a custom number of scenes per family:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP/enviornment
-python3 run_complex.py 20
-```
-
-That script uses:
-
-- `scene_complex.generate_scene(...)`
-- `draw_complex.py`
-
-and writes outputs into the local `enviornment/` working directories used by that script.
-
-## Current planner behavior summary
-
-The main online planner is:
-
-- [NewProject/planner.py](/Users/ishita/Documents/GitHub/SURP/NewProject/planner.py:2123)
-
-Key characteristics of the current version:
-
-- D* Lite-inspired local path repair on the observed map
-- pushing only when strong blockage is detected ahead
-- Bug-style boundary following as a fallback
-- D* Lite-style backtracking during deeper recovery
-- near-goal direct-step fallback so the robot does not stop just short of the goal
-
-The current default max step limit in the planner is:
-
-- [NewProject/planner.py](/Users/ishita/Documents/GitHub/SURP/NewProject/planner.py:2129) -> `max_steps: int = 500`
-
-The current default SCHOLAR CLI step limit is:
-
-- [scholar/demo_scholar.py](/Users/ishita/Documents/GitHub/SURP/scholar/demo_scholar.py:438) -> `--steps` default `500`
-
-## Common workflows
-
-### 1. Just run SCHOLAR on all main scenes
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scenes 0-99 --save --clear-past
-```
-
-### 2. Run one family only
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scenes 0-19 --family cluttered --save
-```
-
-### 3. Give the robot more time
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-/opt/anaconda3/bin/python3 scholar/demo_scholar.py --scenes 0-99 --save --clear-past --steps 700
-```
-
-### 4. Rebuild environment-generator outputs
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 enviornment/run.py
-```
-
-### 5. Reproduce one generated environment by seed
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 enviornment/run_family.py dense_clutter 12345
-```
-
-## Notes for macOS
-
-Batch saving on macOS can fail if Matplotlib tries to open GUI windows from worker threads. `scholar/demo_scholar.py` now switches to the `Agg` backend automatically for batch `--save` runs, which avoids the common `NSWindow should only be instantiated on the main thread` crash.
-
-If you still see Matplotlib cache warnings, you can set:
-
-```bash
-export MPLCONFIGDIR=/tmp/matplotlib-cache
-mkdir -p "$MPLCONFIGDIR"
-```
-
-before running the demos.
-
-## Troubleshooting
-
-### `ModuleNotFoundError` involving `enviornment`
-
-Run from the repo root:
-
-```bash
-cd /Users/ishita/Documents/GitHub/SURP
-python3 scholar/demo_scholar.py --scene 0
-```
-
-The repo root needs to be on the Python path for the top-level `enviornment/` package to resolve.
-
-### `ValueError: not enough values to unpack` with `--scenes`
-
-`--scenes` currently expects a range like:
-
-```bash
---scenes 0-99
-```
-
-not:
-
-```bash
---scenes 0
-```
-
-If you want one scene, use:
-
-```bash
---scene 0
-```
-
-or:
-
-```bash
---scenes 0-0
-```
-
-### The robot seems to stop too early
-
-Check the step limit first:
-
-```bash
-python3 scholar/demo_scholar.py --scene 0 --steps 700
-```
-
-The current defaults are already `500`, but long cluttered scenes may still need more.
-
-## Related READMEs
-
-For generator-specific details, also see:
-
-- [enviornment/README.md](/Users/ishita/Documents/GitHub/SURP/enviornment/README.md)
+- The folder is named `enviornment/` (typo preserved) because the code imports it directly.
+- `main_beacon.py` runs only BEACON. Use `run_one_scene.py` to compare against baselines.
+- Benchmark CSVs record: `planner, family, scene_idx, seed, success, steps, path_length, n_contacts, n_sensed, png_path`.
