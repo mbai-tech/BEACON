@@ -1,0 +1,3 @@
+[submodule "BEACON-semantics"]
+	path = BEACON-semantics
+	url = https://github.com/mbai-tech/BEACON-semantics.git

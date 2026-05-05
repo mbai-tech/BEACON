@@ -1,9 +1,0 @@
-numpy>=2.0
-scipy>=1.10
-matplotlib>=3.7
-pandas>=2.0
-shapely>=2.0
-pybullet>=3.2
-
-# Optional: VLM-based cost updater (beacon/planning/vlm_updater.py)
-# openai>=1.0
